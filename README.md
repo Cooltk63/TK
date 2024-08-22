@@ -1,53 +1,59 @@
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Date;
+import java.util.Optional;
+
+public interface MyEntityRepository extends JpaRepository<MyEntity, Long> {
+    Optional<MyEntity> findByAssetsdateAndBranchCodeAndId(Date assetsdate, String branchCode, Long id);
+}
+
+
+
+
+xxx
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-public Date convertStringToDate(String dateString) throws ParseException {
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-    return formatter.parse(dateString);
-}
-
-xxx
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-public interface MyEntityRepository extends JpaRepository<MyEntity, Long> {
-    List<MyEntity> findByDateAndBranchCodeAndId(LocalDate date, String branchCode, Long id);
-}
-
-xxx
-import java.util.List;
-
+@Service
 public class MyService {
 
-    private final MyEntityRepository myEntityRepository;
+    @Autowired
+    private MyEntityRepository myEntityRepository;
 
-    public MyService(MyEntityRepository myEntityRepository) {
-        this.myEntityRepository = myEntityRepository;
+    @Transactional
+    public void updateRecord(String dateString, String branchCode, Long id, List<String> dataList) throws ParseException {
+        // Convert String to Date
+        Date assetsdate = convertStringToDate(dateString);
+
+        // Retrieve the entity
+        Optional<MyEntity> optionalEntity = myEntityRepository.findByAssetsdateAndBranchCodeAndId(assetsdate, branchCode, id);
+        
+        if (optionalEntity.isPresent()) {
+            MyEntity entity = optionalEntity.get();
+
+            // Update the entity fields using dataList (you will need to map dataList to entity fields)
+            entity.setField1(dataList.get(0));  // Example field update
+            entity.setField2(dataList.get(1));  // Another field update
+            // Update more fields as needed
+
+            // Save the updated entity
+            myEntityRepository.save(entity);
+        } else {
+            // Handle the case where the entity was not found
+            throw new RuntimeException("Entity not found for the given criteria");
+        }
     }
 
-    public List<MyEntity> findRecords(String dateString, String branchCode, Long id) {
-        Date date = convertStringToDate(dateString);
-        return myEntityRepository.findByDateAndBranchCodeAndId(date, branchCode, id);
-    }
-}
-
-xxx
-
-import java.util.List;
-
-public class MyService {
-
-    private final MyEntityRepository myEntityRepository;
-
-    public MyService(MyEntityRepository myEntityRepository) {
-        this.myEntityRepository = myEntityRepository;
-    }
-
-    public List<MyEntity> findRecords(String dateString, String branchCode, Long id) {
-        LocalDate date = convertStringToDate(dateString);
-        return myEntityRepository.findByDateAndBranchCodeAndId(date, branchCode, id);
+    // Date conversion method
+    public Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        return formatter.parse(dateString);
     }
 }
