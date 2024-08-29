@@ -1,4 +1,3 @@
--- Retrieve the list of IDs or relevant fields from CRS_ADJDATA
 SELECT 
     a.ADJMOC_DATE,
     a.ADJMOC_ID,
@@ -15,9 +14,8 @@ SELECT
     a.ADJMOC_SUBHEAD,
     a.REPORT_MASTER_LIST_ID_FK
 FROM CRS_ADJMOC a
-WHERE a.ADJMOC_BRANCH IN (
+WHERE ADJMOC_SUBHEAD='EXPENSES' AND a.ADJMOC_BRANCH IN (
     SELECT d.AD_BRANCH
     FROM CRS_ADJDATA d
-    WHERE d.AD_BRANCH = :branchcode
-      AND d.AD_BALANCE = :qed
-);
+    WHERE d.AD_BRANCH = '50003'
+      AND d.AD_DATE = to_date('31-12-2022','dd/mm/yyyy'));
