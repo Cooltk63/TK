@@ -1,68 +1,30 @@
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import javax.websocket.*;
+List<List<String>> finalList = new ArrayList<>();
+        List<String> rowData=new ArrayList<>();
 
-@ClientEndpoint
-public class WebSocketClient {
+        rowData.add(0,"");
+        rowData.add(1,"");
+        rowData.add(2,"");
+        rowData.add(3,"");
+        rowData.add(4,"");
+        rowData.add(5,"");
+        rowData.add(6,"");
+        rowData.add(7, "");
+        rowData.add(8, "");
+        rowData.add(9,"false");
 
-    private Session session;
-    private static ExecutorService executorService = Executors.newSingleThreadExecutor();
+        for(int j=0; j<7;j++)
+        {
+                {
+                    rowData.set(7, String.valueOf(j));
+                    rowData.set(8, String.valueOf(j));
 
-    public WebSocketClient() {
-        try {
-            // WebSocket server URI
-            URI serverEndpoint = new URI("ws://your-websocket-server");
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            container.connectToServer(this, serverEndpoint);
-        } catch (URISyntaxException | DeploymentException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @OnOpen
-    public void onOpen(Session session) {
-        this.session = session;
-        System.out.println("WebSocket connection opened");
-    }
-
-    @OnMessage
-    public void onMessage(String message) {
-        System.out.println("Message received: " + message);
-    }
-
-    @OnClose
-    public void onClose() {
-        System.out.println("WebSocket connection closed");
-    }
-
-    @OnError
-    public void onError(Throwable throwable) {
-        throwable.printStackTrace();
-    }
-
-    public void sendMessage(String message) throws IOException {
-        session.getBasicRemote().sendText(message);
-    }
-
-    public static void main(String[] args) {
-        executorService.submit(() -> {
-            WebSocketClient client = new WebSocketClient();
-            // Keep WebSocket running
-            while (true) {
-                try {
-                    Thread.sleep(1000);  // Simulate background work
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
                 }
-            }
-        });
+            finalList.add(j, rowData);
+        }
 
-        // Main application logic
-        System.out.println("Application is terminating but WebSocket will continue...");
-        // You can optionally terminate the executor if needed
-        // executorService.shutdown();
+        System.out.println("Value of finalList :"+finalList);
+
     }
-}
+
+
+    I had this list i wanted the row.Data list 7th & 8th Position index set for each list from 1 to 7 so give me the for loop code as i requested
