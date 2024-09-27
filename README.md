@@ -1,37 +1,65 @@
-// IF Data Present IN RW-03
-if (rw03ListData.size() > 0) {
-    for (List<String> dataList : rw03ListData) {
+PreparedStatementCallback; bad SQL grammar [select nvl(ANX2C_GEN,0),nvl(ANX2C_PER,0),nvl(ANX2C_EXPCAP,0),nvl(ANX2C_STD,0),nvl(ANX2C_NPA,0),nvl(ANX2C_NEWRES,0),nvl(ANX2C_MEMSTD,0),nvl(ANX2C_COD,0),nvl(ANX2C_COMREA,0),nvl(ANX2C_EXPCOM,0),nvl(ANX2C_OTH,0),nvl(ANX2C_WILFUL,0),nvl(ANX2C_SECURED,0),nvl(ANX2C_UNSECURED,0),nvl(ANX2C_RESTRUCTURED,0),nvl(ANX2C_UNRESTRUCTURED,0),nvl(ANX2C_ALLOTH,0),ANX2C_TOT,PARAM_NAME as CIRCLE_NAME FROM BS_ANX2C, bs_param where ANNX2C_QED=to_date(?,'dd/mm/yyyy')AND ANNX2C_CIRCLE !='021' AND BS_ANX2C.ANNX2C_CIRCLE=PARAM_STYPE AND BS_PARAM.PARAM_TYPE='CIRCLE']; nested exception is java.sql.SQLException: Invalid column name
+org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [select nvl(ANX2C_GEN,0),nvl(ANX2C_PER,0),nvl(ANX2C_EXPCAP,0),nvl(ANX2C_STD,0),nvl(ANX2C_NPA,0),nvl(ANX2C_NEWRES,0),nvl(ANX2C_MEMSTD,0),nvl(ANX2C_COD,0),nvl(ANX2C_COMREA,0),nvl(ANX2C_EXPCOM,0),nvl(ANX2C_OTH,0),nvl(ANX2C_WILFUL,0),nvl(ANX2C_SECURED,0),nvl(ANX2C_UNSECURED,0),nvl(ANX2C_RESTRUCTURED,0),nvl(ANX2C_UNRESTRUCTURED,0),nvl(ANX2C_ALLOTH,0),ANX2C_TOT,PARAM_NAME as CIRCLE_NAME FROM BS_ANX2C, bs_param where ANNX2C_QED=to_date(?,'dd/mm/yyyy')AND ANNX2C_CIRCLE !='021' AND BS_ANX2C.ANNX2C_CIRCLE=PARAM_STYPE AND BS_PARAM.PARAM_TYPE='CIRCLE']; nested exception is java.sql.SQLException: Invalid column name
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.doTranslate(SQLErrorCodeSQLExceptionTranslator.java:231)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:73)
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:649)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:684)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:716)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:726)
+	at com.tcs.dao.FRTAnnexure2CReportDaoImpl.getAnnex2cList(FRTAnnexure2CReportDaoImpl.java:83)
+	at com.tcs.services.FRTAnnexure2CReportServiceImpl.getAnnex2cList(FRTAnnexure2CReportServiceImpl.java:18)
+	at com.tcs.controllers.FRTAnnexure2CReportController.getAnnex2cList(FRTAnnexure2CReportController.java:26)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:827)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:738)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:897)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:872)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:665)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:750)
+	at weblogic.servlet.internal.StubSecurityHelper$ServletServiceAction.run(StubSecurityHelper.java:295)
+	at weblogic.servlet.internal.StubSecurityHelper$ServletServiceAction.run(StubSecurityHelper.java:260)
+	at weblogic.servlet.internal.StubSecurityHelper.invokeServlet(StubSecurityHelper.java:137)
+	at weblogic.servlet.internal.ServletStubImpl.execute(ServletStubImpl.java:353)
+	at weblogic.servlet.internal.TailFilter.doFilter(TailFilter.java:25)
+	at weblogic.servlet.internal.FilterChainImpl.doFilter(FilterChainImpl.java:82)
+	at weblogic.websocket.tyrus.TyrusServletFilter.doFilter(TyrusServletFilter.java:274)
+	at weblogic.servlet.internal.FilterChainImpl.doFilter(FilterChainImpl.java:82)
+	at com.tcs.security.JWTTokenAuthFilter.doFilterInternal(JWTTokenAuthFilter.java:102)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)
+	at weblogic.servlet.internal.FilterChainImpl.doFilter(FilterChainImpl.java:82)
+	at com.auth10.federation.WSFederationFilter.doFilter(WSFederationFilter.java:56)
+	at weblogic.servlet.internal.FilterChainImpl.doFilter(FilterChainImpl.java:82)
+	at weblogic.servlet.internal.WebAppServletContext$ServletInvocationAction.wrapRun(WebAppServletContext.java:3866)
+	at weblogic.servlet.internal.WebAppServletContext$ServletInvocationAction.run(WebAppServletContext.java:3829)
+	at weblogic.security.acl.internal.AuthenticatedSubject.doAs(AuthenticatedSubject.java:344)
+	at weblogic.security.service.SecurityManager.runAsForUserCode(SecurityManager.java:197)
+	at weblogic.servlet.provider.WlsSecurityProvider.runAsForUserCode(WlsSecurityProvider.java:203)
+	at weblogic.servlet.provider.WlsSubjectHandle.run(WlsSubjectHandle.java:71)
+	at weblogic.servlet.internal.WebAppServletContext.processSecuredExecute(WebAppServletContext.java:2502)
+	at weblogic.servlet.internal.WebAppServletContext.doSecuredExecute(WebAppServletContext.java:2351)
+	at weblogic.servlet.internal.WebAppServletContext.securedExecute(WebAppServletContext.java:2326)
+	at weblogic.servlet.internal.WebAppServletContext.execute(WebAppServletContext.java:2304)
+	at weblogic.servlet.internal.ServletRequestImpl.runInternal(ServletRequestImpl.java:1779)
+	at weblogic.servlet.internal.ServletRequestImpl.run(ServletRequestImpl.java:1733)
+	at weblogic.servlet.provider.ContainerSupportProviderImpl$WlsRequestExecutor.run(ContainerSupportProviderImpl.java:272)
+	at weblogic.invocation.ComponentInvocationContextManager._runAs(ComponentInvocationContextManager.java:352)
+	at weblogic.invocation.ComponentInvocationContextManager.runAs(ComponentInvocationContextManager.java:337)
+	at weblogic.work.LivePartitionUtility.doRunWorkUnderContext(LivePartitionUtility.java:57)
+	at weblogic.work.PartitionUtility.runWorkUnderContext(PartitionUtility.java:41)
+	at weblogic.work.SelfTuningWorkManagerImpl.runWorkUnderContext(SelfTuningWorkManagerImpl.java:651)
+	at weblogic.work.ExecuteThread.execute(ExecuteThread.java:420)
 
-        // Insert the first row with the actual data from dataList
-        CrsLiability crsLiability = new CrsLiability();
-        crsLiability.setLiabilityParticulars("Contiongent liability As per As-29");
-        crsLiability.setLiabilityLstYs(dataList.get(0));
-        crsLiability.setLiabilityAddition(dataList.get(1));
-        crsLiability.setLiabilityReversal(dataList.get(2));
-        crsLiability.setLiabilityBranch((String) loginuserData.get("branch_code"));
-        crsLiability.setLiabilityDate(liabilityDate);
-        crsLiability.setReportMasterListIdfk(submissionId);
-        crsLiability.setCrsLiabilityId("1");
 
-        log.info("Entity Data for Insert: " + crsLiability);
-        CrsLiability entityData = crsLiabilityRepository.save(crsLiability);
-        log.info("CrsLiability saved to database: " + entityData.getCrsLiabilityId());
-
-        // Insert 6 more rows with 0 values for particular fields
-        for (int i = 1; i <= 6; i++) {
-            CrsLiability zeroLiability = new CrsLiability();
-            zeroLiability.setLiabilityParticulars("Contiongent liability As per As-29");
-            zeroLiability.setLiabilityLstYs("0");
-            zeroLiability.setLiabilityAddition("0");
-            zeroLiability.setLiabilityReversal("0");
-            zeroLiability.setLiabilityBranch((String) loginuserData.get("branch_code"));
-            zeroLiability.setLiabilityDate(liabilityDate);
-            zeroLiability.setReportMasterListIdfk(submissionId);
-            zeroLiability.setCrsLiabilityId(String.valueOf(i + 1));  // Set unique ID for each row
-
-            log.info("Inserting zero-value row: " + zeroLiability);
-            CrsLiability zeroEntity = crsLiabilityRepository.save(zeroLiability);
-            log.info("Zero-value CrsLiability saved to database: " + zeroEntity.getCrsLiabilityId());
-        }
-    }
-}
+ Explain me this error where character or line i had error and why 
