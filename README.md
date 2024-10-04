@@ -22,15 +22,17 @@ public class ListModification {
 
         for (List<Object> row : originalList) {
             List<String> modifiedRow = new ArrayList<>();
+            modifiedRow.add("");  // Add an empty string at the 0th position
+
             int serialIndex = Integer.parseInt(row.get(8).toString());  // 8th position contains serial number
 
             // Modify for Index no 1, 2, 5, 6 (positions 1, 2, 3, 4 get "_D" added)
             if (serialIndex == 1 || serialIndex == 2 || serialIndex == 5 || serialIndex == 6) {
-                for (int i = 0; i <= 4; i++) {
-                    modifiedRow.add(row.get(i).toString() + "_D");
+                for (int k = 0; k <= 4; k++) {
+                    modifiedRow.add(row.get(k).toString() + "_D");
                 }
-                for (int i = 5; i < row.size(); i++) {
-                    modifiedRow.add(row.get(i).toString());
+                for (int k = 5; k < row.size(); k++) {
+                    modifiedRow.add(row.get(k).toString());
                 }
             } else {
                 for (Object element : row) {
@@ -40,14 +42,14 @@ public class ListModification {
 
             // Set the 6th position value to 100, except when serialIndex is 0 or 4
             if (serialIndex != 0 && serialIndex != 4) {
-                modifiedRow.set(6, "100");
+                modifiedRow.set(7, "100");  // 6th position becomes 7th due to the empty string at index 0
             }
 
             totalModified.add(modifiedRow);
         }
 
-        // Sort the list based on the serial index at position 8
-        totalModified.sort(Comparator.comparingInt(o -> Integer.parseInt(o.get(8))));
+        // Sort the list based on the serial index at position 9 (previously 8 due to the added empty string)
+        totalModified.sort(Comparator.comparingInt(o -> Integer.parseInt(o.get(9))));
 
         // Printing the final modified and sorted list for verification
         for (List<String> row : totalModified) {
