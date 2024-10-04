@@ -1,27 +1,53 @@
-[
-[FRAUDS - DEBITED TO RECALLED ASSETS A/c (Prod Cd 6998-9981)**, 0, 0, 0, 0, 0, 0, 0, 1, 1, false], 
-[PROVISION ON ACCOUNT OF ENTRIES OUTSTANDING IN ADJUSTING ACCOUNT FOR PREVIOUS QUARTER(S) (i.e. PRIOR TO CURRENT QUARTER), 0, 0, 0, 0, 0, 100, 0, 10, 10, false], 
-[PROVISION ON N.P.A. INTEREST FREE STAFF LOANS, 0, 0, 0, 0, 0, 100, 0, 11, 11, false], 
-[Frauds reported within time up to null provision @ 100% ##, 0, 0, 0, 0, 0, 100, 0, 2, 2, false], 
-[Delayed Reported frauds Provision @ 100% ##, 0, 0, 0, 0, 0, 100, 0, 3, 3, false], 
-[OTHERS LOSSES IN RECALLED ASSETS (Prod cd 6998 - 9982)#, 0, 0, 0, 0, 0, 100, 0, 4, 4, false], 
-[FRAUDS - OTHER (NOT DEBITED TO RA A/c)$, 0, 0, 0, 0, 0, 0, 0, 5, 5, false], 
-[Frauds reported within time up tonullprovision @ 100% ##, 0, 0, 0, 0, 0, 100, 0, 6, 6, false], 
-[Delayed Reported frauds Provision @ 100% ##, 0, 0, 0, 0, 0, 100, 0, 7, 7, false],
-[REVENUE ITEM IN SYSTEM SUSPENSE, 0, 0, 0, 0, 0, 100, 0, 8, 8, false], 
-[PROVISION ON ACCOUNT OF FSLO, 0, 0, 0, 0, 0, 100, 0, 9, 9, false]
-]
+import java.util.ArrayList;
+import java.util.List;
 
+public class ListModification {
 
-I have this list of data nowe i want this same list with some modifications 
+    public static void main(String[] args) {
+        List<List<Object>> originalList = new ArrayList<>();
+        originalList.add(List.of("FRAUDS - DEBITED TO RECALLED ASSETS A/c (Prod Cd 6998-9981)**", 0, 0, 0, 0, 0, 0, 0, 1, 1, false));
+        originalList.add(List.of("PROVISION ON ACCOUNT OF ENTRIES OUTSTANDING IN ADJUSTING ACCOUNT FOR PREVIOUS QUARTER(S) (i.e. PRIOR TO CURRENT QUARTER)", 0, 0, 0, 0, 0, 100, 0, 10, 10, false));
+        originalList.add(List.of("PROVISION ON N.P.A. INTEREST FREE STAFF LOANS", 0, 0, 0, 0, 0, 100, 0, 11, 11, false));
+        originalList.add(List.of("Frauds reported within time up to null provision @ 100% ##", 0, 0, 0, 0, 0, 100, 0, 2, 2, false));
+        originalList.add(List.of("Delayed Reported frauds Provision @ 100% ##", 0, 0, 0, 0, 0, 100, 0, 3, 3, false));
+        originalList.add(List.of("OTHERS LOSSES IN RECALLED ASSETS (Prod cd 6998 - 9982)#", 0, 0, 0, 0, 0, 100, 0, 4, 4, false));
+        originalList.add(List.of("FRAUDS - OTHER (NOT DEBITED TO RA A/c)$", 0, 0, 0, 0, 0, 0, 0, 5, 5, false));
+        originalList.add(List.of("Frauds reported within time up tonullprovision @ 100% ##", 0, 0, 0, 0, 0, 100, 0, 6, 6, false));
+        originalList.add(List.of("Delayed Reported frauds Provision @ 100% ##", 0, 0, 0, 0, 0, 100, 0, 7, 7, false));
+        originalList.add(List.of("REVENUE ITEM IN SYSTEM SUSPENSE", 0, 0, 0, 0, 0, 100, 0, 8, 8, false));
+        originalList.add(List.of("PROVISION ON ACCOUNT OF FSLO", 0, 0, 0, 0, 0, 100, 0, 9, 9, false));
 
-Inside List of each List i need the certain changes on some list positions  as per below 
-In my List of each List has some serial Index Number located at 8th position 
+        List<List<String>> totalModified = new ArrayList<>();
 
-Chnages required for List Index no 1 & 2,5,6 changes position no 1,2,3,4 values added with _D string values 
+        for (List<Object> row : originalList) {
+            List<String> modifiedRow = new ArrayList<>();
+            int serialIndex = (int) row.get(8);  // 8th position contains serial number
+            
+            // Modify for Index no 1, 2, 5, 6 (positions 1, 2, 3, 4 get "_D" added)
+            if (serialIndex == 1 || serialIndex == 2 || serialIndex == 5 || serialIndex == 6) {
+                for (int i = 0; i <= 4; i++) {
+                    modifiedRow.add(row.get(i).toString() + "_D");
+                }
+                for (int i = 5; i < row.size(); i++) {
+                    modifiedRow.add(row.get(i).toString());
+                }
+            } else {
+                for (Object element : row) {
+                    modifiedRow.add(element.toString());
+                }
+            }
 
-I want each and every list 6th position 100 value except which list has Index Number 0 & 4
+            // Set the 6th position value to 100, except when serialIndex is 0 or 4
+            if (serialIndex != 0 && serialIndex != 4) {
+                modifiedRow.set(6, "100");
+            }
 
-give me efffiecent code in java for this list handling
-save the final list in TotoalModified List variable. which is <List<List<String>
+            totalModified.add(modifiedRow);
+        }
 
+        // Printing the final modified list for verification
+        for (List<String> row : totalModified) {
+            System.out.println(row);
+        }
+    }
+}
