@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ListModification {
@@ -21,8 +22,8 @@ public class ListModification {
 
         for (List<Object> row : originalList) {
             List<String> modifiedRow = new ArrayList<>();
-            int serialIndex = (int) row.get(8);  // 8th position contains serial number
-            
+            int serialIndex = Integer.parseInt(row.get(8).toString());  // 8th position contains serial number
+
             // Modify for Index no 1, 2, 5, 6 (positions 1, 2, 3, 4 get "_D" added)
             if (serialIndex == 1 || serialIndex == 2 || serialIndex == 5 || serialIndex == 6) {
                 for (int i = 0; i <= 4; i++) {
@@ -45,7 +46,10 @@ public class ListModification {
             totalModified.add(modifiedRow);
         }
 
-        // Printing the final modified list for verification
+        // Sort the list based on the serial index at position 8
+        totalModified.sort(Comparator.comparingInt(o -> Integer.parseInt(o.get(8))));
+
+        // Printing the final modified and sorted list for verification
         for (List<String> row : totalModified) {
             System.out.println(row);
         }
