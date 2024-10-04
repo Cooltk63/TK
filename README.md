@@ -45,6 +45,11 @@ public class ListModification {
                 modifiedRow.set(7, "100");  // 6th position becomes 7th due to the empty string at index 0
             }
 
+            // Add empty string at the 7th position for lists with index 1 and 4
+            if (serialIndex == 1 || serialIndex == 4) {
+                modifiedRow.set(7, "");  // Replacing 7th position with an empty string
+            }
+
             totalModified.add(modifiedRow);
         }
 
