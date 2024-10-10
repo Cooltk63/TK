@@ -1,28 +1,23 @@
-<table id="myTable">
-    <tr>
-        <td><input type="text" id="input1" name="field1" value="Editable Field"></td>
-    </tr>
-    <tr>
-        <td><input type="text" id="input2" name="field2" value="Editable Field"></td>
-    </tr>
-    <tr>
-        <td><input type="text" id="input3" name="field3" value="Editable Field"></td>
-    </tr>
-    <!-- Continue for inputs up to input12 -->
-</table>
+ if ($scope.sc09Form.$dirty == true && sc09.isCircleInList(circleCode))
+                    {
+                        alert("You cant Make changes here");
+                        console.log("Cant Make Chnage HERERERERERERERERER")
+                        
+                        sc09.redirect();
+                    }
 
-<!-- jQuery Library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+sc09.redirect = function () {
+                $timeout(function () {
 
-<script>
-    // Make input2 and input4 read-only
-    $('#input2, #input4').attr('readonly', true);
-</script>
+                    if ($scope.sessionUser.capacity == "61") {
+                        $state.go('frt_maker.worklist');
+                    } else {
+                        // event.preventDefault();
+                        $scope.preventDefault();
+                        $state.go('circle_maker.worklist');
+                    }
+                }, 500);
+            }
 
 
-<script>
-    // Loop through input IDs 2 to 4 and make them read-only
-    for (let i = 2; i <= 4; i++) {
-        $('#input' + i).attr('readonly', true); // Targets input2, input3, and input4
-    }
-</script>
+            on save button it check if ($scope.sc09Form.$dirty == true && sc09.isCircleInList(circleCode)) if this true thrn it execute the sc09.redirect function but it still stucked and save function executed and user will redirected to worklist location with not having changes or clickable options there means totally stuck need to reload to re-login the application
