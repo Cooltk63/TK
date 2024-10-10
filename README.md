@@ -1,44 +1,28 @@
-SELECT 
-    ROWNUM AS rownum, 
-    *
-FROM (
-    SELECT 
-        a.SRNO, 
-        a.TITLE, 
-        a.CATEGORY, 
-        a.SUB_CATEGORY, 
-        b.ID, 
-        b.NEW_CATEGORY, 
-        b.NEW_TITLE, 
-        b.ACTION, 
-        b.PFID, 
-        b.FK_SRNO
-    FROM 
-        IFRS_INTRA_GROUP_LIABILITY a
-    LEFT JOIN 
-        IFRS_GROUP_CHANGE_REQUEST b
-    ON 
-        b.FK_SRNO = a.SRNO
-    WHERE 
-        a.SUB_CATEGORY = 'Associates' 
-        AND a.STATUS = 'A'
-    
-    UNION ALL
-    
-    SELECT 
-        NULL AS SRNO, 
-        NULL AS TITLE, 
-        NULL AS CATEGORY, 
-        NULL AS SUB_CATEGORY, 
-        b.ID, 
-        b.NEW_CATEGORY, 
-        b.NEW_TITLE, 
-        b.ACTION, 
-        b.PFID, 
-        b.FK_SRNO
-    FROM 
-        IFRS_GROUP_CHANGE_REQUEST b
-    WHERE 
-        b.FK_SRNO NOT IN (SELECT a.SRNO FROM IFRS_INTRA_GROUP_LIABILITY a)
-)
-ORDER BY rownum;
+<table id="myTable">
+    <tr>
+        <td><input type="text" id="input1" name="field1" value="Editable Field"></td>
+    </tr>
+    <tr>
+        <td><input type="text" id="input2" name="field2" value="Editable Field"></td>
+    </tr>
+    <tr>
+        <td><input type="text" id="input3" name="field3" value="Editable Field"></td>
+    </tr>
+    <!-- Continue for inputs up to input12 -->
+</table>
+
+<!-- jQuery Library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    // Make input2 and input4 read-only
+    $('#input2, #input4').attr('readonly', true);
+</script>
+
+
+<script>
+    // Loop through input IDs 2 to 4 and make them read-only
+    for (let i = 2; i <= 4; i++) {
+        $('#input' + i).attr('readonly', true); // Targets input2, input3, and input4
+    }
+</script>
