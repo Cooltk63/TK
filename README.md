@@ -157,6 +157,55 @@ public interface CRS_HedgeInvRepository extends JpaRepository<CRS_HedgeInv,Integ
 
     boolean existsByhedgeinvId(int hedgeId);
 
+
+    Below is my entity class 
+
+    package com.crs.commonReportsService.models;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Date;
+
+//Report RW-38
+
+@Getter
+@Setter
+@Entity
+@Table(name = "CRS_HEDGEINV")
+public class CRS_HedgeInv {
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "CRS_HEDGEINV_SEQ")
+    @SequenceGenerator(name = "CRS_HEDGEINV_SEQ", sequenceName = "CRS_HEDGEINV_SEQ", allocationSize = 1)
+    @Column(name = "HEDGEINV_ID")
+    private int hedgeinvId;
+
+    @Column(name = "HEDGEINV_DATE")
+    private Date hedgeinv_date;
+
+    @Column(name = "HEDGEINV_BRANCH")
+    private String hedgeinv_branch;
+
+    @Column(name = "HEDGEINV_INVDATE")
+    private Date hedgeinv_invdate;
+
+    @Column(name = "HEDGEINV_PAN")
+    private String hedgeinv_pan;
+
+    @Column(name = "HEDGEINV_CUSTOMER")
+    private String hedgeinv_customer;
+
+    @Column(name = "HEDGEINV_AMOUNT")
+    private String hedgeinv_amount;
+
+    @Column(name = "REPORT_MASTER_LIST_ID_FK")
+    private int hedgeInvReporMastertFK;
+}
+
+
   CRS_HedgeInv findByHedgeinv_branchAndHedgeinv_date(String branch, String date);
 }
 
