@@ -1,1 +1,13 @@
-https://url3410.imocha.io/ls/click?upn=u001.VWw9rohU-2FdbcKSPQ6MNa1PGabzT2DqLBdt2T3fsQ1KPzI-2B2It9S7GwzQbNfIV3YwM346pRobQS-2BBb7PE1QrfNQ-3D-3DUz9X_TqJzwviGlFQzBgYAEPTWj1LjHD0Y5rTd7H5t1z-2BTkujYi-2FrfSTSqf3h4ysN9jMLqHsMT1FgcqPkE4Gc0cVHGMa3JStBYkoPdxhxHvRGtcnCBWyaqa-2FJI5kz10l4fApMGJpJ7K2GbS1qroO4Fpkbp90i-2FYm92zLul-2Fw40VtsdmeLZGR1at06T9BSP11hcJxOpQmAiXIdhpjDHGQfWJkGY-2FjXXL8z4v76owibF8smvnzQZ3msdb2F8uMbeowy-2BORFtWrvwRmu-2BJrkeebwG1hDzfSzjhMBsxYaV-2FZT6sg7KVBnxnQEji5T2jryveKwtiWdnf5u7N0zvs0lh6rVgH8ejEWfuDuRHjpkSnjnnHMLAgkPCrk2gP16jT6HXbYdOd-2BxIM-2BuvraBVnS9Q2KK7cwhDuOFQWPphLqAasrnrnF8hjtU-3D
+SELECT\n" +
+            "nvl(to_number(cont_liab_prov_lst_yr), 0) opening," +
+            "nvl(to_number(cont_liab_prov_add), 0) additions," +
+            "nvl(to_number(cont_liab_prov_used), 0) ggg," +
+            "nvl(to_number(cont_liab_prov_unused), 0) reversals " +
+            "FROM " +
+            "crs_cont_liab_prov\n" +
+            "WHERE\n" +
+            "cont_liab_prov_branch = :branch_code\n" +
+            "AND cont_liab_prov_date = to_date(:quarterEndDate,'dd/mm/yyyy')\n" +
+            "AND cont_liab_prov_itemid = '18' 
+
+            I need the  "nvl(to_number(cont_liab_prov_used), 0) ggg, +   "nvl(to_number(cont_liab_prov_unused), 0) reversals " + columns additioin in separate column as name sumofUnsed.
