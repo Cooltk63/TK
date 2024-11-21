@@ -1,102 +1,104 @@
-// Loop for processing each tab data in the `tabData` list
-for (int i = 0; i < tabData.size(); i++) {
-    log.info("Processing TabData >>>> " + tabData.get(i).get("TAB_NAME"));
+List<Map<String, Object>> getColumnData = columnDataRepository.getTabColumnData((String) data.get("reportId"), (String) tabData.get(i).get("TAB_VALUE_FK"));
 
-    // Create a new map to hold updated tab data
-    Map<String, Object> updatedTabData = new HashMap<>();
 
-    // Copy all existing values from the current tab data into the updated map
-    updatedTabData.putAll(tabData.get(i));
 
-    // Fetch column data for the current tab based on report ID and tab value foreign key
-    List<Map<String, Object>> getColumnData = columnDataRepository.getTabColumnData(
-            (String) data.get("reportId"),                  // Report ID for filtering
-            (String) tabData.get(i).get("TAB_VALUE_FK")     // Tab Value foreign key
-    );
+                List<Map<String, Object>> dynamicColumnData = new ArrayList<>(getColumnData);
 
-    // Fetch the dynamic date provided in the input data
-    String dynamicDate = (String) data.get("quarterEndDate");
+                //Changing 2nd Position Column Data
+                Map<String,Object>secondDynamicColumn=new HashMap<>(dynamicColumnData.get(2));
+                String updatedName2=dynamicColumnData.get(2).get("COLUMN_NAME").toString()+ " " +"01.04."+loginuserData.get("quarterEndDate").toString().substring(6,10);
+                // Set to Map
+                secondDynamicColumn.replace("COLUMN_NAME",updatedName2);
+                //Set to List Data
+                dynamicColumnData.set(2,secondDynamicColumn);
 
-    // Use Stream API to process and modify the column data
-    List<Map<String, Object>> modifiedColumnData = getColumnData.stream()
-            .map(column -> {
-                // Check if the column name matches "Provisional as on"
-                if ("Provisional as on".equalsIgnoreCase((String) column.get("COLUMN_NAME"))) {
-                    // Create a new map with the updated column name by appending the dynamic date
-                    return Map.copyOf(new HashMap<>(column) {{
-                        put("COLUMN_NAME", "Provisional as on " + dynamicDate); // Append date
-                    }});
-                }
-                // Return an immutable copy of the original column if no modification is needed
-                return Map.copyOf(column);
-            })
-            .toList(); // Convert the stream back into an immutable list (Java 16+ feature)
 
-    // Add the modified column data to the updated tab data map
-    updatedTabData.put("TAB_COLUMN_DATA", modifiedColumnData);
 
-    // Handle row data processing for specific tabs
-    if (tabData.get(i).get("TAB_VALUE").toString().equalsIgnoreCase("1")) {
-        // Tab 1: Fetch row data based on the submission ID
-        log.info("Fetching ROW Data for SubmissionId: " + submissionId);
+                //Changing 6th Position Column Data
+                Map<String,Object>sixDynamicColumn=new HashMap<>(dynamicColumnData.get(6));
+                String updatedName6="PROVISIONABLE AMT AS ON"+ " "+loginuserData.get("quarterEndDate").toString() +" (7)=3-4+5-6";
+                // Set to Map
+                sixDynamicColumn.replace("COLUMN_NAME",updatedName6);
+                //Set to List Data
+                dynamicColumnData.set(6,sixDynamicColumn);
 
-        // Retrieve the raw row data from the repository
-        List<List<String>> actualRowData = crsOthassestsRepository.getReportDetails(submissionId);
+                //Changing 8th Position Column Data
+                Map<String,Object>EightDynamicColumn=new HashMap<>(dynamicColumnData.get(8));
+                String updatedName8="PROVISION REQUIREMENT AS ON" +loginuserData.get("quarterEndDate").toString()+ " (9)=7*8";
+                // Set to Map
+                EightDynamicColumn.replace("COLUMN_NAME",updatedName8);
+                //Set to List Data
+                dynamicColumnData.set(8,EightDynamicColumn);
 
-        // Initialize a list to hold modified row data
-        List<List<String>> totalModified = new ArrayList<>();
+                // Adding COLUMN-DATA
+                updatedTabData.put("TAB_COLUMN_DATA", dynamicColumnData);
 
-        // Process each row in the retrieved data
-        for (List<String> row : actualRowData) {
-            List<String> modifiedRow = new ArrayList<>();
 
-            // Add an empty string as the first column (required modification)
-            modifiedRow.add("");
+java.lang.IndexOutOfBoundsException: Index 8 out of bounds for length 8
+	at java.base/jdk.internal.util.Preconditions.outOfBounds(Preconditions.java:100) ~[na:na]
+	at java.base/jdk.internal.util.Preconditions.outOfBoundsCheckIndex(Preconditions.java:106) ~[na:na]
+	at java.base/jdk.internal.util.Preconditions.checkIndex(Preconditions.java:302) ~[na:na]
+	at java.base/java.util.Objects.checkIndex(Objects.java:365) ~[na:na]
+	at java.base/java.util.ArrayList.get(ArrayList.java:428) ~[na:na]
+	at com.crs.commonReportsService.services.RW04ServiceImpl.getReportDetails(RW04ServiceImpl.java:159) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:354) ~[spring-aop-6.1.8.jar:6.1.8]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:716) ~[spring-aop-6.1.8.jar:6.1.8]
+	at com.crs.commonReportsService.services.RW04ServiceImpl$$SpringCGLIB$$0.getReportDetails(<generated>) ~[classes/:na]
+	at com.crs.commonReportsService.controllers.RW04Controller.getReportDetails(RW04Controller.java:24) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.24.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.24.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:389) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at java.base/java.lang.Thread.run(Thread.java:1570) ~[na:na]
 
-            // Get the serial index from the 8th column of the row
-            int serialIndex = Integer.parseInt(row.get(8));
 
-            // Modify rows for specific serial indices (2, 3, 6, 7)
-            if (serialIndex == 2 || serialIndex == 3 || serialIndex == 6 || serialIndex == 7) {
-                // Append "_D" to the first five columns
-                for (int k = 0; k <= 4; k++) {
-                    modifiedRow.add(row.get(k) + "_D");
-                }
-                // Copy the remaining columns as they are
-                for (int k = 5; k < row.size(); k++) {
-                    modifiedRow.add(row.get(k));
-                }
-            } else {
-                // If no modification is needed, copy all columns as they are
-                modifiedRow.addAll(row);
-            }
-
-            // Set a specific value ("100") in the 7th column for most rows
-            if (serialIndex != 0 && serialIndex != 5) {
-                modifiedRow.set(7, "100");
-            }
-
-            // For serial indices 1 and 5, set the 7th column to an empty string
-            if (serialIndex == 1 || serialIndex == 5) {
-                modifiedRow.set(7, " ");
-            }
-
-            // Add the modified row to the list
-            totalModified.add(modifiedRow);
-        }
-
-        // Sort the modified rows by the serial index (adjusted for added empty string at position 0)
-        totalModified.sort(Comparator.comparingInt(o -> Integer.parseInt(o.get(9))));
-
-        // Add the modified and sorted row data to the updated tab data map
-        updatedTabData.put("TAB_ROW_DATA", totalModified);
-
-    } else if (tabData.get(i).get("TAB_VALUE").toString().equalsIgnoreCase("2")) {
-        // Tab 2: Fetch and add row data for the second tab
-        log.info("Fetching ROW Data for Tab 2");
-        updatedTabData.put("TAB_ROW_DATA", crsOthassestsRepository.getAddRowData(submissionId));
-    }
-
-    // Add the updated tab data to the final list of tab data
-    tabList.add(updatedTabData);
-}
+ I am getting this error only when i am trying to set the 8th position data
