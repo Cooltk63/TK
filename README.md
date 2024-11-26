@@ -20,3 +20,9 @@
         </proxy>
     </proxies>
 </settings>
+
+
+{
+    "http.proxy": "http://your.proxy.server.url:your_proxy_port",
+    "http.proxyAuthorization": "Basic VjEwMTIyOTc6VHVzaEAyNDg1"
+}
