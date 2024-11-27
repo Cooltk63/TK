@@ -1,9 +1,64 @@
-Failed to execute goal org.apache.maven.plugins:maven-clean-plugin:3.3.2:clean (default-clean) on project commonReportsService: Execution default-clean of goal org.apache.maven.plugins:maven-clean-plugin:3.3.2:clean failed: Plugin org.apache.maven.plugins:maven-clean-plugin:3.3.2 or one of its dependencies could not be resolved: Failed to collect dependencies at org.apache.maven.plugins:maven-clean-plugin:jar:3.3.2 -> org.codehaus.plexus:plexus-utils:jar:4.0.0: Failed to read artifact descriptor for org.codehaus.plexus:plexus-utils:jar:4.0.0: The following artifacts could not be 
-resolved: org.junit:junit-bom:pom:5.9.3 (present, but unavailable): Could not transfer artifact org.junit:junit-bom:pom:5.9.3 from/to central (https://repo.maven.apache.org/maven2): PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target -> [Help 1]
-[ERROR]
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR]
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/PluginResolutionException
-PS D:\VS_Code_Workspace\CRS\CRS_6_0_Revamp\backend\commonReportsService> 
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  
+  <!-- Local repository location (optional) -->
+  <localRepository>/path/to/local/repository</localRepository>
+
+  <!-- Custom repositories -->
+  <profiles>
+    <profile>
+      <id>custom-repo-profile</id>
+      <repositories>
+        <repository>
+          <id>my-repo</id>
+          <name>My Repository</name>
+          <url>https://10.191.167.23:443/repository/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <!-- Activate the profile by default -->
+  <activeProfiles>
+    <activeProfile>custom-repo-profile</activeProfile>
+  </activeProfiles>
+
+  <!-- Server credentials for authentication -->
+  <servers>
+    <server>
+      <id>my-repo</id>
+      <username>your-username</username>
+      <password>your-password</password>
+    </server>
+  </servers>
+
+  <!-- Proxy configuration if required -->
+  <proxies>
+    <proxy>
+      <id>proxy-server</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>proxy-host</host>
+      <port>8080</port>
+      <username>proxy-username</username>
+      <password>proxy-password</password>
+    </proxy>
+  </proxies>
+
+  <!-- Mirror for central repository -->
+  <mirrors>
+    <mirror>
+      <id>central-mirror</id>
+      <mirrorOf>central</mirrorOf>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </mirror>
+  </mirrors>
+</settings>
