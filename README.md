@@ -7,16 +7,25 @@
             "command": "javac",
             "args": [
                 "-d",
-                "out", 
+                "out",
                 "-classpath",
                 "WebContent/WEB-INF/lib/*",
-                "src/com/tcs/**/*"
+                "${fileDirname}/**/*.java"
             ],
+            "windows": {
+                "args": [
+                    "-d",
+                    "out",
+                    "-classpath",
+                    "WebContent\\WEB-INF\\lib\\*",
+                    "@sources.txt"
+                ]
+            },
+            "problemMatcher": "$javac",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            },
-            "problemMatcher": "$javac"
+            }
         },
         {
             "label": "Build WAR",
