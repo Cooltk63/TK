@@ -1,26 +1,3 @@
-dir /s /b src\com\tcs\*.java > sources.txt
-
-
-{
-    "label": "Compile Java",
-    "type": "shell",
-    "command": "javac",
-    "args": [
-        "-d",
-        "out",
-        "-classpath",
-        "WebContent/WEB-INF/lib/*",
-        "@sources.txt"
-    ],
-    "group": {
-        "kind": "build",
-        "isDefault": true
-    },
-    "problemMatcher": "$javac"
-}
-
-
-
 {
     "version": "2.0.0",
     "tasks": [
@@ -30,12 +7,10 @@ dir /s /b src\com\tcs\*.java > sources.txt
             "command": "javac",
             "args": [
                 "-d",
-                "out",
+                "out", 
                 "-classpath",
                 "WebContent/WEB-INF/lib/*",
-                "-sourcepath",
-                "src",
-                "src/com/tcs/**/*.java"
+                "src/com/**/*.java"
             ],
             "group": {
                 "kind": "build",
@@ -65,7 +40,3 @@ dir /s /b src\com\tcs\*.java > sources.txt
         }
     ]
 }
-
-
-
-
