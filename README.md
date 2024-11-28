@@ -1,14 +1,3 @@
-javac -d ./build -classpath "./libs/*" ./src/main/java/com/example/controller/*.java
-
-
-
-mkdir -p ./dist/YourApp/WEB-INF/classes
-cp -r ./build/* ./dist/YourApp/WEB-INF/classes/
-cp -r ./src/main/webapp/* ./dist/YourApp/
-cp -r ./libs ./dist/YourApp/WEB-INF/lib/
-
-
-
 {
   "version": "2.0.0",
   "tasks": [
@@ -18,10 +7,10 @@ cp -r ./libs ./dist/YourApp/WEB-INF/lib/
       "command": "javac",
       "args": [
         "-d",
-        "build",
+        "out",
         "-classpath",
-        "libs/*",
-        "src/main/java/com/example/controller/*.java"
+        "WebContent/WEB-INF/lib/*",
+        "src/com/**/*.java"
       ],
       "group": {
         "kind": "build",
@@ -35,12 +24,12 @@ cp -r ./libs ./dist/YourApp/WEB-INF/lib/
       "command": "jar",
       "args": [
         "-cvf",
-        "dist/YourApp.war",
+        "dist/Dashboard.war",
         "-C",
-        "build",
+        "out",
         ".",
         "-C",
-        "src/main/webapp",
+        "WebContent",
         "."
       ],
       "group": {
@@ -51,4 +40,3 @@ cp -r ./libs ./dist/YourApp/WEB-INF/lib/
     }
   ]
 }
-
