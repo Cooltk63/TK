@@ -1,8 +1,7 @@
-D:\Dashboard_local>javac -d out -classpath WebContent\WEB-INF\lib\* @D:\Dashboard_local\sources.txt
-D:\Dashboard_local\src\com\auth10\federation\URLUTF8Encoder.java:13: error: unmappable character (0xA9) for encoding UTF-8
- * Copyright ? 1997 World Wide Web Consortium, (Massachusetts
-             ^
-D:\Dashboard_local\src\com\auth10\federation\URLUTF8Encoder.java:16: error: unmappable character (0xAE) for encoding UTF-8
- * This work is distributed under the W3C? Software License [1] in the
-                                         ^
-2 errors
+D:\Dashboard_local>javac -d out -classpath WebContent\WEB-INF\lib\* -encoding ISO-8859-1  @D:\Dashboard_local\sources.txt
+D:\Dashboard_local\src\pspl\adfs\sso\Constant.java:3: error: duplicate class: com.pspl.adfs.sso.Constant
+public class Constant {
+       ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 error
