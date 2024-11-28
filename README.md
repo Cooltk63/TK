@@ -1,1 +1,54 @@
-Project build error: Non-resolvable parent POM for com.crs:commonReportsService:0.0.2: The following artifacts could not be resolved: org.springframework.boot:spring-boot-starter-parent:pom:3.3.0 (absent): org.springframework.boot:spring-boot-starter-parent:pom:3.3.0 failed to transfer from https://10.191.167.23:443/repository/ during a previous attempt. This failure was cached in the local repository and resolution is not reattempted until the update interval of central-mirror has elapsed or updates are forced. Original error: Could not transfer artifact org.springframework.boot:spring-boot-starter-parent:pom:3.3.0 from/to central-mirror (https://10.191.167.23:443/repository/): Certificate for <10.191.167.23> doesn't match any of the subject alternative names: [10.191.167.23] and 'parent.relativePath' points at wrong local POM
+javac -d ./build -classpath "./libs/*" ./src/main/java/com/example/controller/*.java
+
+
+
+mkdir -p ./dist/YourApp/WEB-INF/classes
+cp -r ./build/* ./dist/YourApp/WEB-INF/classes/
+cp -r ./src/main/webapp/* ./dist/YourApp/
+cp -r ./libs ./dist/YourApp/WEB-INF/lib/
+
+
+
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compile Java",
+      "type": "shell",
+      "command": "javac",
+      "args": [
+        "-d",
+        "build",
+        "-classpath",
+        "libs/*",
+        "src/main/java/com/example/controller/*.java"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$javac"
+    },
+    {
+      "label": "Build WAR",
+      "type": "shell",
+      "command": "jar",
+      "args": [
+        "-cvf",
+        "dist/YourApp.war",
+        "-C",
+        "build",
+        ".",
+        "-C",
+        "src/main/webapp",
+        "."
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "dependsOn": "Compile Java"
+    }
+  ]
+}
+
