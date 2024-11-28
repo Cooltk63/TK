@@ -1,3 +1,5 @@
-D:\Dashboard_local>jar -cvf out/Dashboard.war -C out . -C WebContent .
-'jar' is not recognized as an internal or external command,
-operable program or batch file.
+Executing task: javac -d out -classpath WebContent\WEB-INF\lib\* D:\Dashboard_local\sources.txt 
+
+error: invalid flag: D:\Dashboard_local\sources.txt
+Usage: javac <options> <source files>
+use --help for a list of possible options
