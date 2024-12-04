@@ -1,71 +1,63 @@
-if (currentStatus.equalsIgnoreCase("X") ||currentStatus.equalsIgnoreCase("12") || currentStatus.equalsIgnoreCase("10") ||currentStatus.equalsIgnoreCase("11")) 
-        {
+if (currentStatus.equalsIgnoreCase("X") || currentStatus.equalsIgnoreCase("12") || 
+    currentStatus.equalsIgnoreCase("10") || currentStatus.equalsIgnoreCase("11")) {
 
-                // Inserting Empty Data 1st time Screen Loading
-                List<String> ParticularsEmptyData = new ArrayList<>();
-                ParticularsEmptyData.add(0, "CHRG-OFFICE RENT");
-                ParticularsEmptyData.add(1, "CHRG-HOUSE RENT");
-                ParticularsEmptyData.add(2, "Charges -TELEPHONE & FAX");
-                ParticularsEmptyData.add(3, "CHARGES - ELECTRICITY & GAS");
-                ParticularsEmptyData.add(4, "CHARGES-REPAIRS- BANK PROPERTY");
+    // Initialize particulars and component list
+    List<String> ParticularsEmptyData = Arrays.asList(
+            "CHRG-OFFICE RENT",
+            "CHRG-HOUSE RENT",
+            "Charges -TELEPHONE & FAX",
+            "CHARGES - ELECTRICITY & GAS",
+            "CHARGES-REPAIRS- BANK PROPERTY"
+    );
 
-                // For inserting Empty Data while Screen Loading
-                List<String> CompList = new ArrayList<>();
-                CompList.add(0, "10151");
-                CompList.add(1, "10152");
-                CompList.add(2, "10212");
-                CompList.add(3, "10154");
-                CompList.add(4, "10225");
+    List<String> CompList = Arrays.asList("10151", "10152", "10212", "10154", "10225");
 
-                // Getting ADJ Data List
-                log.info("Getting Previous Quarter Data from ADJDATA :"+quarterEndDate +" branch_code :"+branch_code);
-                List<String> ADJData=crsAdjmocRepository.getAdjData(quarterEndDate,branch_code);
+    // Fetch existing data from ADJData table
+    log.info("Getting Previous Quarter Data from ADJDATA: " + quarterEndDate + " branch_code: " + branch_code);
+    List<String> ADJData = crsAdjmocRepository.getAdjData(quarterEndDate, branch_code);
 
-                log.info("ADJData List Size :"+ADJData.size());
-                log.info("ADJ DATA WE HAVE :"+ADJData);
+    log.info("ADJData List Size: " + ADJData.size());
+    log.info("ADJ DATA WE HAVE: " + ADJData);
 
+    for (int i = 0; i < 5; i++) {
+        log.info("Processing Particular: " + ParticularsEmptyData.get(i) + ", Component: " + CompList.get(i));
 
-                // Insert 6 more rows with 0 values for particular fields
-                for (int i = 0; i < 5; i++) {
-                    log.info("submissionId for Empty Insert :" + submissionId);
+        // Check if a row already exists for the particular component
+        CRS_Adjmoc existingRow = crsAdjmocRepository.findByAdjmocdescriptionsAndAdjmocpnlcompcode(
+                ParticularsEmptyData.get(i), CompList.get(i));
 
-                    CRS_Adjmoc zeroLiability = new CRS_Adjmoc();
-
-//                    zeroLiability.setAdjmocid(i + 1);
-                    zeroLiability.setAdjmocdescriptions(ParticularsEmptyData.get(i));
-                    zeroLiability.setAdjmocpnlcompcode(CompList.get(i));
-                    zeroLiability.setAdjmoccglno("0");
-                    zeroLiability.setEstimatedmonthlyexpense(new BigDecimal(0));
-                    zeroLiability.setLikelyexpense6months(new BigDecimal(0));
-
-                    log.info("ADJData Empty :"+ADJData.isEmpty());
-                    if(ADJData.isEmpty())
-                    {
-                        log.info("inside if block insert ADJData Values");
-                        zeroLiability.setActualexpensPL(new BigDecimal(0));
-                    }
-                    else {
-                        log.info("inside else block set to 0 Values while Insert");
-                        zeroLiability.setActualexpensPL(new BigDecimal(ADJData.get(i)));
-                    }
-
-
-                    zeroLiability.setAdjmocamount(new BigDecimal(0));
-                    zeroLiability.setRemarks(" ");
-
-                    zeroLiability.setAdjmocdate(liabilityDate); // SAME
-                    zeroLiability.setAdjmochead("EXPENSES A/C");  // SAME
-                    zeroLiability.setAdjmocbranch((String) loginUserData.get("branch_code"));  //SAME
-                    zeroLiability.setReportmasterFK(submissionId); //SAME
-                    zeroLiability.setAdjmocsubhead("EXPENSES"); //SAME
-
-                    log.info("Inserting zero-value row: " + zeroLiability);
-
-                    // Inserting Empty Row Data in DB
-                    crsAdjmocRepository.save(zeroLiability);
-
-                }
-            }
+        if (existingRow != null) {
+            // Update existing row
+            log.info("Row exists, updating values...");
+            existingRow.setActualexpensPL(new BigDecimal(ADJData.isEmpty() ? "0" : ADJData.get(i)));
+            existingRow.setAdjmocamount(new BigDecimal(0));
+            existingRow.setRemarks("Updated based on ADJData");
+            crsAdjmocRepository.save(existingRow);
+        } else {
+            // Insert new row
+            log.info("Row does not exist, inserting new row...");
+            CRS_Adjmoc zeroLiability = new CRS_Adjmoc();
+            zeroLiability.setAdjmocdescriptions(ParticularsEmptyData.get(i));
+            zeroLiability.setAdjmocpnlcompcode(CompList.get(i));
+            zeroLiability.setAdjmoccglno("0");
+            zeroLiability.setEstimatedmonthlyexpense(new BigDecimal(0));
+            zeroLiability.setLikelyexpense6months(new BigDecimal(0));
+            zeroLiability.setActualexpensPL(new BigDecimal(ADJData.isEmpty() ? "0" : ADJData.get(i)));
+            zeroLiability.setAdjmocamount(new BigDecimal(0));
+            zeroLiability.setRemarks("Inserted during screen load");
+            zeroLiability.setAdjmocdate(liabilityDate);
+            zeroLiability.setAdjmochead("EXPENSES A/C");
+            zeroLiability.setAdjmocbranch((String) loginUserData.get("branch_code"));
+            zeroLiability.setReportmasterFK(submissionId);
+            zeroLiability.setAdjmocsubhead("EXPENSES");
+            crsAdjmocRepository.save(zeroLiability);
+        }
+    }
+}
 
 
-            In this method logic on List<String> ADJData=crsAdjmocRepository.getAdjData(quarterEndDate,branch_code); returns ths 5 values which fetched from CRS_ADJData tables  and inserted into the current CRS_ADJMOC table i wanted the whenever values inside that adjdata is changed or modified same values inside my CRS_ADJMOC table which previously inserted or maybe not insetred while 1st time get updated as per the adj_Data table values. do not change anything other than my requirement
+
+
+@Query("SELECT a FROM CRS_Adjmoc a WHERE a.adjmocdescriptions = :description AND a.adjmocpnlcompcode = :compCode")
+CRS_Adjmoc findByAdjmocdescriptionsAndAdjmocpnlcompcode(@Param("description") String description, @Param("compCode") String compCode);
+
