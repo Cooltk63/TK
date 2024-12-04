@@ -1,3 +1,66 @@
+2024-12-04T14:55:33.057+05:30  INFO 3120 --- [commonReportsService] [nio-8081-exec-2] c.c.c.services.RW49ServiceImpl           : currentStatus :X
+2024-12-04T14:55:33.057+05:30  INFO 3120 --- [commonReportsService] [nio-8081-exec-2] c.c.c.services.RW49ServiceImpl           : Getting Previous Quarter Data from ADJDATA: 30/09/2024 branch_code: 00003
+2024-12-04T14:55:33.104+05:30 DEBUG 3120 --- [commonReportsService] [nio-8081-exec-2] org.hibernate.SQL                        : 
+    SELECT
+        AD_BALANCE
+    FROM
+        CRS_ADJDATA
+    where
+        AD_DATE=to_date(?, 'dd/mm/yyyy')
+        AND AD_BRANCH=?
+Hibernate: 
+    SELECT
+        AD_BALANCE
+    FROM
+        CRS_ADJDATA
+    where
+        AD_DATE=to_date(?, 'dd/mm/yyyy')
+        AND AD_BRANCH=?
+2024-12-04T14:55:33.156+05:30  INFO 3120 --- [commonReportsService] [nio-8081-exec-2] c.c.c.services.RW49ServiceImpl           : ADJData List Size: 5
+2024-12-04T14:55:33.157+05:30  INFO 3120 --- [commonReportsService] [nio-8081-exec-2] c.c.c.services.RW49ServiceImpl           : ADJ DATA WE HAVE: [1111, 2222, 33333, 444444, 555555]
+2024-12-04T14:55:33.158+05:30  INFO 3120 --- [commonReportsService] [nio-8081-exec-2] c.c.c.services.RW49ServiceImpl           : Processing Particular: CHRG-OFFICE RENT, Component: 10151
+2024-12-04T14:55:33.199+05:30 DEBUG 3120 --- [commonReportsService] [nio-8081-exec-2] org.hibernate.SQL                        : 
+    select
+        ca1_0.adjmoc_id,
+        ca1_0.adjmoc_actual_expense,
+        ca1_0.adjmoc_amount,
+        ca1_0.adjmoc_branch,
+        ca1_0.adjmoc_cgl,
+        ca1_0.adjmoc_date,
+        ca1_0.adjmoc_compdesc,
+        ca1_0.adjmoc_head,
+        ca1_0.adjmoc_comp,
+        ca1_0.adjmoc_subhead,
+        ca1_0.adjmoc_est_expense,
+        ca1_0.adjmoc_likely_expense,
+        ca1_0.adjmoc_remarks,
+        ca1_0.report_master_list_id_fk
+    from
+        crs_adjmoc ca1_0
+    where
+        ca1_0.adjmoc_compdesc=?
+        and ca1_0.adjmoc_comp=?
+Hibernate: 
+    select
+        ca1_0.adjmoc_id,
+        ca1_0.adjmoc_actual_expense,
+        ca1_0.adjmoc_amount,
+        ca1_0.adjmoc_branch,
+        ca1_0.adjmoc_cgl,
+        ca1_0.adjmoc_date,
+        ca1_0.adjmoc_compdesc,
+        ca1_0.adjmoc_head,
+        ca1_0.adjmoc_comp,
+        ca1_0.adjmoc_subhead,
+        ca1_0.adjmoc_est_expense,
+        ca1_0.adjmoc_likely_expense,
+        ca1_0.adjmoc_remarks,
+        ca1_0.report_master_list_id_fk
+    from
+        crs_adjmoc ca1_0
+    where
+        ca1_0.adjmoc_compdesc=?
+        and ca1_0.adjmoc_comp=?
 2024-12-04T14:55:33.256+05:30 ERROR 3120 --- [commonReportsService] [nio-8081-exec-2] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.dao.IncorrectResultSizeDataAccessException: Query did not return a unique result: 32 results were returned] with root cause
 
 org.hibernate.NonUniqueResultException: Query did not return a unique result: 32 results were returned
@@ -85,3 +148,4 @@ org.hibernate.NonUniqueResultException: Query did not return a unique result: 32
         at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
         at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
         at java.base/java.lang.Thread.run(Thread.java:1570) ~[na:na]
+
