@@ -1,61 +1,49 @@
-           if (currentStatus.equalsIgnoreCase("X") || currentStatus.equalsIgnoreCase("12") || 
-    currentStatus.equalsIgnoreCase("10") || currentStatus.equalsIgnoreCase("11")) {
+AtomicInteger index = new AtomicInteger(0);
 
-    // Initialize particulars and component list
-    List<String> ParticularsEmptyData = Arrays.asList(
-            "CHRG-OFFICE RENT",
-            "CHRG-HOUSE RENT",
-            "Charges -TELEPHONE & FAX",
-            "CHARGES - ELECTRICITY & GAS",
-            "CHARGES-REPAIRS- BANK PROPERTY"
-    );
+datalist.stream().forEach((c) -> {
+                            log.info("into for each Tab 111 >> " + c);
+                            Rw01 saveR01 = new Rw01();
+                            Rw01 aa = rw01Repository.findByPlSuplDateAndPlSuplBranchAndPlSuplId(quarterEndDate, loginUserData.get("branch_code"), c.get(6));
+                            log.info("aa Tab 111 -" + aa);
 
-    List<String> CompList = Arrays.asList("10151", "10152", "10212", "10154", "10225");
+                            
+                            int forEachIndex = index.getAndIncrement();
+                            if (aa == null) {
+                                System.out.println("Inside Ifff...11111");
+                                rw01.setPlSuplId(c.get(6));
+                                rw01.setPlSuplBranch(loginUserData.get("branch_code"));
+                                rw01.setPlSuplCy(c.get(4));
+                                rw01.setPlSuplDate(quarterEndDate);
+                                rw01.setPlSuplPy(c.get(0));
+                                rw01.setReportMasterListIdFk(String.valueOf(data.get("submissionId")));
+                                // rw01.setPlSuplDetails(headingValuesSrNoArr[index.getAndIncrement()] + " " + headingValuesParticularsArr[index.getAndIncrement()]);
+                                rw01.setPlSuplDetails(headingValuesSrNoArr[forEachIndex] + " " + headingValuesParticularsArr[forEachIndex]);
 
-    // Fetch existing data from ADJData table
-    log.info("Getting Previous Quarter Data from ADJDATA: " + quarterEndDate + " branch_code: " + branch_code);
-    List<String> ADJData = crsAdjmocRepository.getAdjData(quarterEndDate, branch_code);
+                                log.info("rw01.submissionId:-" + rw01.getReportMasterListIdFk());
+                                saveR01 = rw01Repository.save(rw01);
+                            } else {
+                                System.out.println("Inside lese ..22222");
+                                log.info("into elseeeee Tab 111");
+                                aa.setPlSuplPy(c.get(0));
+                                System.out.println("Inside lese ..3333");
+                                aa.setPlSuplCy(c.get(4));
 
-    log.info("ADJData List Size: " + ADJData.size());
-    log.info("ADJ DATA WE HAVE: " + ADJData);
+                                System.out.println("Inside lese ..index" + index);
 
-    for (int i = 0; i < 5; i++) {
-        log.info("Processing Particular: " + ParticularsEmptyData.get(i) + ", Component: " + CompList.get(i));
-
-        // Check if a row already exists for the particular component
-        CRS_Adjmoc existingRow = crsAdjmocRepository.findByAdjmocdescriptionsAndAdjmocpnlcompcodeAndAdjmocdateAndAdjmocbranch(
-                ParticularsEmptyData.get(i).toString(), CompList.get(i).toString(), liabilityDate, branch_code);
-
-        if (existingRow != null) {
-            // Update existing row
-            log.info("Row exists, updating values...");
-            existingRow.setActualexpensPL(new BigDecimal(ADJData.isEmpty() ? "0" : ADJData.get(i)));
-            existingRow.setAdjmocamount(new BigDecimal(0));
-            // existingRow.setRemarks("Updated based on ADJData");
-            crsAdjmocRepository.save(existingRow);
-        } else {
-            // Insert new row
-            log.info("Row does not exist, inserting new row...");
-            CRS_Adjmoc zeroLiability = new CRS_Adjmoc();
-            zeroLiability.setAdjmocdescriptions(ParticularsEmptyData.get(i));
-            zeroLiability.setAdjmocpnlcompcode(CompList.get(i));
-            zeroLiability.setAdjmoccglno("0");
-            zeroLiability.setEstimatedmonthlyexpense(new BigDecimal(0));
-            zeroLiability.setLikelyexpense6months(new BigDecimal(0));
-            zeroLiability.setActualexpensPL(new BigDecimal(ADJData.isEmpty() ? "0" : ADJData.get(i)));
-            zeroLiability.setAdjmocamount(new BigDecimal(0));
-            zeroLiability.setRemarks("Inserted during screen load");
-            zeroLiability.setAdjmocdate(liabilityDate);
-            zeroLiability.setAdjmochead("EXPENSES A/C");
-            zeroLiability.setAdjmocbranch((String) loginUserData.get("branch_code"));
-            zeroLiability.setReportmasterFK(submissionId);
-            zeroLiability.setAdjmocsubhead("EXPENSES");
-            crsAdjmocRepository.save(zeroLiability);
-        }
-    }
-}
+                                // aa.setPlSuplDetails(headingValuesSrNoArr[index.getAndIncrement()] + " " + headingValuesParticularsArr[index.getAndIncrement()]);
+                                aa.setPlSuplDetails(headingValuesSrNoArr[forEachIndex] + " " + headingValuesParticularsArr[forEachIndex]);
 
 
-I need to add the one more in below query result 
-List<String> ADJData = crsAdjmocRepository.getAdjData(quarterEndDate, branch_code);
- which i have alredy added which is CRS_CGL in query but as i am returning the List<String> and i wanted to set the setAdjmoccglno from adj data .
+                                System.out.println("Inside lese ..44444");
+                                log.info("final aa" + aa);
+                                saveR01 = rw01Repository.save(aa);
+                            }
+
+                            // index.getAndIncrement();
+                            // forEachIndex++;
+
+                });
+
+
+i have initilized atomic initeger to 0
+but on first occurance of index.getAndIncrement() it is printing 1 instead of 0
