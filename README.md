@@ -1,19 +1,64 @@
-int[] index = {0}; // Mutable counter
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="test" value="true"/>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="target/generated-sources/annotations">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="ignore_optional_problems" value="true"/>
+			<attribute name="m2e-apt" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="src/main/resources/lib"/>
+	<classpathentry kind="lib" path="src/main/resources/sso_lib"/>
+	<classpathentry kind="src" output="target/test-classes" path="target/generated-test-sources/test-annotations">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="ignore_optional_problems" value="true"/>
+			<attribute name="m2e-apt" value="true"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
 
-datalist.stream().forEach(c -> {
-    log.info("Processing item: " + c);
 
-    int forEachIndex = index[0]; // Access the current index value
+This is the my .classpath file 
 
-    if (rw01Repository.findByPlSuplDateAndPlSuplBranchAndPlSuplId(
-        quarterEndDate, loginUserData.get("branch_code"), c.get(6)) == null) {
-        rw01.setPlSuplDetails(headingValuesSrNoArr[forEachIndex] + " " + headingValuesParticularsArr[forEachIndex]);
-        rw01Repository.save(rw01);
-    } else {
-        Rw01 aa = ...; // Update logic here
-        aa.setPlSuplDetails(headingValuesSrNoArr[forEachIndex] + " " + headingValuesParticularsArr[forEachIndex]);
-        rw01Repository.save(aa);
-    }
-
-    index[0]++; // Increment index
-});
+mine project had 2 lib folders : ss0_lib , lib located inside resources folder i am still cant run the project cause none of dependency get resovled as i a can see on main method annotation cant find dependecies either.
