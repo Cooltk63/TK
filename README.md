@@ -1,9 +1,8 @@
-Getting this error
-
-PS F:\Projects\CRS Projects\CRS ReWork\backend\SSOLoginService>  & 'D:\Java22\bin\java.exe' '@C:\Users\v1012297\AppData\Local\Temp\cp_56jd319gtytxxjms604ppthdw.argfile' 'com.crs.SsoLoginService.SsoService'
-Error: Could not find or load main class com.crs.SsoLoginService.SsoService    
-Caused by: java.lang.ClassNotFoundException: com.crs.SsoLoginService.SsoService
-PS F:\Projects\CRS Projects\CRS ReWork\backend\SSOLoginService> 
-
- below is the file content for @C:\Users\v1012297\AppData\Local\Temp\cp_56jd319gtytxxjms604ppthdw.argfile this file
- -XX:+ShowCodeDetailsInExceptionMessages -cp "F:\\Projects\\CRS Projects\\CRS ReWork\\backend\\SSOLoginService\\target\\classes;F:\\Projects\\CRS Projects\\CRS ReWork\\backend\\SSOLoginService\\src\\main\\resources\\lib;F:\\Projects\\CRS Projects\\CRS ReWork\\backend\\SSOLoginService\\src\\main\\resources\\sso_lib"
+PS F:\Projects\CRS Projects\CRS ReWork\backend\SSOLoginService> javac -d target/classes -cp "src/main/resources/lib/*;src/main/resources/sso_lib/*" src/main/java/com/crs/SsoLoginService/*.java
+Note: Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
