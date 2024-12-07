@@ -1,1 +1,1 @@
-https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZDA3ODgxZDctNzU4Yy00NWFkLTg4ODktN2RlMDA0NjY5ZjA5%40thread.v2/0?context=%7b%22Tid%22%3a%224adae17a-ae8f-4ebe-b9b9-730105aa1002%22%2c%22Oid%22%3a%2229821a8a-3afd-4d8e-9eab-7fd6f5d34ab7%22%7d
+https://www.hackerearth.com/challenges/test/java-online-test-l3/?login=143960da6323db85c439e88a405fa943
