@@ -1,1 +1,1 @@
-https://www.hackerearth.com/challenges/test/java-online-test-l3/?login=143960da6323db85c439e88a405fa943
+https://www.hackerearth.com/challenges/test/java-online-test-l3/?login=7c2f535e76b97d4874e3091cf2a44e13
