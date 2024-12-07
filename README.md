@@ -1,8 +1,1 @@
-PS F:\Projects\CRS Projects\CRS ReWork\backend\SSOLoginService> javac -d target/classes -cp "src/main/resources/lib/*;src/main/resources/sso_lib/*" src/main/java/com/crs/SsoLoginService/*.java
-Note: Annotation processing is enabled because one or more processors were found
-  on the class path. A future release of javac may disable annotation processing
-  unless at least one processor is specified by name (-processor), or a search
-  path is specified (--processor-path, --processor-module-path), or annotation
-  processing is enabled explicitly (-proc:only, -proc:full).
-  Use -Xlint:-options to suppress this message.
-  Use -proc:none to disable annotation processing.
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZDA3ODgxZDctNzU4Yy00NWFkLTg4ODktN2RlMDA0NjY5ZjA5%40thread.v2/0?context=%7b%22Tid%22%3a%224adae17a-ae8f-4ebe-b9b9-730105aa1002%22%2c%22Oid%22%3a%2229821a8a-3afd-4d8e-9eab-7fd6f5d34ab7%22%7d
