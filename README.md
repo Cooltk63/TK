@@ -1,20 +1,14 @@
-{
-    "type": "java",
-    "name": "Debug LoginServiceAPI",
-    "request": "launch",
-    "mainClass": "com.crs.LoginServiceAPI",
-    "projectName": "LoginService"
-}
+# Use the Tomcat image as the base
+FROM tomcat:latest
 
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "java",
-      "name": "Launch LoginServiceAPI",
-      "request": "launch",
-      "mainClass": "com.crs.LoginServiceAPI",
-      "projectName": "LoginService"
-    }
-  ]
-}
+# Set the working directory inside the container
+WORKDIR /usr/local/tomcat/webapps/
+
+# Copy the WAR file from the relative build context into the container
+COPY target/dockerDemo.war /usr/local/tomcat/webapps/dockerDemo.war
+
+# Expose the Tomcat port
+EXPOSE 8080
+
+# Start the Tomcat server
+CMD ["catalina.sh", "run"]
