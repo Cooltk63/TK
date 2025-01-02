@@ -1,25 +1,14 @@
-https://registry-1.docker.io
+Hi Team,
+
+This is to remind everyone about the importance of sharing your daily task updates. Despite multiple reminders, only a few team members have been regularly providing updates, while others have not.
+
+I cannot stress enough how vital these updates are for maintaining workflow transparency and ensuring timely reporting. Please make it a priority to send your updates by the end of each day going forward.
+
+Let’s work together to improve our coordination and avoid delays. If there are any issues preventing you from doing so, please let me know.
+
+Thank you for your attention to this matter.
 
 
-2. https://auth.docker.io
+---
 
-
-3. https://production.cloudflare.docker.com
-
-
-4. https://index.docker.io
-
-
-5. *.ecr.*.amazonaws.com (if using AWS ECR)
-
-
-6. *.azurecr.io (if using Azure Container Registry)
-
-
-7. *.gcr.io (if using Google Container Registry)
-
-
-8. https://docs.docker.com (optional, for documentation)
-
-
-9. https://download.docker.com (optional, for updates)
+Let me know if further adjustments are needed!
