@@ -44,79 +44,110 @@ public class ReportServiceImpl {
             throw new IllegalArgumentException("Invalid data structure. Expecting at least 4 lists.");
         }
 
-        // Map each list to its corresponding entity and save them
-        List<CRSInduDvlpInc> induList = mapToEntities(valueNameMap.get(0), CRSInduDvlpInc.class);
-        List<CRSInfraDvlpInc> infraList = mapToEntities(valueNameMap.get(1), CRSInfraDvlpInc.class);
-        List<CRSAgrDvlpInc> agrList = mapToEntities(valueNameMap.get(2), CRSAgrDvlpInc.class);
-        List<CRSHousDvlpInc> housList = mapToEntities(valueNameMap.get(3), CRSHousDvlpInc.class);
-
-        // Save all entities in batches
-        if (!induList.isEmpty()) induDvlpRepository.saveAll(induList);
-        if (!infraList.isEmpty()) infraDvlpRepository.saveAll(infraList);
-        if (!agrList.isEmpty()) agrDvlpRepository.saveAll(agrList);
-        if (!housList.isEmpty()) housDvlpRepository.saveAll(housList);
+        // Map and save entities for each table
+        saveEntities(valueNameMap.get(0), CRSInduDvlpInc.class, induDvlpRepository);
+        saveEntities(valueNameMap.get(1), CRSInfraDvlpInc.class, infraDvlpRepository);
+        saveEntities(valueNameMap.get(2), CRSAgrDvlpInc.class, agrDvlpRepository);
+        saveEntities(valueNameMap.get(3), CRSHousDvlpInc.class, housDvlpRepository);
     }
 
     /**
-     * Maps a list of rows to entities of a specified type.
-     *
-     * @param rows The list of rows containing table data.
-     * @param clazz The entity class type.
-     * @return A list of entities populated with the data.
-     * @param <T> Generic type representing the entity class.
+     * Maps rows of data to entities and saves them using the provided repository.
+     * 
+     * @param <T>       The entity type.
+     * @param rows      The rows of data to be mapped.
+     * @param clazz     The class type of the entity.
+     * @param repository The repository to save the entities.
      */
-    private <T> List<T> mapToEntities(List<List<String>> rows, Class<T> clazz) {
+    private <T> void saveEntities(List<List<String>> rows, Class<T> clazz, JpaRepository<T, ?> repository) {
         List<T> entities = new ArrayList<>();
-
         for (List<String> row : rows) {
-            try {
-                T entity = clazz.newInstance();
-
-                if (clazz.equals(CRSInduDvlpInc.class)) {
-                    CRSInduDvlpInc induEntity = (CRSInduDvlpInc) entity;
-                    induEntity.setCrsInduDvlpBrno(row.get(0));
-                    induEntity.setCrsInduDvlpDate(parseDate(row.get(1)));
-                    induEntity.setCrsInduDvlpOther(row.get(2));
-                    induEntity.setCrsInduDvlpProcfee(row.get(3));
-                    induEntity.setCrsInduDvlpTotal(row.get(4));
-                    induEntity.setCrsInduDvlpTotalAdvances(row.get(5));
-                    induEntity.setReportMasterListIdFk(row.get(6));
-                } else if (clazz.equals(CRSInfraDvlpInc.class)) {
-                    CRSInfraDvlpInc infraEntity = (CRSInfraDvlpInc) entity;
-                    infraEntity.setCrsInfraDvlpBrno(row.get(0));
-                    infraEntity.setCrsInfraDvlpDate(parseDate(row.get(1)));
-                    infraEntity.setCrsInfraDvlpOther(row.get(2));
-                    infraEntity.setCrsInfraDvlpProcfee(row.get(3));
-                    infraEntity.setCrsInfraDvlpTotal(row.get(4));
-                    infraEntity.setCrsInfraDvlpTotalAdvances(row.get(5));
-                    infraEntity.setReportMasterListIdFk(row.get(6));
-                } else if (clazz.equals(CRSAgrDvlpInc.class)) {
-                    CRSAgrDvlpInc agrEntity = (CRSAgrDvlpInc) entity;
-                    agrEntity.setCrsAgriDvlpBrno(row.get(0));
-                    agrEntity.setCrsAgriDvlpDate(parseDate(row.get(1)));
-                    agrEntity.setCrsAgriDvlpOther(row.get(2));
-                    agrEntity.setCrsAgriDvlpProcfee(row.get(3));
-                    agrEntity.setCrsAgriDvlpTotal(row.get(4));
-                    agrEntity.setCrsAgriDvlpTotalAdvances(row.get(5));
-                    agrEntity.setReportMasterListIdFk(row.get(6));
-                } else if (clazz.equals(CRSHousDvlpInc.class)) {
-                    CRSHousDvlpInc housEntity = (CRSHousDvlpInc) entity;
-                    housEntity.setCrsHousDvlpBrno(row.get(0));
-                    housEntity.setCrsHousDvlpDate(parseDate(row.get(1)));
-                    housEntity.setCrsHousDvlpOther(row.get(2));
-                    housEntity.setCrsHousDvlpProcfee(row.get(3));
-                    housEntity.setCrsHousDvlpTotal(row.get(4));
-                    housEntity.setCrsHousDvlpTotalAdvances(row.get(5));
-                    housEntity.setReportMasterListIdFk(row.get(6));
-                }
-
-                entities.add(entity);
-            } catch (Exception e) {
-                throw new RuntimeException("Error mapping row to entity: " + e.getMessage());
-            }
+            T entity = mapRowToEntity(row, clazz);
+            entities.add(entity);
         }
+        if (!entities.isEmpty()) {
+            repository.saveAll(entities);
+        }
+    }
 
-        return entities;
+    /**
+     * Maps a single row of data to an entity of the specified type.
+     * 
+     * @param <T>   The entity type.
+     * @param row   The row of data to be mapped.
+     * @param clazz The class type of the entity.
+     * @return An entity populated with data from the row.
+     */
+    private <T> T mapRowToEntity(List<String> row, Class<T> clazz) {
+        try {
+            T entity = clazz.newInstance();
+
+            if (clazz.equals(CRSInduDvlpInc.class)) {
+                populateInduDvlpEntity((CRSInduDvlpInc) entity, row);
+            } else if (clazz.equals(CRSInfraDvlpInc.class)) {
+                populateInfraDvlpEntity((CRSInfraDvlpInc) entity, row);
+            } else if (clazz.equals(CRSAgrDvlpInc.class)) {
+                populateAgriDvlpEntity((CRSAgrDvlpInc) entity, row);
+            } else if (clazz.equals(CRSHousDvlpInc.class)) {
+                populateHousDvlpEntity((CRSHousDvlpInc) entity, row);
+            }
+
+            return entity;
+        } catch (Exception e) {
+            throw new RuntimeException("Error mapping row to entity: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Populates a CRSInduDvlpInc entity with data from a row.
+     */
+    private void populateInduDvlpEntity(CRSInduDvlpInc entity, List<String> row) {
+        entity.setCrsInduDvlpBrno(row.get(0));
+        entity.setCrsInduDvlpDate(parseDate(row.get(1)));
+        entity.setCrsInduDvlpOther(row.get(2));
+        entity.setCrsInduDvlpProcfee(row.get(3));
+        entity.setCrsInduDvlpTotal(row.get(4));
+        entity.setCrsInduDvlpTotalAdvances(row.get(5));
+        entity.setReportMasterListIdFk(row.get(6));
+    }
+
+    /**
+     * Populates a CRSInfraDvlpInc entity with data from a row.
+     */
+    private void populateInfraDvlpEntity(CRSInfraDvlpInc entity, List<String> row) {
+        entity.setCrsInfraDvlpBrno(row.get(0));
+        entity.setCrsInfraDvlpDate(parseDate(row.get(1)));
+        entity.setCrsInfraDvlpOther(row.get(2));
+        entity.setCrsInfraDvlpProcfee(row.get(3));
+        entity.setCrsInfraDvlpTotal(row.get(4));
+        entity.setCrsInfraDvlpTotalAdvances(row.get(5));
+        entity.setReportMasterListIdFk(row.get(6));
+    }
+
+    /**
+     * Populates a CRSAgrDvlpInc entity with data from a row.
+     */
+    private void populateAgriDvlpEntity(CRSAgrDvlpInc entity, List<String> row) {
+        entity.setCrsAgriDvlpBrno(row.get(0));
+        entity.setCrsAgriDvlpDate(parseDate(row.get(1)));
+        entity.setCrsAgriDvlpOther(row.get(2));
+        entity.setCrsAgriDvlpProcfee(row.get(3));
+        entity.setCrsAgriDvlpTotal(row.get(4));
+        entity.setCrsAgriDvlpTotalAdvances(row.get(5));
+        entity.setReportMasterListIdFk(row.get(6));
+    }
+
+    /**
+     * Populates a CRSHousDvlpInc entity with data from a row.
+     */
+    private void populateHousDvlpEntity(CRSHousDvlpInc entity, List<String> row) {
+        entity.setCrsHousDvlpBrno(row.get(0));
+        entity.setCrsHousDvlpDate(parseDate(row.get(1)));
+        entity.setCrsHousDvlpOther(row.get(2));
+        entity.setCrsHousDvlpProcfee(row.get(3));
+        entity.setCrsHousDvlpTotal(row.get(4));
+        entity.setCrsHousDvlpTotalAdvances(row.get(5));
+        entity.setReportMasterListIdFk(row.get(6));
     }
 
     /**
