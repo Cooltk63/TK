@@ -1,7 +1,23 @@
-CRSInduDvlpInc findByDateAndBranchNumberAndCrsInduDvlpId(Date date, String branchNumber, String crsInduDvlpId);
-
-CRSInfraDvlpInc findByDateAndBranchNumberAndCrsInfraDvlpId(Date date, String branchNumber, String crsInfraDvlpId);
-
-CRSAgrDvlpInc findByDateAndBranchNumberAndCrsAgrDvlpId(Date date, String branchNumber, String crsAgrDvlpId);
-
-CRSHousDvlpInc findByDateAndBranchNumberAndCrsHousDvlpId(Date date, String branchNumber, String crsHousDvlpId);
+[06/01, 3:46 pm] Falguni Nakhwa - TCS: SELECT 
+    GROUP_ID,
+    MAX(CASE WHEN RANK = 1 THEN VALUE END) AS COL1,
+    MAX(CASE WHEN RANK = 2 THEN VALUE END) AS COL2
+FROM (
+    SELECT 
+        GROUP_ID,
+        VALUE,
+        ROW_NUMBER() OVER (PARTITION BY GROUP_ID ORDER BY VALUE) AS RANK
+    FROM MY_TABLE
+) 
+GROUP BY GROUP_ID;
+[06/01, 3:46 pm] Falguni Nakhwa - TCS: SELECT *
+FROM (
+    SELECT 
+        GROUP_ID, 
+        VALUE, 
+        ROW_NUMBER() OVER (PARTITION BY GROUP_ID ORDER BY VALUE) AS RANK
+    FROM MY_TABLE
+) 
+PIVOT (
+    MAX(VALUE) FOR RANK IN (1 AS COL1, 2 AS COL2)
+);
