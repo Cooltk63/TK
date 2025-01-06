@@ -83,3 +83,197 @@
         // Return response in the specified format
         return new ResponseEntity<>(responseVO, HttpStatus.valueOf(responseVO.getStatusCode()));
     }
+
+
+This is above sample method i have alredy written for your reference.use above referenced method for generating my required code and use the map as per the above provided in code see how FE sending map and values.
+
+also sharing my repository autowired objects name as per below
+crsInduDvIncRepository
+crsInfraDvIncRepository
+crsAgriDvIncRepository
+crsHousDvIncRepository
+
+also sharing the models data
+package com.crs.renderService.models;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.util.Date;
+
+@Entity
+@Table(name = "CRS_AGRI_DVLP_INC")
+@Getter
+@Setter
+@IdClass(CRSAgrDvlpIncExtended.class)
+public class CRSAgrDvlpInc {
+
+    
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "SR_NO")
+    private String srNo;
+    @Id
+    @Column(name = "CRS_AGRI_DVLP_BRNO", length = 5)
+    private String branchNumber;
+
+    @Id
+    @Column(name = "CRS_AGRI_DVLP_DATE")
+    // @Temporal(TemporalType.DATE)
+    private Date date;
+
+    @Column(name = "CRS_AGRI_DVLP_OTHER", length = 30)
+    private String other;
+
+    @Column(name = "CRS_AGRI_DVLP_PROCFEE", length = 30)
+    private String processingFee;
+
+    @Column(name = "CRS_AGRI_DVLP_TOTAL", length = 30)
+    private String total;
+
+    @Column(name = "CRS_AGRI_DVLP_TOTAL_ADVANCES", length = 30)
+    private String totalAdvances;
+
+    @Column(name = "REPORT_MASTER_LIST_ID_FK", length = 10)
+    private String reportMasterListIdFk;
+}
+xxx
+
+
+package com.crs.renderService.models;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.util.Date;
+
+@Entity
+@Table(name = "CRS_INDU_DVLP_INC")
+@Getter
+@Setter
+@IdClass(CRSInduDvlpIncExtended.class)
+public class CRSInduDvlpInc {
+
+    
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "SR_NO")
+    private String srNo;
+
+    @Id
+    @Column(name = "CRS_INDU_DVLP_BRNO", length = 5)
+    private String branchNumber;
+
+    @Id
+    @Column(name = "CRS_INDU_DVLP_DATE")
+    // @Temporal(TemporalType.DATE)
+    private Date date;
+
+    @Column(name = "CRS_INDU_DVLP_OTHER", length = 30)
+    private String other;
+
+    @Column(name = "CRS_INDU_DVLP_PROCFEE", length = 30)
+    private String processingFee;
+
+    @Column(name = "CRS_INDU_DVLP_TOTAL", length = 30)
+    private String total;
+
+    @Column(name = "CRS_INDU_DVLP_TOTAL_ADVANCES", length = 30)
+    private String totalAdvances;
+
+    @Column(name = "REPORT_MASTER_LIST_ID_FK", length = 10)
+    private String reportMasterListIdFk;
+}
+
+
+xxxx
+
+package com.crs.renderService.models;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.util.Date;
+
+@Entity
+@Table(name = "CRS_INFRA_DVLP_INC")
+@Getter
+@Setter
+@IdClass(CRSInfraDvlpIncExtended.class)
+public class CRSInfraDvlpInc {
+
+    
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "SR_NO")
+    private String srNo;
+
+    @Id
+    @Column(name = "CRS_INFRA_DVLP_BRNO", length = 5)
+    private String branchNumber;
+
+    @Id
+    @Column(name = "CRS_INFRA_DVLP_DATE")
+    // @Temporal(TemporalType.DATE)
+    private Date date;
+
+    @Column(name = "CRS_INFRA_DVLP_OTHER", length = 30)
+    private String other;
+
+    @Column(name = "CRS_INFRA_DVLP_PROCFEE", length = 30)
+    private String processingFee;
+
+    @Column(name = "CRS_INFRA_DVLP_TOTAL", length = 30)
+    private String total;
+
+    @Column(name = "CRS_INFRA_DVLP_TOTAL_ADVANCES", length = 30)
+    private String totalAdvances;
+
+    @Column(name = "REPORT_MASTER_LIST_ID_FK", length = 10)
+    private String reportMasterListIdFk;
+}
+
+
+
+XXX
+
+package com.crs.renderService.models;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.util.Date;
+
+@Entity
+@Table(name = "CRS_HOUS_DVLP_INC")
+@Getter
+@Setter
+@IdClass(CRSHousDvlpIncExtended.class)
+public class CRSHousDvlpInc {
+
+   
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "SR_NO")
+    private String srNo;
+
+    @Id
+    @Column(name = "CRS_HOUS_DVLP_BRNO", length = 5)
+    private String branchNumber;
+
+    @Id
+    @Column(name = "CRS_HOUS_DVLP_DATE")
+    // @Temporal(TemporalType.DATE)
+    private Date date;
+
+    @Column(name = "CRS_HOUS_DVLP_OTHER", length = 30)
+    private String other;
+
+    @Column(name = "CRS_HOUS_DVLP_PROCFEE", length = 30)
+    private String processingFee;
+
+    @Column(name = "CRS_HOUS_DVLP_TOTAL", length = 30)
+    private String total;
+
+    @Column(name = "CRS_HOUS_DVLP_TOTAL_ADVANCES", length = 30)
+    private String totalAdvances;
+
+    @Column(name = "REPORT_MASTER_LIST_ID_FK", length = 10)
+    private String reportMasterListIdFk;
+}
+
+
