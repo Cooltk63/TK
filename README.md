@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReportServiceImpl {
@@ -25,47 +26,31 @@ public class ReportServiceImpl {
     private static final String DATE_FORMAT = "yyyy-MM-dd";
 
     /**
-     * Saves data for all four tables based on the input provided by the frontend.
-     * The data is received in a List<List<String>> format, where each row represents 
-     * a specific table type and its associated data.
-     *
-     * @param data A list of rows where:
-     *             - The first column indicates the table type ("INDU", "INFRA", "AGRI", "HOUS").
-     *             - Remaining columns hold the corresponding table data.
+     * Saves data for all four tables based on the ordered list provided by the frontend.
+     * 
+     * @param dataMap A map containing a key `valueNameMap` holding the ordered list of data:
+     *                - 1st list: Data for `induDvlp`.
+     *                - 2nd list: Data for `infraDvlp`.
+     *                - 3rd list: Data for `agriDvlp`.
+     *                - 4th list: Data for `housDvlp`.
      */
     @Transactional
-    public void saveAllTablesData(List<List<String>> data) {
-        // Prepare lists to hold entities for each table
-        List<CRSInduDvlpInc> induList = new ArrayList<>();
-        List<CRSInfraDvlpInc> infraList = new ArrayList<>();
-        List<CRSAgrDvlpInc> agrList = new ArrayList<>();
-        List<CRSHousDvlpInc> housList = new ArrayList<>();
+    public void saveAllTablesData(Map<String, List<List<String>>> dataMap) {
+        // Extract the ordered list from the map
+        List<List<String>> valueNameMap = dataMap.get("valueNameMap");
 
-        // Process each row of data
-        for (List<String> row : data) {
-            // Determine the table type from the first column
-            String tableType = row.get(0);
-
-            // Map the row data to the appropriate entity based on the table type
-            switch (tableType) {
-                case "INDU":
-                    induList.add(mapToInduEntity(row));
-                    break;
-                case "INFRA":
-                    infraList.add(mapToInfraEntity(row));
-                    break;
-                case "AGRI":
-                    agrList.add(mapToAgriEntity(row));
-                    break;
-                case "HOUS":
-                    housList.add(mapToHousEntity(row));
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid table type: " + tableType);
-            }
+        // Validate the data structure
+        if (valueNameMap == null || valueNameMap.size() < 4) {
+            throw new IllegalArgumentException("Invalid data structure. Expecting at least 4 lists.");
         }
 
-        // Save all entities to their respective repositories in a batch
+        // Map each list to its corresponding entity and save them
+        List<CRSInduDvlpInc> induList = mapToEntities(valueNameMap.get(0), CRSInduDvlpInc.class);
+        List<CRSInfraDvlpInc> infraList = mapToEntities(valueNameMap.get(1), CRSInfraDvlpInc.class);
+        List<CRSAgrDvlpInc> agrList = mapToEntities(valueNameMap.get(2), CRSAgrDvlpInc.class);
+        List<CRSHousDvlpInc> housList = mapToEntities(valueNameMap.get(3), CRSHousDvlpInc.class);
+
+        // Save all entities in batches
         if (!induList.isEmpty()) induDvlpRepository.saveAll(induList);
         if (!infraList.isEmpty()) infraDvlpRepository.saveAll(infraList);
         if (!agrList.isEmpty()) agrDvlpRepository.saveAll(agrList);
@@ -73,75 +58,65 @@ public class ReportServiceImpl {
     }
 
     /**
-     * Maps a row to a CRSInduDvlpInc entity.
+     * Maps a list of rows to entities of a specified type.
      *
-     * @param row The data row as a List<String>.
-     * @return A CRSInduDvlpInc entity populated with the data.
+     * @param rows The list of rows containing table data.
+     * @param clazz The entity class type.
+     * @return A list of entities populated with the data.
+     * @param <T> Generic type representing the entity class.
      */
-    private CRSInduDvlpInc mapToInduEntity(List<String> row) {
-        CRSInduDvlpInc entity = new CRSInduDvlpInc();
-        entity.setCrsInduDvlpBrno(row.get(1));
-        entity.setCrsInduDvlpDate(parseDate(row.get(2)));
-        entity.setCrsInduDvlpOther(row.get(3));
-        entity.setCrsInduDvlpProcfee(row.get(4));
-        entity.setCrsInduDvlpTotal(row.get(5));
-        entity.setCrsInduDvlpTotalAdvances(row.get(6));
-        entity.setReportMasterListIdFk(row.get(7));
-        return entity;
-    }
+    private <T> List<T> mapToEntities(List<List<String>> rows, Class<T> clazz) {
+        List<T> entities = new ArrayList<>();
 
-    /**
-     * Maps a row to a CRSInfraDvlpInc entity.
-     *
-     * @param row The data row as a List<String>.
-     * @return A CRSInfraDvlpInc entity populated with the data.
-     */
-    private CRSInfraDvlpInc mapToInfraEntity(List<String> row) {
-        CRSInfraDvlpInc entity = new CRSInfraDvlpInc();
-        entity.setCrsInfraDvlpBrno(row.get(1));
-        entity.setCrsInfraDvlpDate(parseDate(row.get(2)));
-        entity.setCrsInfraDvlpOther(row.get(3));
-        entity.setCrsInfraDvlpProcfee(row.get(4));
-        entity.setCrsInfraDvlpTotal(row.get(5));
-        entity.setCrsInfraDvlpTotalAdvances(row.get(6));
-        entity.setReportMasterListIdFk(row.get(7));
-        return entity;
-    }
+        for (List<String> row : rows) {
+            try {
+                T entity = clazz.newInstance();
 
-    /**
-     * Maps a row to a CRSAgrDvlpInc entity.
-     *
-     * @param row The data row as a List<String>.
-     * @return A CRSAgrDvlpInc entity populated with the data.
-     */
-    private CRSAgrDvlpInc mapToAgriEntity(List<String> row) {
-        CRSAgrDvlpInc entity = new CRSAgrDvlpInc();
-        entity.setCrsAgriDvlpBrno(row.get(1));
-        entity.setCrsAgriDvlpDate(parseDate(row.get(2)));
-        entity.setCrsAgriDvlpOther(row.get(3));
-        entity.setCrsAgriDvlpProcfee(row.get(4));
-        entity.setCrsAgriDvlpTotal(row.get(5));
-        entity.setCrsAgriDvlpTotalAdvances(row.get(6));
-        entity.setReportMasterListIdFk(row.get(7));
-        return entity;
-    }
+                if (clazz.equals(CRSInduDvlpInc.class)) {
+                    CRSInduDvlpInc induEntity = (CRSInduDvlpInc) entity;
+                    induEntity.setCrsInduDvlpBrno(row.get(0));
+                    induEntity.setCrsInduDvlpDate(parseDate(row.get(1)));
+                    induEntity.setCrsInduDvlpOther(row.get(2));
+                    induEntity.setCrsInduDvlpProcfee(row.get(3));
+                    induEntity.setCrsInduDvlpTotal(row.get(4));
+                    induEntity.setCrsInduDvlpTotalAdvances(row.get(5));
+                    induEntity.setReportMasterListIdFk(row.get(6));
+                } else if (clazz.equals(CRSInfraDvlpInc.class)) {
+                    CRSInfraDvlpInc infraEntity = (CRSInfraDvlpInc) entity;
+                    infraEntity.setCrsInfraDvlpBrno(row.get(0));
+                    infraEntity.setCrsInfraDvlpDate(parseDate(row.get(1)));
+                    infraEntity.setCrsInfraDvlpOther(row.get(2));
+                    infraEntity.setCrsInfraDvlpProcfee(row.get(3));
+                    infraEntity.setCrsInfraDvlpTotal(row.get(4));
+                    infraEntity.setCrsInfraDvlpTotalAdvances(row.get(5));
+                    infraEntity.setReportMasterListIdFk(row.get(6));
+                } else if (clazz.equals(CRSAgrDvlpInc.class)) {
+                    CRSAgrDvlpInc agrEntity = (CRSAgrDvlpInc) entity;
+                    agrEntity.setCrsAgriDvlpBrno(row.get(0));
+                    agrEntity.setCrsAgriDvlpDate(parseDate(row.get(1)));
+                    agrEntity.setCrsAgriDvlpOther(row.get(2));
+                    agrEntity.setCrsAgriDvlpProcfee(row.get(3));
+                    agrEntity.setCrsAgriDvlpTotal(row.get(4));
+                    agrEntity.setCrsAgriDvlpTotalAdvances(row.get(5));
+                    agrEntity.setReportMasterListIdFk(row.get(6));
+                } else if (clazz.equals(CRSHousDvlpInc.class)) {
+                    CRSHousDvlpInc housEntity = (CRSHousDvlpInc) entity;
+                    housEntity.setCrsHousDvlpBrno(row.get(0));
+                    housEntity.setCrsHousDvlpDate(parseDate(row.get(1)));
+                    housEntity.setCrsHousDvlpOther(row.get(2));
+                    housEntity.setCrsHousDvlpProcfee(row.get(3));
+                    housEntity.setCrsHousDvlpTotal(row.get(4));
+                    housEntity.setCrsHousDvlpTotalAdvances(row.get(5));
+                    housEntity.setReportMasterListIdFk(row.get(6));
+                }
 
-    /**
-     * Maps a row to a CRSHousDvlpInc entity.
-     *
-     * @param row The data row as a List<String>.
-     * @return A CRSHousDvlpInc entity populated with the data.
-     */
-    private CRSHousDvlpInc mapToHousEntity(List<String> row) {
-        CRSHousDvlpInc entity = new CRSHousDvlpInc();
-        entity.setCrsHousDvlpBrno(row.get(1));
-        entity.setCrsHousDvlpDate(parseDate(row.get(2)));
-        entity.setCrsHousDvlpOther(row.get(3));
-        entity.setCrsHousDvlpProcfee(row.get(4));
-        entity.setCrsHousDvlpTotal(row.get(5));
-        entity.setCrsHousDvlpTotalAdvances(row.get(6));
-        entity.setReportMasterListIdFk(row.get(7));
-        return entity;
+                entities.add(entity);
+            } catch (Exception e) {
+                throw new RuntimeException("Error mapping row to entity: " + e.getMessage());
+            }
+        }
+
+        return entities;
     }
 
     /**
