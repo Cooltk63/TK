@@ -1,206 +1,85 @@
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+    public ResponseEntity<ResponseVO<Boolean>> saveStaticDetails(Map<String, Object> map) {
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+        // Extracting additional details from the input map
+        Map<String, Object> data = (Map<String, Object>) map.get("data");
 
-@Service
-public class ReportServiceImpl {
+        // Extracting logged user data
+        Map<String, String> loginUserData = (Map<String, String>) map.get("user");
 
-    @Autowired
-    private CRSInduDvlpRepository induDvlpRepository;
+        // Getting submission ID from the data map
+        int submissionId = (int) data.get("submissionId");
 
-    @Autowired
-    private CRSInfraDvlpRepository infraDvlpRepository;
+        // Initializing response object
+        ResponseVO<Boolean> responseVO = new ResponseVO<>();
+        Map<String, Object> resultDataMap = new HashMap<>();
 
-    @Autowired
-    private CRSAgrDvlpRepository agrDvlpRepository;
+        // List of ROW data (List<List<String>> format)
+        List<List<String>> mainList = (List<List<String>>) data.get("value");
 
-    @Autowired
-    private CRSHousDvlpRepository housDvlpRepository;
+        try {
+            // Parse the quarterEndDate from user data
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            Date liabilityDate = dateFormat.parse(loginUserData.get("quarterEndDate"));
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            log.info("Liability Date: " + liabilityDate);
+            log.info("Main List Data: " + mainList);
 
-    /**
-     * Saves data for all four tables based on the ordered list provided by the frontend.
-     *
-     * @param parameters A map containing:
-     *                   - 'user': A map with 'branch_code' and 'quarterEndDate'.
-     *                   - 'data': A map with 'submissionId' and 'valueNameMap' (ordered list of lists).
-     */
-    @Transactional
-    public void saveAllTablesData(Map<String, Map<String, Object>> parameters) {
-        // Extract and validate user and data information
-        String branchCode = getRequiredParameter(parameters, "user", "branch_code");
-        String quarterEndDate = getRequiredParameter(parameters, "user", "quarterEndDate");
-        String reportMasterIdFk = getRequiredParameter(parameters, "data", "submissionId");
+            // Process each list (row) inside the main list
+            for (List<String> dataList : mainList) {
 
-        // Retrieve the ordered list of data
-        List<List<List<String>>> valueNameMap = (List<List<List<String>>>) parameters.get("data").get("valueNameMap");
-        if (valueNameMap == null || valueNameMap.size() < 4) {
-            throw new IllegalArgumentException("Incomplete data. Expecting at least 4 lists.");
+                // Set the ROW-ID (Liability ID)
+                String crsLiabilityId = String.valueOf(Integer.parseInt(dataList.get(7)));
+                log.info("crsLiabilityId: " + crsLiabilityId);
+
+                // Check if an entity with the given params exists in the database
+                CrsLiability existingEntity = crsLiabilityRepository.findByLiabilityDateAndLiabilityBranchAndCrsLiabilityId(
+                        liabilityDate, loginUserData.get("branch_code"), crsLiabilityId);
+
+                // If no existing entity, create a new one
+                if (existingEntity == null) {
+                    log.info("No existing entity found. Inserting new record.");
+                    CrsLiability newEntity = setEntity(dataList, loginUserData.get("quarterEndDate"), loginUserData.get("branch_code"), submissionId);
+                    crsLiabilityRepository.save(newEntity);
+
+                } else {
+                    // Update existing entity if it exists
+                    log.info("Existing entity found. Updating record.");
+
+                    // Update fields
+                    log.info("Updating existing entity data");
+                    existingEntity = setEntity(dataList, loginUserData.get("quarterEndDate"), loginUserData.get("branch_code"), submissionId);
+
+                    // Save the updated entity
+                    crsLiabilityRepository.save(existingEntity);
+                }
+            }
+
+            // If all records processed successfully
+            responseVO.setMessage("All data updated successfully.");
+//            resultDataMap.put("status", true);
+//            responseVO.setResult(resultDataMap);
+            responseVO.setResult(true);
+            responseVO.setStatusCode(HttpStatus.OK.value());
+
+        } catch (ParseException e) {
+            // Handle date parsing errors
+            log.info("Error parsing date: " + e.getMessage());
+            responseVO.setMessage("Invalid date format provided.");
+//            resultDataMap.put("status", false);
+//            responseVO.setResult(resultDataMap);
+            responseVO.setResult(false);
+            responseVO.setStatusCode(HttpStatus.BAD_REQUEST.value());
+
+        } catch (RuntimeException e) {
+            // Handle unexpected runtime exceptions
+            log.info("Exception occurred: " + e.getMessage());
+            responseVO.setMessage("An unexpected error occurred.");
+//            resultDataMap.put("status", false);
+//            responseVO.setResult(resultDataMap);
+            responseVO.setResult(false);
+            responseVO.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
 
-        // Process and save each category of data using method references
-        saveData(valueNameMap.get(0), branchCode, quarterEndDate, reportMasterIdFk, induDvlpRepository, CRSInduDvlpInc::new, "CrsInduDvlpProcfee");
-        saveData(valueNameMap.get(1), branchCode, quarterEndDate, reportMasterIdFk, infraDvlpRepository, CRSInfraDvlpInc::new, "CrsInfraDvlpProcfee");
-        saveData(valueNameMap.get(2), branchCode, quarterEndDate, reportMasterIdFk, agrDvlpRepository, CRSAgrDvlpInc::new, "CrsAgriDvlpProcfee");
-        saveData(valueNameMap.get(3), branchCode, quarterEndDate, reportMasterIdFk, housDvlpRepository, CRSHousDvlpInc::new, "CrsHouseDvlpProcfee");
+        // Return response in the specified format
+        return new ResponseEntity<>(responseVO, HttpStatus.valueOf(responseVO.getStatusCode()));
     }
-
-    /**
-     * Retrieves a required parameter from the provided map.
-     *
-     * @param parameters The main parameters map.
-     * @param mapKey     The key to access the inner map ('user' or 'data').
-     * @param key        The key of the required parameter.
-     * @return The value associated with the key.
-     * @throws IllegalArgumentException if the key is missing or the value is null.
-     */
-    private String getRequiredParameter(Map<String, Map<String, Object>> parameters, String mapKey, String key) {
-        return Optional.ofNullable((String) parameters.get(mapKey).get(key))
-                .orElseThrow(() -> new IllegalArgumentException("Missing '" + key + "' in parameters"));
-    }
-
-    /**
-     * Saves data for a specific category (InduDvlp, InfraDvlp, AgriDvlp, HousDvlp).
-     *
-     * @param dataRows          The list of data rows to process.
-     * @param branchCode        The branch code.
-     * @param quarterEndDate    The quarter end date.
-     * @param reportMasterIdFk  The report master ID.
-     * @param repository        The repository to save the entities.
-     * @param entityConstructor A supplier to create a new entity instance.
-     * @param procFeeField      The field to be set as Procfee (varies by table).
-     * @param <T>               The type of the entity.
-     */
-    private <T> void saveData(
-            List<List<String>> dataRows,
-            String branchCode,
-            String quarterEndDate,
-            String reportMasterIdFk,
-            JpaRepository<T, ?> repository,
-            Supplier<T> entityConstructor,
-            String procFeeField) {
-
-        if (dataRows == null || dataRows.isEmpty()) return;
-
-        // Map each row to an entity and save it
-        List<T> entities = dataRows.stream()
-                .map(row -> {
-                    T entity = entityConstructor.get();
-                    populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk, procFeeField);
-                    return entity;
-                })
-                .collect(Collectors.toList());
-
-        // Save all entities in a batch
-        repository.saveAll(entities);
-    }
-
-    /**
-     * Populates common fields for all entities (branch code, date, etc.).
-     *
-     * @param entity            The entity to populate.
-     * @param row               The data row.
-     * @param branchCode        The branch code.
-     * @param quarterEndDate    The quarter end date.
-     * @param reportMasterIdFk  The report master ID.
-     * @param procFeeField      The field name for 'procfee'.
-     */
-    private void populateCommonFields(
-            Object entity,
-            List<String> row,
-            String branchCode,
-            String quarterEndDate,
-            String reportMasterIdFk,
-            String procFeeField) {
-
-        // Set common fields for all entities
-        LocalDate date = LocalDate.parse(quarterEndDate, DATE_FORMATTER);
-
-        if (entity instanceof CRSInduDvlpInc) {
-            CRSInduDvlpInc induEntity = (CRSInduDvlpInc) entity;
-            induEntity.setBranchCode(branchCode);
-            induEntity.setDate(date);
-            induEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
-            induEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
-            induEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
-            induEntity.setReportMasterListIdFk(reportMasterIdFk);
-            induEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
-            induEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
-            induEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
-            setProcFee(induEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
-        } else if (entity instanceof CRSInfraDvlpInc) {
-            CRSInfraDvlpInc infraEntity = (CRSInfraDvlpInc) entity;
-            infraEntity.setBranchCode(branchCode);
-            infraEntity.setDate(date);
-            infraEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
-            infraEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
-            infraEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
-            infraEntity.setReportMasterListIdFk(reportMasterIdFk);
-            infraEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
-            infraEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
-            infraEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
-            setProcFee(infraEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
-        } else if (entity instanceof CRSAgrDvlpInc) {
-            CRSAgrDvlpInc agrEntity = (CRSAgrDvlpInc) entity;
-            agrEntity.setBranchCode(branchCode);
-            agrEntity.setDate(date);
-            agrEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
-            agrEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
-            agrEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
-            agrEntity.setReportMasterListIdFk(reportMasterIdFk);
-            agrEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
-            agrEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
-            agrEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
-            setProcFee(agrEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
-        } else if (entity instanceof CRSHousDvlpInc) {
-            CRSHousDvlpInc housEntity = (CRSHousDvlpInc) entity;
-            housEntity.setBranchCode(branchCode);
-            housEntity.setDate(date);
-            housEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
-            housEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
-            housEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
-            housEntity.setReportMasterListIdFk(reportMasterIdFk);
-            housEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
-            housEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
-            housEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
-            setProcFee(housEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
-        }
-    }
-
-    /**
-     * Helper function to retrieve values from row.
-     * @param row The row of data.
-     * @param index The column index.
-     * @return The value at the specified column index.
-     */
-    private String getValue(List<String> row, int index) {
-        if (row != null && row.size() > index) {
-            return row.get(index);
-        }
-        return "";
-    }
-
-    /**
-     * Dynamically sets the Procfee field in the entity.
-     */
-    private void setProcFee(Object entity, String procFeeField, String procFeeValue) {
-        if ("CrsInduDvlpProcfee".equals(procFeeField)) {
-            ((CRSInduDvlpInc) entity).setCrsInduDvlpProcfee(procFeeValue);
-        } else if ("CrsInfraDvlpProcfee".equals(procFeeField)) {
-            ((CRSInfraDvlpInc) entity).setCrsInfraDvlpProcfee(procFeeValue);
-        } else if ("CrsAgriDvlpProcfee".equals(procFeeField)) {
-            ((CRSAgrDvlpInc) entity).setCrsAgriDvlpProcfee(procFeeValue);
-        } else if ("CrsHouseDvlpProcfee".equals(procFeeField)) {
-            ((CRSHousDvlpInc) entity).setCrsHouseDvlpProcfee(procFeeValue);
-        }
-    }
-}
