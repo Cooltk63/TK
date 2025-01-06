@@ -7,8 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl {
@@ -29,127 +29,133 @@ public class ReportServiceImpl {
 
     /**
      * Saves data for all four tables based on the ordered list provided by the frontend.
-     * Includes branch code from the `user` map and processes the last three columns.
      *
      * @param parameters A map containing:
-     *                   - `user`: A map with `branch_code` and `quarterEndDate`.
-     *                   - `data`: A map with `submissionId` and `valueNameMap` (ordered list of lists).
+     *                   - 'user': A map with 'branch_code' and 'quarterEndDate'.
+     *                   - 'data': A map with 'submissionId' and 'valueNameMap' (ordered list of lists).
      */
     @Transactional
     public void saveAllTablesData(Map<String, Map<String, Object>> parameters) {
-        // Extract the branch code and quarter end date from the `user` map
-        Map<String, Object> userMap = parameters.get("user");
-        String branchCode = (String) Optional.ofNullable(userMap.get("branch_code"))
-                .orElseThrow(() -> new IllegalArgumentException("Missing `branch_code` in user map"));
-        String quarterEndDate = (String) Optional.ofNullable(userMap.get("quarterEndDate"))
-                .orElseThrow(() -> new IllegalArgumentException("Missing `quarterEndDate` in user map"));
+        // Extract and validate user and data information
+        String branchCode = getRequiredParameter(parameters, "user", "branch_code");
+        String quarterEndDate = getRequiredParameter(parameters, "user", "quarterEndDate");
+        String reportMasterIdFk = getRequiredParameter(parameters, "data", "submissionId");
 
-        // Extract the submission ID and ordered list from the `data` map
-        Map<String, Object> dataMap = parameters.get("data");
-        String reportMasterIdFk = (String) Optional.ofNullable(dataMap.get("submissionId"))
-                .orElseThrow(() -> new IllegalArgumentException("Missing `submissionId` in data map"));
-
-        List<List<List<String>>> valueNameMap = (List<List<List<String>>>) dataMap.get("valueNameMap");
+        // Retrieve the ordered list of data
+        List<List<List<String>>> valueNameMap = (List<List<List<String>>>) parameters.get("data").get("valueNameMap");
         if (valueNameMap == null || valueNameMap.size() < 4) {
             throw new IllegalArgumentException("Incomplete data. Expecting at least 4 lists.");
         }
 
-        // Map the lists to corresponding entities and save
-        saveEntities(valueNameMap.get(0), CRSInduDvlpInc::new, 
-                     (entity, row) -> populateInduDvlp(entity, row, branchCode, quarterEndDate, reportMasterIdFk), 
-                     induDvlpRepository);
-        saveEntities(valueNameMap.get(1), CRSInfraDvlpInc::new, 
-                     (entity, row) -> populateInfraDvlp(entity, row, branchCode, quarterEndDate, reportMasterIdFk), 
-                     infraDvlpRepository);
-        saveEntities(valueNameMap.get(2), CRSAgrDvlpInc::new, 
-                     (entity, row) -> populateAgriDvlp(entity, row, branchCode, quarterEndDate, reportMasterIdFk), 
-                     agrDvlpRepository);
-        saveEntities(valueNameMap.get(3), CRSHousDvlpInc::new, 
-                     (entity, row) -> populateHousDvlp(entity, row, branchCode, quarterEndDate, reportMasterIdFk), 
-                     housDvlpRepository);
+        // Process and save each category of data using method references
+        saveData(valueNameMap.get(0), branchCode, quarterEndDate, reportMasterIdFk, induDvlpRepository, CRSInduDvlpInc::new);
+        saveData(valueNameMap.get(1), branchCode, quarterEndDate, reportMasterIdFk, infraDvlpRepository, CRSInfraDvlpInc::new);
+        saveData(valueNameMap.get(2), branchCode, quarterEndDate, reportMasterIdFk, agrDvlpRepository, CRSAgrDvlpInc::new);
+        saveData(valueNameMap.get(3), branchCode, quarterEndDate, reportMasterIdFk, housDvlpRepository, CRSHousDvlpInc::new);
     }
 
     /**
-     * Generic method to save entities in a batch.
+     * Retrieves a required parameter from the provided map.
      *
-     * @param <T>         The entity type.
-     * @param rows        The rows of data to map and save.
-     * @param constructor A supplier to create a new entity instance.
-     * @param mapper      A BiConsumer to populate the entity with row data.
-     * @param repository  The repository to save the entities.
+     * @param parameters The main parameters map.
+     * @param mapKey     The key to access the inner map ('user' or 'data').
+     * @param key        The key of the required parameter.
+     * @return The value associated with the key.
+     * @throws IllegalArgumentException if the key is missing or the value is null.
      */
-    private <T> void saveEntities(List<List<String>> rows, 
-                                  Supplier<T> constructor, 
-                                  BiConsumer<T, List<String>> mapper, 
-                                  JpaRepository<T, ?> repository) {
-        if (rows == null || rows.isEmpty()) return;
+    private String getRequiredParameter(Map<String, Map<String, Object>> parameters, String mapKey, String key) {
+        return Optional.ofNullable((String) parameters.get(mapKey).get(key))
+                .orElseThrow(() -> new IllegalArgumentException("Missing '" + key + "' in parameters"));
+    }
 
-        var entities = rows.stream()
+    /**
+     * Saves data for a specific category (InduDvlp, InfraDvlp, AgriDvlp, HousDvlp).
+     *
+     * @param dataRows          The list of data rows to process.
+     * @param branchCode        The branch code.
+     * @param quarterEndDate    The quarter end date.
+     * @param reportMasterIdFk  The report master ID.
+     * @param repository        The repository to save the entities.
+     * @param entityConstructor A supplier to create a new entity instance.
+     * @param <T>               The type of the entity.
+     */
+    private <T extends CommonEntityFields> void saveData(
+            List<List<String>> dataRows,
+            String branchCode,
+            String quarterEndDate,
+            String reportMasterIdFk,
+            JpaRepository<T, ?> repository,
+            Supplier<T> entityConstructor) {
+
+        if (dataRows == null || dataRows.isEmpty()) return;
+
+        // Map each row to an entity and save it
+        List<T> entities = dataRows.stream()
                 .map(row -> {
-                    T entity = constructor.get();
-                    mapper.accept(entity, row);
+                    T entity = entityConstructor.get();
+                    populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk);
+                    populateSpecificFields(entity, row);
                     return entity;
                 })
-                .toList();
+                .collect(Collectors.toList());
 
+        // Save all entities in a batch
         repository.saveAll(entities);
     }
 
     /**
-     * Populates a CRSInduDvlpInc entity.
+     * Populates common fields for all entities (branch code, date, etc.).
+     *
+     * @param entity            The entity to populate.
+     * @param row               The data row.
+     * @param branchCode        The branch code.
+     * @param quarterEndDate    The quarter end date.
+     * @param reportMasterIdFk  The report master ID.
      */
-    private void populateInduDvlp(CRSInduDvlpInc entity, List<String> row, String branchCode, String quarterEndDate, String reportMasterIdFk) {
-        populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk);
-        entity.setCrsInduDvlpProcfee(getValue(row, row.size() - 5)); // Example
-    }
+    private void populateCommonFields(
+            CommonEntityFields entity,
+            List<String> row,
+            String branchCode,
+            String quarterEndDate,
+            String reportMasterIdFk) {
 
-    /**
-     * Populates a CRSInfraDvlpInc entity.
-     */
-    private void populateInfraDvlp(CRSInfraDvlpInc entity, List<String> row, String branchCode, String quarterEndDate, String reportMasterIdFk) {
-        populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk);
-        entity.setCrsInfraDvlpProcfee(getValue(row, row.size() - 5)); // Example
-    }
-
-    /**
-     * Populates a CRSAgrDvlpInc entity.
-     */
-    private void populateAgriDvlp(CRSAgrDvlpInc entity, List<String> row, String branchCode, String quarterEndDate, String reportMasterIdFk) {
-        populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk);
-        entity.setCrsAgriDvlpProcfee(getValue(row, row.size() - 5)); // Example
-    }
-
-    /**
-     * Populates a CRSHousDvlpInc entity.
-     */
-    private void populateHousDvlp(CRSHousDvlpInc entity, List<String> row, String branchCode, String quarterEndDate, String reportMasterIdFk) {
-        populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk);
-        entity.setCrsHousDvlpProcfee(getValue(row, row.size() - 5)); // Example
-    }
-
-    /**
-     * Populates common fields for all entities.
-     */
-    private <T extends CommonEntityFields> void populateCommonFields(T entity, List<String> row, String branchCode, String quarterEndDate, String reportMasterIdFk) {
         entity.setBranchCode(branchCode);
         entity.setDate(LocalDate.parse(quarterEndDate, DATE_FORMATTER));
-        entity.setOther(getValue(row, 1));
-        entity.setTotal(getValue(row, 3));
-        entity.setTotalAdvances(getValue(row, 4));
+        entity.setOther(getValue(row, 1));  // Example: Column index for 'other'
+        entity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
+        entity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
         entity.setReportMasterListIdFk(reportMasterIdFk);
-        entity.setRowId(getValue(row, row.size() - 3));
-        entity.setSameRowId(getValue(row, row.size() - 2));
-        entity.setHardcodedFlag(getValue(row, row.size() - 1));
+        entity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
+        entity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
+        entity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
     }
 
     /**
-     * Safely gets a value from a list.
+     * Populates specific fields for each entity type.
      *
-     * @param row   The row list.
-     * @param index The index to fetch.
-     * @return The value at the index or an empty string if out of bounds.
+     * @param entity The entity to populate.
+     * @param row    The data row.
+     */
+    private void populateSpecificFields(CommonEntityFields entity, List<String> row) {
+        if (entity instanceof CRSInduDvlpInc) {
+            ((CRSInduDvlpInc) entity).setCrsInduDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+        } else if (entity instanceof CRSInfraDvlpInc) {
+            ((CRSInfraDvlpInc) entity).setCrsInfraDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+        } else if (entity instanceof CRSAgrDvlpInc) {
+            ((CRSAgrDvlpInc) entity).setCrsAgriDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+        } else if (entity instanceof CRSHousDvlpInc) {
+            ((CRSHousDvlpInc) entity).setCrsHousDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+        }
+    }
+
+    /**
+     * Safely retrieves the value from a row or returns an empty string if out of bounds.
+     *
+     * @param row The data row.
+     * @param index The index of the column to retrieve.
+     * @return The value at the given index or an empty string if out of bounds.
      */
     private String getValue(List<String> row, int index) {
-        return (index < row.size() && row.get(index) != null) ? row.get(index) : "";
+        return index < row.size() ? row.get(index) : "";
     }
 }
