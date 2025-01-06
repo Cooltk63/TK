@@ -2,10 +2,21 @@
 private void processInduDvl(List<String> dataList, Date liabilityDate, String branchCode, int submissionId, String liabilityId) {
     CRSInduDvlpInc existingEntity = crsInduDvIncRepository.findByDateAndBranchNumberAndCrsInduDvlpId(liabilityDate, branchCode, liabilityId);
     if (existingEntity == null) {
-        CRSInduDvlpInc newEntity = setInduDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        CRSInduDvlpInc newEntity = new CRSInduDvlpInc();
+        newEntity.setDate(liabilityDate);
+        newEntity.setBranchCode(branchCode);
+        newEntity.setCrsInduDvlpId(liabilityId);
+        // Assuming dataList contains specific values for entity fields
+        newEntity.setSomeField(dataList.get(0)); // Set fields from dataList accordingly
+        newEntity.setOtherField(dataList.get(1)); // Set additional fields
         crsInduDvIncRepository.save(newEntity);
     } else {
-        existingEntity = setInduDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        existingEntity.setDate(liabilityDate);
+        existingEntity.setBranchCode(branchCode);
+        existingEntity.setCrsInduDvlpId(liabilityId);
+        // Update fields from dataList accordingly
+        existingEntity.setSomeField(dataList.get(0));
+        existingEntity.setOtherField(dataList.get(1));
         crsInduDvIncRepository.save(existingEntity);
     }
 }
@@ -14,10 +25,20 @@ private void processInduDvl(List<String> dataList, Date liabilityDate, String br
 private void processInfraDvl(List<String> dataList, Date liabilityDate, String branchCode, int submissionId, String liabilityId) {
     CRSInfraDvlpInc existingEntity = crsInfraDvIncRepository.findByDateAndBranchNumberAndCrsInfraDvlpId(liabilityDate, branchCode, liabilityId);
     if (existingEntity == null) {
-        CRSInfraDvlpInc newEntity = setInfraDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        CRSInfraDvlpInc newEntity = new CRSInfraDvlpInc();
+        newEntity.setDate(liabilityDate);
+        newEntity.setBranchCode(branchCode);
+        newEntity.setCrsInfraDvlpId(liabilityId);
+        // Set fields based on dataList
+        newEntity.setSomeField(dataList.get(0));
+        newEntity.setOtherField(dataList.get(1));
         crsInfraDvIncRepository.save(newEntity);
     } else {
-        existingEntity = setInfraDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        existingEntity.setDate(liabilityDate);
+        existingEntity.setBranchCode(branchCode);
+        existingEntity.setCrsInfraDvlpId(liabilityId);
+        existingEntity.setSomeField(dataList.get(0));
+        existingEntity.setOtherField(dataList.get(1));
         crsInfraDvIncRepository.save(existingEntity);
     }
 }
@@ -26,10 +47,19 @@ private void processInfraDvl(List<String> dataList, Date liabilityDate, String b
 private void processAgriDvl(List<String> dataList, Date liabilityDate, String branchCode, int submissionId, String liabilityId) {
     CRSAgrDvlpInc existingEntity = crsAgriDvIncRepository.findByDateAndBranchNumberAndCrsAgrDvlpId(liabilityDate, branchCode, liabilityId);
     if (existingEntity == null) {
-        CRSAgrDvlpInc newEntity = setAgriDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        CRSAgrDvlpInc newEntity = new CRSAgrDvlpInc();
+        newEntity.setDate(liabilityDate);
+        newEntity.setBranchCode(branchCode);
+        newEntity.setCrsAgrDvlpId(liabilityId);
+        newEntity.setSomeField(dataList.get(0));  // Set fields based on dataList
+        newEntity.setOtherField(dataList.get(1));
         crsAgriDvIncRepository.save(newEntity);
     } else {
-        existingEntity = setAgriDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        existingEntity.setDate(liabilityDate);
+        existingEntity.setBranchCode(branchCode);
+        existingEntity.setCrsAgrDvlpId(liabilityId);
+        existingEntity.setSomeField(dataList.get(0));
+        existingEntity.setOtherField(dataList.get(1));
         crsAgriDvIncRepository.save(existingEntity);
     }
 }
@@ -38,21 +68,19 @@ private void processAgriDvl(List<String> dataList, Date liabilityDate, String br
 private void processHousDvl(List<String> dataList, Date liabilityDate, String branchCode, int submissionId, String liabilityId) {
     CRSHousDvlpInc existingEntity = crsHousDvIncRepository.findByDateAndBranchNumberAndCrsHousDvlpId(liabilityDate, branchCode, liabilityId);
     if (existingEntity == null) {
-        CRSHousDvlpInc newEntity = setHousDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        CRSHousDvlpInc newEntity = new CRSHousDvlpInc();
+        newEntity.setDate(liabilityDate);
+        newEntity.setBranchCode(branchCode);
+        newEntity.setCrsHousDvlpId(liabilityId);
+        newEntity.setSomeField(dataList.get(0)); // Set fields based on dataList
+        newEntity.setOtherField(dataList.get(1));
         crsHousDvIncRepository.save(newEntity);
     } else {
-        existingEntity = setHousDvlpIncEntity(dataList, liabilityDate, branchCode, submissionId);
+        existingEntity.setDate(liabilityDate);
+        existingEntity.setBranchCode(branchCode);
+        existingEntity.setCrsHousDvlpId(liabilityId);
+        existingEntity.setSomeField(dataList.get(0));
+        existingEntity.setOtherField(dataList.get(1));
         crsHousDvIncRepository.save(existingEntity);
     }
 }
-
-I am getting error on this methods 
-
-setInduDvlpIncEntity
-setInfraDvlpIncEntity
-setInfraDvlpIncEntity
-setAgriDvlpIncEntity
-
-The method setAgriDvlpIncEntity(List<String>, Date, String, int) is undefined for the type RW10ServiceImplJava(67108964)
-what is this make the simple use of this dont make things to complicated and read the code again and cross check again if any methods missing or anything.
-
