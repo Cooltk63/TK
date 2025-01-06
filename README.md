@@ -48,10 +48,10 @@ public class ReportServiceImpl {
         }
 
         // Process and save each category of data using method references
-        saveData(valueNameMap.get(0), branchCode, quarterEndDate, reportMasterIdFk, induDvlpRepository, CRSInduDvlpInc::new);
-        saveData(valueNameMap.get(1), branchCode, quarterEndDate, reportMasterIdFk, infraDvlpRepository, CRSInfraDvlpInc::new);
-        saveData(valueNameMap.get(2), branchCode, quarterEndDate, reportMasterIdFk, agrDvlpRepository, CRSAgrDvlpInc::new);
-        saveData(valueNameMap.get(3), branchCode, quarterEndDate, reportMasterIdFk, housDvlpRepository, CRSHousDvlpInc::new);
+        saveData(valueNameMap.get(0), branchCode, quarterEndDate, reportMasterIdFk, induDvlpRepository, CRSInduDvlpInc::new, "CrsInduDvlpProcfee");
+        saveData(valueNameMap.get(1), branchCode, quarterEndDate, reportMasterIdFk, infraDvlpRepository, CRSInfraDvlpInc::new, "CrsInfraDvlpProcfee");
+        saveData(valueNameMap.get(2), branchCode, quarterEndDate, reportMasterIdFk, agrDvlpRepository, CRSAgrDvlpInc::new, "CrsAgriDvlpProcfee");
+        saveData(valueNameMap.get(3), branchCode, quarterEndDate, reportMasterIdFk, housDvlpRepository, CRSHousDvlpInc::new, "CrsHouseDvlpProcfee");
     }
 
     /**
@@ -77,15 +77,17 @@ public class ReportServiceImpl {
      * @param reportMasterIdFk  The report master ID.
      * @param repository        The repository to save the entities.
      * @param entityConstructor A supplier to create a new entity instance.
+     * @param procFeeField      The field to be set as Procfee (varies by table).
      * @param <T>               The type of the entity.
      */
-    private <T extends CommonEntityFields> void saveData(
+    private <T> void saveData(
             List<List<String>> dataRows,
             String branchCode,
             String quarterEndDate,
             String reportMasterIdFk,
             JpaRepository<T, ?> repository,
-            Supplier<T> entityConstructor) {
+            Supplier<T> entityConstructor,
+            String procFeeField) {
 
         if (dataRows == null || dataRows.isEmpty()) return;
 
@@ -93,8 +95,7 @@ public class ReportServiceImpl {
         List<T> entities = dataRows.stream()
                 .map(row -> {
                     T entity = entityConstructor.get();
-                    populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk);
-                    populateSpecificFields(entity, row);
+                    populateCommonFields(entity, row, branchCode, quarterEndDate, reportMasterIdFk, procFeeField);
                     return entity;
                 })
                 .collect(Collectors.toList());
@@ -111,51 +112,95 @@ public class ReportServiceImpl {
      * @param branchCode        The branch code.
      * @param quarterEndDate    The quarter end date.
      * @param reportMasterIdFk  The report master ID.
+     * @param procFeeField      The field name for 'procfee'.
      */
     private void populateCommonFields(
-            CommonEntityFields entity,
+            Object entity,
             List<String> row,
             String branchCode,
             String quarterEndDate,
-            String reportMasterIdFk) {
+            String reportMasterIdFk,
+            String procFeeField) {
 
-        entity.setBranchCode(branchCode);
-        entity.setDate(LocalDate.parse(quarterEndDate, DATE_FORMATTER));
-        entity.setOther(getValue(row, 1));  // Example: Column index for 'other'
-        entity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
-        entity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
-        entity.setReportMasterListIdFk(reportMasterIdFk);
-        entity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
-        entity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
-        entity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
-    }
+        // Set common fields for all entities
+        LocalDate date = LocalDate.parse(quarterEndDate, DATE_FORMATTER);
 
-    /**
-     * Populates specific fields for each entity type.
-     *
-     * @param entity The entity to populate.
-     * @param row    The data row.
-     */
-    private void populateSpecificFields(CommonEntityFields entity, List<String> row) {
         if (entity instanceof CRSInduDvlpInc) {
-            ((CRSInduDvlpInc) entity).setCrsInduDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+            CRSInduDvlpInc induEntity = (CRSInduDvlpInc) entity;
+            induEntity.setBranchCode(branchCode);
+            induEntity.setDate(date);
+            induEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
+            induEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
+            induEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
+            induEntity.setReportMasterListIdFk(reportMasterIdFk);
+            induEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
+            induEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
+            induEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
+            setProcFee(induEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
         } else if (entity instanceof CRSInfraDvlpInc) {
-            ((CRSInfraDvlpInc) entity).setCrsInfraDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+            CRSInfraDvlpInc infraEntity = (CRSInfraDvlpInc) entity;
+            infraEntity.setBranchCode(branchCode);
+            infraEntity.setDate(date);
+            infraEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
+            infraEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
+            infraEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
+            infraEntity.setReportMasterListIdFk(reportMasterIdFk);
+            infraEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
+            infraEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
+            infraEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
+            setProcFee(infraEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
         } else if (entity instanceof CRSAgrDvlpInc) {
-            ((CRSAgrDvlpInc) entity).setCrsAgriDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+            CRSAgrDvlpInc agrEntity = (CRSAgrDvlpInc) entity;
+            agrEntity.setBranchCode(branchCode);
+            agrEntity.setDate(date);
+            agrEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
+            agrEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
+            agrEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
+            agrEntity.setReportMasterListIdFk(reportMasterIdFk);
+            agrEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
+            agrEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
+            agrEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
+            setProcFee(agrEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
         } else if (entity instanceof CRSHousDvlpInc) {
-            ((CRSHousDvlpInc) entity).setCrsHousDvlpProcfee(getValue(row, 5));  // Example index for 'procfee'
+            CRSHousDvlpInc housEntity = (CRSHousDvlpInc) entity;
+            housEntity.setBranchCode(branchCode);
+            housEntity.setDate(date);
+            housEntity.setOther(getValue(row, 1));  // Example: Column index for 'other'
+            housEntity.setTotal(getValue(row, 3));  // Example: Column index for 'total'
+            housEntity.setTotalAdvances(getValue(row, 4));  // Example: Column index for 'total advances'
+            housEntity.setReportMasterListIdFk(reportMasterIdFk);
+            housEntity.setRowId(getValue(row, row.size() - 3));  // Last 3rd column
+            housEntity.setSameRowId(getValue(row, row.size() - 2));  // 2nd last column
+            housEntity.setHardcodedFlag(getValue(row, row.size() - 1));  // Last column
+            setProcFee(housEntity, procFeeField, getValue(row, 5));  // Set procfee dynamically
         }
     }
 
     /**
-     * Safely retrieves the value from a row or returns an empty string if out of bounds.
-     *
-     * @param row The data row.
-     * @param index The index of the column to retrieve.
-     * @return The value at the given index or an empty string if out of bounds.
+     * Helper function to retrieve values from row.
+     * @param row The row of data.
+     * @param index The column index.
+     * @return The value at the specified column index.
      */
     private String getValue(List<String> row, int index) {
-        return index < row.size() ? row.get(index) : "";
+        if (row != null && row.size() > index) {
+            return row.get(index);
+        }
+        return "";
+    }
+
+    /**
+     * Dynamically sets the Procfee field in the entity.
+     */
+    private void setProcFee(Object entity, String procFeeField, String procFeeValue) {
+        if ("CrsInduDvlpProcfee".equals(procFeeField)) {
+            ((CRSInduDvlpInc) entity).setCrsInduDvlpProcfee(procFeeValue);
+        } else if ("CrsInfraDvlpProcfee".equals(procFeeField)) {
+            ((CRSInfraDvlpInc) entity).setCrsInfraDvlpProcfee(procFeeValue);
+        } else if ("CrsAgriDvlpProcfee".equals(procFeeField)) {
+            ((CRSAgrDvlpInc) entity).setCrsAgriDvlpProcfee(procFeeValue);
+        } else if ("CrsHouseDvlpProcfee".equals(procFeeField)) {
+            ((CRSHousDvlpInc) entity).setCrsHouseDvlpProcfee(procFeeValue);
+        }
     }
 }
