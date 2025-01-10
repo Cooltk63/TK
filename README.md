@@ -1,21 +1,7 @@
-<td>
-    <input type="text" id="tab1Title{{row.SRNO}}" name="NEW_TITLE"
-           class="form-control"
-           ng-model="row.NEW_TITLE"
-           ng-blur="validateInput(row)" <!-- Trigger validation on blur -->
-           value="{{row.NEW_TITLE}}" maxlength="99">
-</td>
+Vulnerability Description in Detail :It was observed in application attacker can able to modifies the parameters in client-server request to manupulate application behavior.
 
+Likely Impact:  An attacker might use this to perform unauthorized access to sensitive data. Unauthorized modification of data. Like changing the IDs or Price parameters in payment request.
 
-$scope.validateInput = function(row) {
-    const regex = /^[a-zA-Z0-9\s]*$/;  // Regex to allow alphanumeric characters and spaces
+Recommendation:It is recommended to implement validate all inputs on the server side to ensure data integrity.
+Use strict type checking and enforce data format constraints. 
 
-    // Check if input matches the regex
-    if (!regex.test(row.NEW_TITLE)) {
-        alert('Special characters are not allowed');
-        row.NEW_TITLE = '';  // Clear input value
-    } else {
-        // Enable buttons or other actions
-        angular.element('button').prop('disabled', false);
-    }
-};
