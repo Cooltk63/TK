@@ -1,29 +1,48 @@
-<td>
-    <input type="text" id="tab1Title{{row.SRNO}}" name="NEW_TITLE"
-           class="form-control"
-           pattern="^[a-zA-Z0-9\s]*$"  <!-- Regex to allow only alphanumeric characters and spaces -->
-           oninput="validateInput(this)"  <!-- Calling validateInput function on input change -->
-           value="{{row.NEW_TITLE}}" maxlength="99">
-</td>
-
-
-xxx
-
 // Function to validate the input
 function validateInput(input) {
-    const regex = /^[a-zA-Z0-9\s]*$/;  // Allow alphanumeric characters and spaces
+    const regex = /^[a-zA-Z0-9\s]*$/;  // Regex to allow only alphanumeric characters and spaces
+    const errorMessage = 'Special characters are not allowed';
+
     if (!regex.test(input.value)) {
-        input.setCustomValidity('Special characters are not allowed');  // Set custom error message
+        input.setCustomValidity(errorMessage);  // Set custom error message
     } else {
         input.setCustomValidity('');  // Clear error message
     }
+
+    // Disable other actions if the input is invalid
+    managePageInteraction(input);
 }
 
-// Function to prevent interaction if validation fails
+// Function to disable interactions with other elements if the input is invalid
+function managePageInteraction(input) {
+    const isInvalid = input.validity.invalid;
+
+    // Disable the submit button or any other action if input is invalid
+    const buttons = document.querySelectorAll('button, input[type="button"], input[type="submit"]');
+    buttons.forEach(button => {
+        if (isInvalid) {
+            button.disabled = true;  // Disable button if input is invalid
+        } else {
+            button.disabled = false;  // Enable button if input is valid
+        }
+    });
+
+    // Optionally, disable other form elements like links
+    const clickableElements = document.querySelectorAll('a, button, input');
+    clickableElements.forEach(element => {
+        if (isInvalid) {
+            element.setAttribute('disabled', 'true');  // Disable clickable elements
+        } else {
+            element.removeAttribute('disabled');
+        }
+    });
+}
+
+// Event listener to prevent interactions when the page is invalid
 document.addEventListener('click', function(e) {
-    const inputField = document.querySelector('input[type="text"]:invalid');  // Get invalid input field
-    if (inputField) {
-        e.preventDefault();  // Prevent click on other elements
-        alert('Please fix the input error before proceeding');  // Optionally show a message
+    const invalidInput = document.querySelector('input[type="text"]:invalid');
+    if (invalidInput) {
+        e.preventDefault();  // Prevent click actions
+        alert('Please fix the input error before proceeding');
     }
 });
