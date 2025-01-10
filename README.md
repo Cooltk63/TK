@@ -46,3 +46,20 @@ document.addEventListener('click', function(e) {
         alert('Please fix the input error before proceeding');
     }
 });
+
+
+,,,,,,
+
+function validateInput(input) {
+    const regex = /^[a-zA-Z0-9\s]*$/;  // Regex to allow alphanumeric characters and spaces
+    const isValid = regex.test(input.value);
+
+    if (!isValid) {
+        input.setCustomValidity('Special characters are not allowed');  // Set custom error message
+    } else {
+        input.setCustomValidity('');  // Clear error message
+    }
+
+    // Disable the entire page if invalid
+    document.body.style.pointerEvents = isValid ? 'auto' : 'none'; // Prevent clicks on the page
+}
