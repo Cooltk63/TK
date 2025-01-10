@@ -1,65 +1,21 @@
-// Function to validate the input
-function validateInput(input) {
-    const regex = /^[a-zA-Z0-9\s]*$/;  // Regex to allow only alphanumeric characters and spaces
-    const errorMessage = 'Special characters are not allowed';
-
-    if (!regex.test(input.value)) {
-        input.setCustomValidity(errorMessage);  // Set custom error message
-    } else {
-        input.setCustomValidity('');  // Clear error message
-    }
-
-    // Disable other actions if the input is invalid
-    managePageInteraction(input);
-}
-
-// Function to disable interactions with other elements if the input is invalid
-function managePageInteraction(input) {
-    const isInvalid = input.validity.invalid;
-
-    // Disable the submit button or any other action if input is invalid
-    const buttons = document.querySelectorAll('button, input[type="button"], input[type="submit"]');
-    buttons.forEach(button => {
-        if (isInvalid) {
-            button.disabled = true;  // Disable button if input is invalid
-        } else {
-            button.disabled = false;  // Enable button if input is valid
-        }
-    });
-
-    // Optionally, disable other form elements like links
-    const clickableElements = document.querySelectorAll('a, button, input');
-    clickableElements.forEach(element => {
-        if (isInvalid) {
-            element.setAttribute('disabled', 'true');  // Disable clickable elements
-        } else {
-            element.removeAttribute('disabled');
-        }
-    });
-}
-
-// Event listener to prevent interactions when the page is invalid
-document.addEventListener('click', function(e) {
-    const invalidInput = document.querySelector('input[type="text"]:invalid');
-    if (invalidInput) {
-        e.preventDefault();  // Prevent click actions
-        alert('Please fix the input error before proceeding');
-    }
-});
+<td>
+    <input type="text" id="tab1Title{{row.SRNO}}" name="NEW_TITLE"
+           class="form-control"
+           ng-model="row.NEW_TITLE"
+           ng-blur="validateInput(row)" <!-- Trigger validation on blur -->
+           value="{{row.NEW_TITLE}}" maxlength="99">
+</td>
 
 
-,,,,,,
-
-function validateInput(input) {
+$scope.validateInput = function(row) {
     const regex = /^[a-zA-Z0-9\s]*$/;  // Regex to allow alphanumeric characters and spaces
-    const isValid = regex.test(input.value);
 
-    if (!isValid) {
-        input.setCustomValidity('Special characters are not allowed');  // Set custom error message
+    // Check if input matches the regex
+    if (!regex.test(row.NEW_TITLE)) {
+        alert('Special characters are not allowed');
+        row.NEW_TITLE = '';  // Clear input value
     } else {
-        input.setCustomValidity('');  // Clear error message
+        // Enable buttons or other actions
+        angular.element('button').prop('disabled', false);
     }
-
-    // Disable the entire page if invalid
-    document.body.style.pointerEvents = isValid ? 'auto' : 'none'; // Prevent clicks on the page
-}
+};
