@@ -1,42 +1,25 @@
-public String generateSignature(String uri, String secretKey) throws Exception {
-    Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-    SecretKeySpec secret_key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
-    sha256_HMAC.init(secret_key);
-    return Base64.getEncoder().encodeToString(sha256_HMAC.doFinal(uri.getBytes()));
-}
+ let params = {
+            'salt': salt,
+            'iv': iv,
+            'data': aesUtil.encrypt(salt, iv, passphrase, JSON.stringify(payload)),
+        }
+        
+        liabilitiesMasterFactory.deleteRowData(params).then(function (data) {
+            if (data) {
+            // Some Processing
+            }
+            }
 
 
-@PostMapping("/deleteRow")
-public ResponseEntity<String> deleteRow(
-    @RequestHeader("X-Signature") String signature,
-    HttpServletRequest request,
-    @RequestBody Map<String, Object> payload) throws Exception {
-
-    String secretKey = "mySecretKey";  // Keep this secure
-    String expectedSignature = generateSignature(request.getRequestURI(), secretKey);
-
-    if (!expectedSignature.equals(signature)) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid signature. Potential tampering detected.");
+This is my service.js file code to call the backend URI
+             function deleteRowData(params) {
+             let REST_SERVICE_URI_3 = './IFRS/liabiltiyMaster/delete';
+        let deferred = $q.defer();
+        $http.post(REST_SERVICE_URI_3, params).then(function (response) {
+            deferred.resolve(response.data);
+        }, function (errResponse) {
+            console.error('Error while deleteRowData call respponse :' + errResponse);
+            deferred.reject(errResponse);
+        });
+        return deferred.promise;
     }
-
-    // Proceed with deletion logic
-    String rowId = (String) payload.get("rowId");
-    return ResponseEntity.ok("Row deleted successfully.");
-}
-
-
-var uri = '/BS/IFRS/deleteRow';
-var signature = btoa(uri + 'mySecretKey');  // Basic encoding for demonstration
-
-$http({
-    method: 'POST',
-    url: uri,
-    headers: {
-        'X-Signature': signature
-    },
-    data: {
-        rowId: '456'
-    }
-});
-
-earl;ier you have provided me this way to resolved this issue using btoa give me the solution using this way and how does it protec the URI manipulation or secure my uri request
