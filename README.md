@@ -1,67 +1,52 @@
-app.config(function ($httpProvider) {
-    $httpProvider.interceptors.push([
-        '$injector',
-        function ($injector) {
-            return $injector.get('AuthInterceptor');
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
+
+public class SecretKeyEncryption {
+
+    // Method to generate a Secret Key
+    public static SecretKey generateSecretKey() throws Exception {
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        keyGen.init(128); // AES supports 128, 192, or 256 bits (use 256 if your system supports it)
+        return keyGen.generateKey();
+    }
+
+    // Method to encrypt data
+    public static String encrypt(String data, SecretKey secretKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
+
+    // Method to decrypt data
+    public static String decrypt(String encryptedData, SecretKey secretKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+        return new String(decryptedBytes);
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Generate a secret key
+            SecretKey secretKey = generateSecretKey();
+
+            // Data to be encrypted
+            String originalData = "This is a secret message";
+
+            // Encrypt the data
+            String encryptedData = encrypt(originalData, secretKey);
+            System.out.println("Encrypted Data: " + encryptedData);
+
+            // Decrypt the data
+            String decryptedData = decrypt(encryptedData, secretKey);
+            System.out.println("Decrypted Data: " + decryptedData);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    ]);
-    // AppSec Change Here-1
-    // New Change for Additional Token Security- AppSec
-    // START
-
-    $httpProvider.interceptors.push(function ($q, $window) {
-        return {
-            request: function (config) {
-                // [CHANGE-APP-2] Retrieve token from localStorage
-                var token = $window.localStorage.getItem('token');
-
-                if (token) {
-                    try {
-                        // [CHANGE-APP-3] Decode the token payload for validation
-                        var payload = JSON.parse(atob(token.split('.')[1]));
-                        var currentTime = Math.floor(Date.now() / 1000);
-
-                        // [CHANGE-APP-4] Check if the token is expired
-                        if (payload.exp && payload.exp < currentTime) {
-                            console.warn('Token has expired'); // Log expiration
-                            $window.localStorage.removeItem('token'); // Remove expired token
-                        } else {
-                            // [CHANGE-APP-5] Attach valid Bearer token to headers
-                            config.headers.Authorization = 'Bearer ' + token;
-                        }
-                    } catch (e) {
-                        // [CHANGE-APP-6] Handle invalid token format
-                        console.error('Invalid token format:', e.message);
-                        $window.localStorage.removeItem('token');
-                    }
-                }
-
-                return config;
-            },
-            responseError: function (rejection) {
-                // [CHANGE-APP-7] Handle Unauthorized (401) errors
-                if (rejection.status === 401) {
-                    console.warn('Unauthorized access - Token may be invalid or expired');
-                    $window.localStorage.removeItem('token'); // Clear invalid token
-                }
-                return $q.reject(rejection);
-            }
-        };
-    });
-
-
-    // END
-
-});
-
-app.config(['KeepaliveProvider', 'IdleProvider', 'TitleProvider', function (KeepaliveProvider, IdleProvider, TitleProvider) {
-    TitleProvider.enabled(true);
-    IdleProvider.idle(900);    // 5 minutes idle pop up will come
-    IdleProvider.timeout(10);   // popup showing time in seconds
-    KeepaliveProvider.interval(10);   // 
-}]);
-
-
-app.run(['Idle', function (Idle) {
-    Idle.watch();
-}]);
+    }
+}
