@@ -1,139 +1,18 @@
-package com.tcs.security;
+SELECT to_char(AX.MODE_PAYMENT_DT,'yyyy-mm-dd') as MODE_PAYMENT_DT,  
+           MODE_NATURE, MODE_PAYEE,  
+           NVL(MODE_PAN,' ')MODE_PAN,  
+           CASE MODE_TYPEBGL 
+           WHEN '1' THEN 'Debited/ Credited to P&L BGL'  
+           WHEN '2' THEN 'Debited/ Credited to Balance Sheet BGL'  
+           END AS MODE_TYPEBGL, 
+           NVl(MODE_AMT,0)MODE_AMT,  
+           NVl(MODE_REASON,' ')MODE_REASON,  
+           NVL(FILE_NAME, ' ')FILE_NAME,  
+           MODE_ID,
+           MODE_ID AS MROW_ID,'false'  
+           FROM TAR_REPORTS_MASTER_LIST RM ,TAR_MODE AX  
+           left outer join TAR_FILE fx on fx.TAR_RML_FK=ax.TAR_RML_FK and fx.FILE_SEQ_ID=ax.MODE_ID   
+           WHERE RM.REPORT_ID=AX.TAR_RML_FK AND RM.REPORT_ID='1777772' ORDER BY AX.MODE_ID;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
-public class JWTTokenAuthFilter extends OncePerRequestFilter {
-    public static final String JWT_KEY = "JWT-TOKEN-SECRET";
-    private static final List<Pattern> AUTH_ROUTES = new ArrayList<>();
-    private static final List<String> NO_AUTH_ROUTES = new ArrayList<>();
-    private static final List<Pattern> NO_AUTH_ROUTES_PATTERNS = new ArrayList<>();
-
-    static {
-        AUTH_ROUTES.add(Pattern.compile("/BS/*"));
-        NO_AUTH_ROUTES.add("/BS/Security/login");
-        NO_AUTH_ROUTES.add("/BS/Security/logout");
-        NO_AUTH_ROUTES.add("/BS/Security/reNewSession");
-        NO_AUTH_ROUTES.add("/BS/index.jsp");
-        NO_AUTH_ROUTES.add("/BS/views/login.jsp");
-        NO_AUTH_ROUTES.add("/BS/pdfStream.jsp");
-        NO_AUTH_ROUTES.add("/BS/displaySignedPDF.jsp");
-        NO_AUTH_ROUTES.add("/BS/signPDF.jsp");
-        NO_AUTH_ROUTES.add("/BS/favicon.ico");
-        NO_AUTH_ROUTES.add("/BS/signapplet.jar.pack.gz");
-        NO_AUTH_ROUTES.add("/BS/Admin/downloadSignedReport");
-        NO_AUTH_ROUTES.add("/BS/displayPDF.jsp");
-        NO_AUTH_ROUTES.add("/BS/acceptReport.jsp");
-        NO_AUTH_ROUTES_PATTERNS.add(Pattern.compile("/BS/resources/*"));
-        NO_AUTH_ROUTES_PATTERNS.add(Pattern.compile("/BS/assets/*"));
-    }
-
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        String authorizationHeader = request.getHeader("authorization");
-        String authenticationHeader = request.getHeader("authentication");
-        String route = request.getRequestURI();
-
-        // no auth route matching
-        boolean needsAuthentication = false;
-        for (Pattern p : AUTH_ROUTES) {
-            if (p.matcher(route).matches()) {
-                needsAuthentication = true;
-                break;
-            }
-        }
-
-        if (route.startsWith("/BS/")) {
-            needsAuthentication = true;
-        }
-
-        if (NO_AUTH_ROUTES.contains(route)) {
-            needsAuthentication = false;
-        }
-
-        for (Pattern p : NO_AUTH_ROUTES_PATTERNS) {
-            if (p.matcher(route).find()) {
-                needsAuthentication = false;
-                break;
-            }
-        }
-
-        // Checking whether the current route needs to be authenticated
-        if (needsAuthentication) {
-            // Check for authorization header presence
-            String authHeader = null;
-            if (authorizationHeader == null || authorizationHeader.equalsIgnoreCase("")) {
-                if (authenticationHeader == null || authenticationHeader.equalsIgnoreCase("")) {
-                    authHeader = null;
-                } else {
-                    authHeader = authenticationHeader;
-                }
-            } else {
-                authHeader = authorizationHeader;
-            }
-
-            if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
-                handleLogoutRedirect(response, "Missing or invalid Authorization header.");
-                return;
-            }
-
-            final String token = authHeader.substring(7); // The part after "Bearer "
-
-            try {
-                final Claims claims = Jwts.parser().setSigningKey(JWT_KEY)
-                        .parseClaimsJws(token).getBody();
-
-                // Call validateSession without altering existing logic
-                boolean validation = validateSession(request, claims);
-                if (!validation) {
-                    // Handle token mismatch and redirect to logout
-                    handleLogoutRedirect(response, "Token mismatch detected. Redirecting to logout.");
-                    return;
-                }
-
-                request.setAttribute("claims", claims);
-                filterChain.doFilter(request, response);
-
-            } catch (final Exception e) {
-                handleLogoutRedirect(response, "Invalid token. Cause: " + e.getMessage());
-                return;
-            }
-        } else {
-            filterChain.doFilter(request, response);
-        }
-    }
-
-    // Validate the session (userId key from JWT matches session userId)
-    private boolean validateSession(HttpServletRequest request, Claims claims) {
-        String userIdFromToken = claims.get("userId", String.class); // Key from your frontend JWT payload
-        String userIdFromSession = (String) request.getSession().getAttribute("userId");
-
-        logger.info("userIdFromToken: " + userIdFromToken);
-        logger.info("userIdFromSession: " + userIdFromSession);
-
-        if (userIdFromSession == null || !userIdFromSession.equals(userIdFromToken)) {
-            System.err.println("User mismatch detected. Possible token manipulation.");
-            return false;
-        }
-        return true;
-    }
-
-    // Redirect the user to the logout page on token errors
-    private void handleLogoutRedirect(HttpServletResponse response, String message) throws IOException {
-        System.err.println("Unauthorized Access: " + message); // Log the error for debugging
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Set the status code to 401
-        response.sendRedirect("/BS/Security/logout"); // Redirect the user to the logout page
-    }
-}
+           This query returnng the 2 output ros even if i only had a single entry inside db aginast the subkissionID
+           
