@@ -1,105 +1,69 @@
-@Transactional
-@Override
-public Map<String, Object> saveRowData(Map<String, Object> map) {
-    Map<String, Object> result = new HashMap<>();
-    try {
-        // Extract data and user details from the input map
-        Map<String, Object> data = (Map<String, Object>) map.get("data");
-        Map<String, String> loginUserData = (Map<String, String>) map.get("user");
+ Updating existing data for RowId: {}4837
+2025-01-22T19:49:23.580+05:30  INFO 18788 --- [TARReportsService] [nio-1000-exec-1] c.t.r.services.ST08ServiceImpl           : Unexpected error: {}Supplied id had wrong type: entity 'com.tar.reportService.models.TAR_MODE' has id type 'class com.tar.reportService.models.TAR_MODE_Extended' but supplied id was of type 'class java.lang.Integer'
+2025-01-22T19:49:23.580+05:30  INFO 18788 --- [TARReportsService] [nio-1000-exec-1] c.t.r.services.RenderServiceImpl         : result>>>{status=false}
+2025-01-22T19:49:23.587+05:30 ERROR 18788 --- [TARReportsService] [nio-1000-exec-1] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.transaction.UnexpectedRollbackException: Transaction silently rolled back because it has been marked as rollback-only] with root cause
 
-        log.info("Data Map: {}", data);
-        log.info("User Map: {}", loginUserData);
+org.springframework.transaction.UnexpectedRollbackException: Transaction silently rolled back because it has been marked as rollback-only
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:804) ~[spring-tx-6.1.8.jar:6.1.8]
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758) ~[spring-tx-6.1.8.jar:6.1.8]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:676) ~[spring-tx-6.1.8.jar:6.1.8]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:426) ~[spring-tx-6.1.8.jar:6.1.8]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.1.8.jar:6.1.8]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.1.8.jar:6.1.8]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:768) ~[spring-aop-6.1.8.jar:6.1.8]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:720) ~[spring-aop-6.1.8.jar:6.1.8]
+	at com.tar.renderService.services.RenderServiceImpl$$SpringCGLIB$$0.saveData(<generated>) ~[classes/:na]
+	at com.tar.renderService.controllers.RenderController.saveData(RenderController.java:29) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.24.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.8.jar:6.1.8]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.24.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:389) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.24.jar:10.1.24]
+	at java.base/java.lang.Thread.run(Thread.java:1570) ~[na:na]
 
-        // Extract submission ID
-        String submissionId = data.get("submissionId").toString();
-
-        // Extract the list of row data (List<List<String>> format)
-        List<String> dataList = (List<String>) data.get("value");
-
-        // Parse quarter end date and branch code from user data
-        Date quarterEndDate = new SimpleDateFormat("dd/MM/yyyy").parse(loginUserData.get("quarterEndDate"));
-        String branchCode = loginUserData.get("branch_code");
-
-        log.info("Processing DataList: {}", dataList);
-
-        // Extract row ID from 7th position
-        String rowIdStr = dataList.get(7).trim();
-
-        if (rowIdStr.isEmpty()) {
-            // If row ID is empty or null, insert new data
-            log.info("Inserting new data as rowId is empty or null");
-            TAR_MODE newEntity = setEntity(null, dataList, quarterEndDate, branchCode, submissionId);
-            tarModeRepository.save(newEntity);
-
-            result.put("RowId", newEntity.getModeid());
-            result.put("status", true);
-            log.info("New data inserted with RowId: {}", newEntity.getModeid());
-        } else {
-            // Parse row ID and check if the record exists
-            int rowId = Integer.parseInt(rowIdStr);
-
-            if (tarModeRepository.existsByModeid(rowId)) {
-                // If record exists, update the data
-                log.info("Updating existing data for RowId: {}", rowId);
-                TAR_MODE existingEntity = tarModeRepository.findById(rowId).orElseThrow(() -> 
-                    new RuntimeException("Record not found with RowId: " + rowId)
-                );
-                TAR_MODE updatedEntity = setEntity(existingEntity, dataList, quarterEndDate, branchCode, submissionId);
-                tarModeRepository.save(updatedEntity);
-
-                result.put("RowId", updatedEntity.getModeid());
-                result.put("status", true);
-                log.info("Data updated for RowId: {}", rowId);
-            } else {
-                // If record does not exist, insert new data with provided rowId
-                log.info("No existing data for RowId: {}. Inserting new data.", rowId);
-                TAR_MODE newEntity = setEntity(null, dataList, quarterEndDate, branchCode, submissionId);
-                newEntity.setModeid(rowId); // Set provided RowId as modeid
-                tarModeRepository.save(newEntity);
-
-                result.put("RowId", newEntity.getModeid());
-                result.put("status", true);
-                log.info("New data inserted with provided RowId: {}", rowId);
-            }
-        }
-    } catch (ParseException e) {
-        log.error("Error parsing date: {}", e.getMessage());
-        result.put("status", false);
-    } catch (RuntimeException e) {
-        log.error("Unexpected error: {}", e.getMessage());
-        result.put("status", false);
-    }
-
-    return result;
-}
-
-
-xxxx
-
-private TAR_MODE setEntity(TAR_MODE entity, List<String> dataList, Date quarterEndDate, String branchCode, String submissionId) {
-    // If no existing entity, create a new one
-    if (entity == null) {
-        entity = new TAR_MODE();
-    }
-
-    try {
-        // Parse and set the payment date
-        entity.setMode_payment_dt(new SimpleDateFormat("dd/MM/yyyy").parse(dataList.get(0)));
-    } catch (ParseException e) {
-        log.info("Invalid payment date '{}'. Setting as null.", dataList.get(0));
-        entity.setMode_payment_dt(null);
-    }
-
-    // Map data fields directly
-    entity.setMode_nature(dataList.get(1));           // Nature of the payment
-    entity.setMode_payee(dataList.get(2));            // Payee name
-    entity.setMode_pan(dataList.get(3));              // PAN number
-    entity.setMode_typebgl(dataList.get(4).equalsIgnoreCase("Debited / Credited to P&L BGL") ? "1" : "2");
-    entity.setMode_amt(parseAmount(dataList.get(5))); // Safely parse and set the amount
-    entity.setMode_reason(dataList.get(6));           // Reason for payment
-    entity.setMode_branch(branchCode);                // Branch code
-    entity.setMode_date(quarterEndDate);              // Quarter end date
-    entity.setReportSubmissionId(submissionId);       // Submission ID
-
-    return entity;
-}
