@@ -1,75 +1,68 @@
-@Service
-public class TarModeService {
+package com.tar.reportService.repository;
 
-    @Autowired
-    private TarModeRepository tarModeRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
+
+import com.tar.reportService.models.TAR_MODE;
+
+import java.util.Optional;
+
+public interface TarModeRepository extends JpaRepository<TAR_MODE, Integer> {
 
     /**
-     * Saves or updates TAR_MODE data based on the provided rowDataList.
-     * Returns a map with row number and status for each operation.
+     * Find TAR_MODE by modeId.
      *
-     * @param rowDataList List of rows where each row contains TAR_MODE data as strings.
-     * @return Map with "rowNum" as the row index and "status" as true/false for success or failure.
+     * @param modeId The modeId to search for.
+     * @return An Optional containing the TAR_MODE entity if it exists.
      */
-    public Map<String, Object> saveRowData(List<List<String>> rowDataList) {
-        Map<String, Object> resultMap = new HashMap<>();
-        int rowNum = 0;
+    Optional<TAR_MODE> findByModeid(@Param("modeId") int modeId);
 
-        for (List<String> rowData : rowDataList) {
-            rowNum++; // Increment row index
-            try {
-                String rowId = rowData.get(7); // Extract row ID from the 8th position
+    /**
+     * Check if a TAR_MODE record exists by modeId.
+     *
+     * @param modeId The modeId to check.
+     * @return True if a record exists, false otherwise.
+     */
+    boolean existsByModeid(@Param("modeId") int modeId);
+}
 
-                TAR_MODE tarMode;
-                if (rowId == null || rowId.isEmpty()) {
-                    // If row ID is not provided, create a new entity for insertion
-                    tarMode = new TAR_MODE();
-                } else {
-                    int modeId = Integer.parseInt(rowId); // Parse the mode ID
-                    // Check if the modeId already exists in the database
-                    tarMode = tarModeRepository.findByModeid(modeId).orElse(new TAR_MODE());
-                    tarMode.setModeid(modeId); // Set mode ID in the entity
-                }
+xx
 
-                // Populate the TAR_MODE entity using the setEntity method
-                setEntity(rowData, tarMode);
+public Map<String, Object> saveRowData(List<String> dataList) {
+    Map<String, Object> result = new HashMap<>();
 
-                // Save the entity (insert or update)
-                TAR_MODE savedEntity = tarModeRepository.save(tarMode);
+    try {
+        // Fetch modeId from the 8th position of the dataList
+        int modeId = Integer.parseInt(dataList.get(7));
 
-                // Add success status and mode ID to the result map
-                resultMap.put("rowNum", rowNum);
-                resultMap.put("status", true);
-                resultMap.put("modeId", savedEntity.getModeid());
-            } catch (Exception e) {
-                // Handle any errors and add failure status to the result map
-                resultMap.put("rowNum", rowNum);
-                resultMap.put("status", false);
-                resultMap.put("error", e.getMessage());
-            }
+        // Check if a record exists with the given modeId
+        if (tarModeRepository.existsByModeid(modeId)) {
+            // Fetch the existing entity
+            TAR_MODE existingEntity = tarModeRepository.findByModeid(modeId).orElseThrow(
+                () -> new IllegalStateException("Data not found for the given modeId: " + modeId)
+            );
+
+            // Update the entity with new data
+            setEntity(existingEntity, dataList);
+            tarModeRepository.save(existingEntity);
+
+            result.put("modeId", modeId);
+            result.put("status", true);
+            result.put("message", "Record updated successfully");
+        } else {
+            // Create a new entity and save it
+            TAR_MODE newEntity = new TAR_MODE();
+            setEntity(newEntity, dataList);
+            TAR_MODE savedEntity = tarModeRepository.save(newEntity);
+
+            result.put("modeId", savedEntity.getModeid());
+            result.put("status", true);
+            result.put("message", "Record inserted successfully");
         }
-
-        return resultMap;
+    } catch (Exception e) {
+        result.put("status", false);
+        result.put("message", "Failed to save or update data: " + e.getMessage());
     }
 
-    /**
-     * Maps data from the rowData list to the TAR_MODE entity based on the predefined index positions.
-     *
-     * @param rowData List of string values representing the row data.
-     * @param tarMode The TAR_MODE entity to populate.
-     */
-    private void setEntity(List<String> rowData, TAR_MODE tarMode) {
-        tarMode.setMode_branch(rowData.get(0)); // mode_branch at index 0
-        tarMode.setMode_date(java.sql.Date.valueOf(rowData.get(1))); // mode_date at index 1, in 'yyyy-MM-dd' format
-        tarMode.setMode_account(Integer.parseInt(rowData.get(2))); // mode_account at index 2
-        tarMode.setMode_amt(Integer.parseInt(rowData.get(3))); // mode_amt at index 3
-        tarMode.setMode_nature(rowData.get(4)); // mode_nature at index 4
-        tarMode.setMode_pan(rowData.get(5)); // mode_pan at index 5
-        tarMode.setModeid(Integer.parseInt(rowData.get(6))); // mode_id at index 6
-        tarMode.setMode_payee(rowData.get(7)); // mode_payee at index 7
-        tarMode.setMode_payment_dt(java.sql.Date.valueOf(rowData.get(8))); // mode_payment_dt at index 8
-        tarMode.setMode_reason(rowData.get(9)); // mode_reason at index 9
-        tarMode.setMode_typebgl(rowData.get(10)); // mode_typebgl at index 10
-        tarMode.setReportSubmissionId(rowData.get(11)); // reportSubmissionId at index 11
-    }
+    return result;
 }
