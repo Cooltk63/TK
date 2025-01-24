@@ -1,69 +1,34 @@
-public Map<String, Object> saveRowData(List<String> dataList) {
-    Map<String, Object> result = new HashMap<>();
+import java.awt.Robot;
+import java.awt.AWTException;
+import java.awt.Point;
+import java.awt.MouseInfo;
+import java.util.Random;
 
-    // Validate that dataList has at least 8 elements
-    if (dataList.size() < 8) {
-        throw new IllegalArgumentException("Invalid data list. At least 8 elements are required.");
-    }
-
-    // Extract the rowId from the 8th position
-    String rowIdString = dataList.get(7).trim();
-
-    // Create a new entity object
-    TAR_MODE entity = new TAR_MODE();
-
-    // Set common entity fields using setEntity method
-    setEntity(entity, dataList);
-
-    if (rowIdString.isEmpty()) {
-        // Case 1: Insert new row when rowId is empty
-        log.info("Inserting a new row as rowId is empty.");
-        TAR_MODE savedEntity = tarModeRepository.save(entity); // Save entity and get generated modeId
-        result.put("rowId", savedEntity.getModeid());
-        result.put("status", true);
-    } else {
-        // Case 2: Update existing row when rowId is provided
+public class MouseMover {
+    public static void main(String[] args) {
         try {
-            int rowId = Integer.parseInt(rowIdString); // Convert rowId to integer
-            TAR_MODE existingEntity = tarModeRepository.findByModeid(rowId);
-
-            if (existingEntity != null) {
-                log.info("Updating existing row with modeId: {}", rowId);
-                entity.setModeid(rowId); // Set the existing modeId for update
-                TAR_MODE updatedEntity = tarModeRepository.save(entity); // Save updated entity
-                result.put("rowId", updatedEntity.getModeid());
-                result.put("status", true);
-            } else {
-                log.warn("No record found with modeId: {}. Update failed.", rowId);
-                result.put("rowId", rowId);
-                result.put("status", false);
+            Robot robot = new Robot();
+            Random random = new Random();
+            System.out.println("Mouse Mover started. Press Ctrl+C to stop.");
+            
+            while (true) {
+                // Get the current mouse location
+                Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
+                int x = (int) mouseLocation.getX();
+                int y = (int) mouseLocation.getY();
+                
+                // Move the mouse slightly
+                int offsetX = random.nextInt(10) - 5; // Random offset between -5 and 5
+                int offsetY = random.nextInt(10) - 5;
+                robot.mouseMove(x + offsetX, y + offsetY);
+                
+                // Wait for 4-5 seconds
+                Thread.sleep(4000 + random.nextInt(1000)); // Random delay between 4000ms and 5000ms
             }
-        } catch (NumberFormatException e) {
-            log.error("Invalid rowId format: {}. Expected a number.", rowIdString);
-            throw new IllegalArgumentException("Invalid rowId format. Must be an integer.", e);
+        } catch (AWTException e) {
+            System.err.println("Error: Unable to control the mouse. " + e.getMessage());
+        } catch (InterruptedException e) {
+            System.err.println("Error: Program interrupted. " + e.getMessage());
         }
     }
-
-    return result;
-}
-xxxx
-
-private void setEntity(TAR_MODE entity, List<String> dataList) {
-    // Populate entity fields from dataList
-    entity.setBranchCode(dataList.get(0).trim());
-    entity.setModeName(dataList.get(1).trim());
-    entity.setDescription(dataList.get(2).trim());
-    entity.setQuarterEndDate(dataList.get(3).trim());
-    entity.setYear(dataList.get(4).trim());
-    entity.setStatus(dataList.get(5).trim());
-    entity.setRemarks(dataList.get(6).trim());
-    // dataList.get(7) is rowId and handled separately in saveRowData
-}
-
-
-xxx
-
-@Repository
-public interface TarModeRepository extends JpaRepository<TAR_MODE, Integer> {
-    TAR_MODE findByModeid(int modeId); // Method to fetch an entity by modeId
 }
