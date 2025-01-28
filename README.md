@@ -1,34 +1,40 @@
-import java.awt.Robot;
-import java.awt.AWTException;
-import java.awt.Point;
-import java.awt.MouseInfo;
-import java.util.Random;
+[28/01, 3:31 pm] Falguni Nakhwa - TCS: import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
 
-public class MouseMover {
-    public static void main(String[] args) {
-        try {
-            Robot robot = new Robot();
-            Random random = new Random();
-            System.out.println("Mouse Mover started. Press Ctrl+C to stop.");
-            
-            while (true) {
-                // Get the current mouse location
-                Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
-                int x = (int) mouseLocation.getX();
-                int y = (int) mouseLocation.getY();
-                
-                // Move the mouse slightly
-                int offsetX = random.nextInt(10) - 5; // Random offset between -5 and 5
-                int offsetY = random.nextInt(10) - 5;
-                robot.mouseMove(x + offsetX, y + offsetY);
-                
-                // Wait for 4-5 seconds
-                Thread.sleep(4000 + random.nextInt(1000)); // Random delay between 4000ms and 5000ms
-            }
-        } catch (AWTException e) {
-            System.err.println("Error: Unable to control the mouse. " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Error: Program interrupted. " + e.getMessage());
+import java.io.IOException;
+
+@Component
+public class HSTSFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        if (response instanceof HttpServletResponse) {
+            HttpServletResponse httpResponse = (HttpServletResponse) response;
+            httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         }
+
+        chain.doFilter(request, response);
     }
 }
+[28/01, 3:38 pm] Falguni Nakhwa - TCS: Strict-Transport-Security: max-age=31536000; includeSubDomains
+[28/01, 3:45 pm] Falguni Nakhwa - TCS: <?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app">
+    <container-descriptor>
+        <prefer-application-packages>
+            <package-name>javax.servlet.*</package-name>
+        </prefer-application-packages>
+    </container-descriptor>
+    <header-parameters>
+        <header-parameter>
+            <name>Strict-Transport-Security</name>
+            <value>max-age=31536000; includeSubDomains</value>
+        </header-parameter>
+    </header-parameters>
+</weblogic-web-app>
