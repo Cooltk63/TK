@@ -1,40 +1,22 @@
-[28/01, 3:31 pm] Falguni Nakhwa - TCS: import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
+Subject: Reminder: Submit Daily Task Updates with Time Segregation
 
-import java.io.IOException;
+Dear Team,
 
-@Component
-public class HSTSFilter implements Filter {
+As a reminder, while submitting your daily task updates, please ensure that if you are working on multiple tasks, you segregate the time spent on each task and also mention the total time worked for the day.
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+This will help in maintaining accurate records and ensuring transparency in our workflow. Kindly make it a practice to follow this format going forward.
 
-        if (response instanceof HttpServletResponse) {
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
-            httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-        }
+Let me know if you have any questions.
 
-        chain.doFilter(request, response);
-    }
-}
-[28/01, 3:38 pm] Falguni Nakhwa - TCS: Strict-Transport-Security: max-age=31536000; includeSubDomains
-[28/01, 3:45 pm] Falguni Nakhwa - TCS: <?xml version="1.0" encoding="UTF-8"?>
-<weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app">
-    <container-descriptor>
-        <prefer-application-packages>
-            <package-name>javax.servlet.*</package-name>
-        </prefer-application-packages>
-    </container-descriptor>
-    <header-parameters>
-        <header-parameter>
-            <name>Strict-Transport-Security</name>
-            <value>max-age=31536000; includeSubDomains</value>
-        </header-parameter>
-    </header-parameters>
-</weblogic-web-app>
+Example Format:
+
+Task 1: [Description] – [Time Spent]
+
+Task 2: [Description] – [Time Spent]
+
+Total Time Worked: [Total Hours]
+
+
+Looking forward to your timely updates.
+
+Best regards,
