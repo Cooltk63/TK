@@ -1,4 +1,4 @@
-#this is the main application.properties
+#**this is the main application.properties**
 spring.application.name=checkerWorklistService
 
 #Default Profile is Development
@@ -20,33 +20,34 @@ spring.mvc.view.prefix=/templates/
 spring.mvc.view.suffix=.html
 spring.application.name=checkerWorklistService
 
-application-dev.properties
+**application-dev.properties**
 # For DEV Environment
 spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
 spring.datasource.username=XYZ
 spring.datasource.password=XYZ
 
 for Dev tomcat server set the below line
-spring.profiles.active=dev
+**spring.profiles.active=dev**
 
-application-prod.properties
+**application-prod.properties**
 # For PROD Environment
 spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
 spring.datasource.username=XYZ
 spring.datasource.password=XYZ
 
 for Prod tomcat server set the below line
-spring.profiles.active=dev
+**spring.profiles.active=dev
+**
 
-
-application-uat.properties
+**application-uat.properties**
 # For UAT Environment
 spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
 spring.datasource.username=XYZ
 spring.datasource.password=XYZ
 
 for Uat tomcat server set the below line
-spring.profiles.active=uat
+**spring.profiles.active=uat**
 
-
+Is it correct every environment added line will override the main application.properties file (spring.profiles.active=dev) this line 
+I had bit confusion
 
