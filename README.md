@@ -1,73 +1,52 @@
-java.lang.NoClassDefFoundError: org/bouncycastle/asn1/ASN1EncodableVector
-        at org.bouncycastle.asn1.ASN1InputStream.buildEncodableVector(Unknown Source) ~[bcprov-jdk18on-1.76.jar:1.76.0.0]
-        at org.bouncycastle.asn1.ASN1InputStream.buildDEREncodableVector(Unknown Source) ~[bcprov-jdk18on-1.76.jar:1.76.0.0]
-        at org.bouncycastle.asn1.ASN1InputStream.buildObject(Unknown Source) ~[bcprov-jdk18on-1.76.jar:1.76.0.0]
-        at org.bouncycastle.asn1.ASN1InputStream.readObject(Unknown Source) ~[bcprov-jdk18on-1.76.jar:1.76.0.0]
-        at org.bouncycastle.asn1.ASN1Object.fromByteArray(Unknown Source) ~[bcprov-jdk18on-1.76.jar:1.76.0.0]
-        at org.bouncycastle.jce.provider.JDKKeyFactory.createPrivateKeyFromDERStream(Unknown Source) ~[na:na]
-        at org.bouncycastle.jce.provider.JDKKeyFactory$RSA.engineGeneratePrivate(Unknown Source) ~[na:na]
-        at java.base/java.security.KeyFactory.generatePrivate(KeyFactory.java:388) ~[na:na]
-        at com.crs.externalApiService.util.ClientUtility.getPrivateKey(ClientUtility.java:101) ~[classes/:0.0.2]
-        at com.crs.externalApiService.services.HrmsServceImpl.generatingDigitalSignature(HrmsServceImpl.java:157) ~[classes/:0.0.2]
-        at com.crs.externalApiService.services.HrmsServceImpl.getHrmsUserDetails(HrmsServceImpl.java:79) ~[classes/:0.0.2]
-        at com.crs.externalApiService.controllers.HrmsController.getUser(HrmsController.java:31) ~[classes/:0.0.2]
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-        at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[servlet-api.jar:6.0]
-        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.8.jar:6.1.8]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[servlet-api.jar:6.0]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:196) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[catalina.jar:10.1.23]
-        at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-websocket.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[catalina.jar:10.1.23]
-        at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[catalina.jar:10.1.23]
-        at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[catalina.jar:10.1.23]
-        at org.springframework.boot.web.servlet.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:124) ~[spring-boot-3.3.0.jar:3.3.0]
-        at org.springframework.boot.web.servlet.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:99) ~[spring-boot-3.3.0.jar:3.3.0]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.springframework.boot.web.servlet.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117) ~[spring-boot-3.3.0.jar:3.3.0]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[catalina.jar:10.1.23]
-        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.8.jar:6.1.8]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:673) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[catalina.jar:10.1.23]
-        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[catalina.jar:10.1.23]
-        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391) ~[tomcat-coyote.jar:10.1.23]
-        at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-coyote.jar:10.1.23]
-        at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-coyote.jar:10.1.23]
-        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736) ~[tomcat-coyote.jar:10.1.23]
-        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-coyote.jar:10.1.23]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-util.jar:10.1.23]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-util.jar:10.1.23]
-        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-util.jar:10.1.23]
-        at java.base/java.lang.Thread.run(Thread.java:1575) ~[na:na]
-Caused by: java.lang.ClassNotFoundException: Illegal access: this web application instance has been stopped already. Could not load [org.bouncycastle.asn1.ASN1EncodableVector]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
-        ... 67 common frames omitted
+#this is the main application.properties
+spring.application.name=checkerWorklistService
+
+#Default Profile is Development
+spring.profiles.active=dev
+
+#Servlet Config
+server.servlet.context-path=/
+server.port=8087
+
+#DB Config
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+#spring.jpa.show-sql=true
+#spring.jpa.properties.hibernate.format_sql=true
+#logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+#Frontend View Config
+spring.mvc.view.prefix=/templates/
+spring.mvc.view.suffix=.html
+spring.application.name=checkerWorklistService
+
+application-dev.properties
+# For DEV Environment
+spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
+spring.datasource.username=XYZ
+spring.datasource.password=XYZ
+
+for Dev tomcat server set the below line
+spring.profiles.active=dev
+
+application-prod.properties
+# For PROD Environment
+spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
+spring.datasource.username=XYZ
+spring.datasource.password=XYZ
+
+for Prod tomcat server set the below line
+spring.profiles.active=dev
 
 
-I am getting this error and How will i resolve this error and explain me the source of line this error.
+application-uat.properties
+# For UAT Environment
+spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
+spring.datasource.username=XYZ
+spring.datasource.password=XYZ
+
+for Uat tomcat server set the below line
+spring.profiles.active=uat
+
+
+
