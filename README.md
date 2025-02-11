@@ -1,53 +1,20 @@
-#**this is the main application.properties**
-spring.application.name=checkerWorklistService
+spring.datasource.jndi-name=java:comp/env/jdbc/MyDB
 
-#Default Profile is Development
-spring.profiles.active=dev
+DB_USER="your_db_user"
+DB_PASSWORD="your_db_password"
+DB_HOST="your_db_host"
+DB_NAME="your_database"
 
-#Servlet Config
-server.servlet.context-path=/
-server.port=8087
-
-#DB Config
-spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
-#spring.jpa.show-sql=true
-#spring.jpa.properties.hibernate.format_sql=true
-#logging.level.org.hibernate.SQL=DEBUG
-logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
-
-#Frontend View Config
-spring.mvc.view.prefix=/templates/
-spring.mvc.view.suffix=.html
-spring.application.name=checkerWorklistService
-
-**application-dev.properties**
-# For DEV Environment
-spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
-spring.datasource.username=XYZ
-spring.datasource.password=XYZ
-
-for Dev tomcat server set the below line
-**spring.profiles.active=dev**
-
-**application-prod.properties**
-# For PROD Environment
-spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
-spring.datasource.username=XYZ
-spring.datasource.password=XYZ
-
-for Prod tomcat server set the below line
-**spring.profiles.active=dev
-**
-
-**application-uat.properties**
-# For UAT Environment
-spring.datasource.url=jdbc:oracle:thin:@IP:PORT:CTX
-spring.datasource.username=XYZ
-spring.datasource.password=XYZ
-
-for Uat tomcat server set the below line
-**spring.profiles.active=uat**
-
-Is it correct every environment added line will override the main application.properties file (spring.profiles.active=dev) this line 
-I had bit confusion
-
+<Context>
+    <Resource name="jdbc/MyDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              factory="org.apache.commons.dbcp2.BasicDataSourceFactory"
+              username="${DB_USER}"
+              password="${DB_PASSWORD}"
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://${DB_HOST}:3306/${DB_NAME}"
+              maxActive="50"
+              maxIdle="10"
+              maxWait="-1"/>
+</Context>
