@@ -1,27 +1,12 @@
-spring.datasource.jndi-name=java:comp/env/jdbc/MyDB
+Subject: Leave Notification and Temporary Reporting Arrangements
 
-DB_USER="your_db_user"
-DB_PASSWORD="your_db_password"
-DB_HOST="your_db_host"
-DB_NAME="your_database"
+Dear [Manager's Name],
 
-<Context>
-    <Resource name="jdbc/MyDB"
-              auth="Container"
-              type="javax.sql.DataSource"
-              factory="org.apache.commons.dbcp2.BasicDataSourceFactory"
-              username="${DB_USER}"
-              password="${DB_PASSWORD}"
-              driverClassName="com.mysql.cj.jdbc.Driver"
-              url="jdbc:mysql://${DB_HOST}:3306/${DB_NAME}"
-              maxActive="50"
-              maxIdle="10"
-              maxWait="-1"/>
-</Context>
+I hope you are doing well. I would like to inform you that I will be on leave from [Start Date] to [End Date]. During this period, my reporting responsibilities will be handled by [Colleague’s Name] and [Other Team Members, if applicable].
 
-export SPRING_PROFILES_ACTIVE=dev
-export DB_HOST=dev-db-ip
-export DB_PORT=1521  # Change as per your DB port
-export DB_SID=devdb
-export DB_USER=dev_user
-export DB_PASS=dev_password
+Please feel free to reach out to them for any urgent matters. I will ensure a smooth transition before my leave and will be available for any handover discussions if required.
+
+Let me know if you need any further information.
+
+Best regards,
+[Your Name]
