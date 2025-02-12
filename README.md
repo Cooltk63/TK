@@ -18,3 +18,10 @@ DB_NAME="your_database"
               maxIdle="10"
               maxWait="-1"/>
 </Context>
+
+export SPRING_PROFILES_ACTIVE=dev
+export DB_HOST=dev-db-ip
+export DB_PORT=1521  # Change as per your DB port
+export DB_SID=devdb
+export DB_USER=dev_user
+export DB_PASS=dev_password
