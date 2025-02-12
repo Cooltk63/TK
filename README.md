@@ -1,12 +1,21 @@
-Subject: Leave Notification and Temporary Reporting Arrangements
+Subject: Leave Intimation and Task Assignment
 
-Dear [Manager's Name],
+Dear Team,
 
-I hope you are doing well. I would like to inform you that I will be on leave from [Start Date] to [End Date]. During this period, my reporting responsibilities will be handled by [Colleague’s Name] and [Other Team Members, if applicable].
+I would like to inform you that I will be on leave on [leave date(s)]. During this period, I have assigned the following tasks to ensure smooth progress:
 
-Please feel free to reach out to them for any urgent matters. I will ensure a smooth transition before my leave and will be available for any handover discussions if required.
+Task Assignments:
 
-Let me know if you need any further information.
+[Task 1] – Assigned to [Team Member 1]
+
+[Task 2] – Assigned to [Team Member 2]
+
+[Task 3] – Assigned to [Team Member 3]
+
+
+Please coordinate as needed and reach out to me if any clarification is required before my leave.
+
+Thanks for your cooperation.
 
 Best regards,
 [Your Name]
