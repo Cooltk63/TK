@@ -1,21 +1,20 @@
-Subject: Leave Intimation and Task Assignment
+{
+    "pfId":"1015402"
+}
 
-Dear Team,
-
-I would like to inform you that I will be on leave on [leave date(s)]. During this period, I have assigned the following tasks to ensure smooth progress:
-
-Task Assignments:
-
-[Task 1] – Assigned to [Team Member 1]
-
-[Task 2] – Assigned to [Team Member 2]
-
-[Task 3] – Assigned to [Team Member 3]
+http://10.191.158.38:7001/externalApiService/HRMS/testBounceCastle_1
 
 
-Please coordinate as needed and reach out to me if any clarification is required before my leave.
 
-Thanks for your cooperation.
 
-Best regards,
-[Your Name]
+http://localhost:4587/HRMS/getUser
+
+{
+    "pfId":"1015402"
+}
+
+
+http://10.176.6.7:7002/externalApiService/HRMS/getUser
+{
+    "pfId":"1015402"
+}
