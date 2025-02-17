@@ -1,86 +1,26 @@
-<dependencies>
-    <!-- Spring Boot JPA -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
+){faint,green,red}2025-02-17 17:03:07  INFO [%boldGreen(HrmsController.java:42)] :: disableAnsi=true(Log Class type: class org.apache.logging.log4j.core.Logger
 
-    <!-- Spring Boot Web (Excluding Logback) -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
-        <exclusions>
-            <exclusion>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-logging</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
+above log I am getting for Log : log.info("Log Class type: "+log.getClass());  
 
-    <!-- Oracle JDBC Driver -->
-    <dependency>
-        <groupId>com.oracle.database.jdbc</groupId>
-        <artifactId>ojdbc11</artifactId>
-        <scope>runtime</scope>
-    </dependency>
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss}  %-5level[%boldGreen(%file:%line)] :: %highlight(%msg%n){faint,green,red}"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
 
-    <!-- Lombok -->
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <scope>provided</scope>
-    </dependency>
 
-    <!-- JSON Processing -->
-    <dependency>
-        <groupId>org.json</groupId>
-        <artifactId>json</artifactId>
-        <version>20210307</version>
-    </dependency>
+In this configuration or pattern I need the logs color as per the log level
 
-    <!-- Bouncy Castle Security -->
-    <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk18on</artifactId>
-        <version>1.76</version>
-    </dependency>
 
-    <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcpkix-jdk18on</artifactId>
-        <version>1.76</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcutil-jdk18on</artifactId>
-        <version>1.76</version>
-    </dependency>
-
-    <!-- Jakarta Annotations -->
-    <dependency>
-        <groupId>jakarta.annotation</groupId>
-        <artifactId>jakarta.annotation-api</artifactId>
-        <version>2.1.1</version>
-    </dependency>
-
-    <!-- Log4j2 (Spring Boot Starter) -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-log4j2</artifactId>
-    </dependency>
-
-    <!-- SLF4J to Log4j2 Bridge (Fixes SLF4J conflicts) -->
-    <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-slf4j-impl</artifactId>
-    </dependency>
-
-    <!-- Upgraded Commons Configuration (Avoids commons-logging issue) -->
-    <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-configuration2</artifactId>
-        <version>2.9.0</version>
-    </dependency>
-
-</dependencies>
+		log.trace("Trace Message!"); = Orange
+        log.debug("Debug Message!"); = Yellow
+        log.info("Info Message!"); = skyblue
+        log.warn("Warn Message!");= bold red
