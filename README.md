@@ -1,16 +1,1 @@
-logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n
-
-
-<configuration>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36}.%M(%file:%line) - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <root level="info">
-        <appender-ref ref="CONSOLE" />
-    </root>
-</configuration>
-
-logback-spring.xml
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_NmYzMjhkNmQtNDM2NS00MzUwLWJmMGQtZmM2MjhhZDFhNjM0%40thread.v2/0?context=%7b%22Tid%22%3a%2263ce7d59-2f3e-42cd-a8cc-be764cff5eb6%22%2c%22Oid%22%3a%2278e16ee3-5909-497a-bb92-4686e2eb657e%22%7d
