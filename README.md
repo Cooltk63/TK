@@ -1,13 +1,11 @@
-for using this
-%d{yyyy-MM-dd HH:mm:ss}  %-5level[%boldGreen(%file:%line)] :: %highlight(%msg%n){faint,green,red}
-I wanted the as usual color which is blue for message in INFO category logs 
+# Root Logger - Set to TRACE to enable all levels
+rootLogger.level = trace
+rootLogger.appenderRefs = console
+rootLogger.appenderRef.console.ref = Console
 
- log.error("Error Message!");  I need bold red
- 
-I need whole new different colors for below log messages
- log.trace("Trace Message!");      
- log.debug("Debug Message!");     
- log.info("Info Message!");     
- log.warn("Warn Message!");      
-    
- log.fatal("Fatal Message!");
+# Console Appender
+appender.console.type = Console
+appender.console.name = Console
+appender.console.target = SYSTEM_OUT
+appender.console.layout.type = PatternLayout
+appender.console.layout.pattern = %d{yyyy-MM-dd HH:mm:ss} %-5level [%style{%C{1}:%L}{cyan}] :: %style{%msg%n}{trace:cyan, debug:magenta, info:blue, warn:yellow, error:red, fatal:bold red}
