@@ -1,6 +1,20 @@
-# ========================= 3️⃣ LOG FORMATTING =========================
-# Console log pattern (Color-coded output)
-logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level:%file:%line - %highlight(%msg){ERROR=red, WARN=yellow, INFO=cyan, DEBUG=green, TRACE=magenta}%n
+server {
+    listen 80;
 
-# File log pattern (Plain text without color codes)
-logging.pattern.file=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+    server_name yourdomain.com;
+
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri /index.html;
+    }
+
+    # Redirect SSO POST request to Express backend
+    location /sso-callback {
+        proxy_pass http://localhost:9000/sso-callback;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
