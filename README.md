@@ -1,16 +1,12 @@
 # ==============================
-# 1️⃣ LOG FILE LOCATION (Based on OS)
+# 1️⃣ LOG DIRECTORY (Cross-Platform)
 # ==============================
 
-# Define log directory path dynamically for Windows and Linux
+# Check OS and set log path dynamically
 logging.file.path=${LOG_DIR:${sys:os.name}.contains('Windows') ? 'C:/media/bs' : '/media/bs'}
 
-# Log file name (Rolling logs per day)
+# Define log file name (Rolling logs per day)
 logging.file.name=${logging.file.path}/application.log
-
-# Log level configuration for different packages
-logging.level.root=INFO
-logging.level.com.yourpackage=TRACE  # Adjust for your package
 
 # ==============================
 # 2️⃣ LOG FORMAT (With Colors)
