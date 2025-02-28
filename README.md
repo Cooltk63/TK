@@ -1,210 +1,35 @@
-public Map<String, Object> getSaveBySftp(Map<String, Object> map) {
-		log.info("Inside SC09DaoImpl getSaveBySftp");
-		Map<String, Object> updatedTabData = new HashMap<>();
-		String quarterEndDate = (String) map.get("qed");
-		log.info("quarterEndDate:-"+quarterEndDate);///// quarterEndDate":"30/06/2024
-		String circleCode = (String) map.get("circleCode");
-		String reportId = (String) map.get("reportID");
-		String reportName = (String) map.get("reportName");
-		String yyyy = quarterEndDate.split("/")[2];
-		String mm = quarterEndDate.split("/")[1];
-		String dd = quarterEndDate.split("/")[0];
-		String sessionDate = yyyy + mm + dd;   ///20230930
-		String qDate = dd + mm + yyyy;  ////30092023
-		int status =0;
-
-		String branchCode = ccdpSftpDao.getBrcodeforsftp(circleCode, reportName);
-
-		log.info("qDate- " + qDate);
-		log.info("sessionDate- " + sessionDate);
-		log.info("circleCode- " + circleCode);
-		log.info("into Dao  reading & inserting file*********");
-
-		//////////////////reading File and Validations///////////////////
-
-		try {
-			/*String mainPath = "/media/BS/CCDP/";
-			String path = mainPath + qDate + "/SCH9_" + sessionDate + "_" + branchCode + ".txt";*/
-
-
-			/// below lines for prod
-			PropertiesConfiguration config = new PropertiesConfiguration("common.properties");
-			String mainPath =  config.getProperty("ReportDirCCDP").toString();
-			//String mainPath =  "/ccdp2bsa/" ;
-
-			String path = mainPath + qDate + "/SCH_9_" + sessionDate + "_" + branchCode + ".txt";
-			log.info("path" + path);
-
-
-			List<String> lines = new ArrayList<String>();
-
-			FileReader reader;
-			BufferedReader bufferedReader;
-
-			reader = new FileReader(path);
-			bufferedReader = new BufferedReader(reader);
-			StringBuffer stringBuffer = new StringBuffer();
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				stringBuffer.append(line);
-				if (!line.equalsIgnoreCase("")) {
-					lines.add(line);
-					stringBuffer.append("\n");
-				}
-
-
-			}
-			SC09 sc09 = new SC09();
-			String first = lines.get(0);
-			log.info("first " + first);
-			int linesSize = lines.size() - 1;
-			String last = lines.get(linesSize);
-			log.info("last:-" + last);
-			String timeStamp = last.split("\\|")[1];
-			log.info("timest:-"+timeStamp);
-			int len = first.length();
-			log.info("len- " + len);
-			
-			log.info("before FOR LOOP");
-			for (String mycodes : lines) {
-				log.info("mycodes-" + mycodes);
-
-				String[] mycode1 = mycodes.split("\\|");
-				log.info("length " + mycode1.length+ "mycode1:_"+Arrays.toString(mycode1));
-
-				if(!(mycode1[0].trim()).equalsIgnoreCase("Generated at")) {
-					log.info("into value line ");
-					if ((!(mycode1[1].trim().matches("^(?:-?\\d{1,16}\\.\\d{1,2}|-?\\d{1,16})$"))) ||
-							(!(mycode1[2].trim().matches("^(?:-?\\d{1,16}\\.\\d{1,2}|-?\\d{1,16})$"))) ||
-							(!(mycode1[3].trim().matches("^(?:-?\\d{1,16}\\.\\d{1,2}|-?\\d{1,16})$"))) ||
-							(!(mycode1[4].trim().matches("^(?:-?\\d{1,16}\\.\\d{1,2}|-?\\d{1,16})$")))
-					) {
-						log.info("into regex ");
-
-						//cnt to check data exist or not
-						int cnt=ccdpSftpDao.getCountdata(circleCode,quarterEndDate,reportName);
-						String prevtime= ccdpSftpDao.getCCDPTimeStamp(circleCode,quarterEndDate,reportName);
-						if(cnt >=1 ){
-							updatedTabData.put("message", FETCH_DATA + prevtime);
-							updatedTabData.put("fileAndDataStatus", 3);
-							updatedTabData.put("status", true);
-						}else{
-							updatedTabData.put("message", "The data generated at " + timeStamp + " has invalid data. Kindly regenerate files at CCDP and try again");
-							updatedTabData.put("fileAndDataStatus", 2);
-							updatedTabData.put("status", false);
-						}
-						return updatedTabData;
-					}
-				}
-
-				if (mycode1.length == 5  ) {
-					if ((mycode1[0].trim()).equalsIgnoreCase("A11")) {
-						sc09.setFacility_Standard_1(mycode1[1].trim());
-						sc09.setFacility_SubStandard_1(mycode1[2].trim());
-						sc09.setFacility_Doubtful_1(mycode1[3].trim());
-						sc09.setFacility_Loss_1(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A12")) {
-						sc09.setFacility_Standard_2(mycode1[1].trim());
-						sc09.setFacility_SubStandard_2(mycode1[2].trim());
-						sc09.setFacility_Doubtful_2(mycode1[3].trim());
-						sc09.setFacility_Loss_2(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A13")) {
-						sc09.setFacility_Standard_3(mycode1[1].trim());
-						sc09.setFacility_SubStandard_3(mycode1[2].trim());
-						sc09.setFacility_Doubtful_3(mycode1[3].trim());
-						sc09.setFacility_Loss_3(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A21")) {
-						sc09.setSecurity_Standard_1(mycode1[1].trim());
-						sc09.setSecurity_SubStandard_1(mycode1[2].trim());
-						sc09.setSecurity_Doubtful_1(mycode1[3].trim());
-						sc09.setSecurity_Loss_1(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A22")) {
-						sc09.setSecurity_Standard_2(mycode1[1].trim());
-						sc09.setSecurity_SubStandard_2(mycode1[2].trim());
-						sc09.setSecurity_Doubtful_2(mycode1[3].trim());
-						sc09.setSecurity_Loss_2(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A23")) {
-						sc09.setSecurity_Standard_3(mycode1[1].trim());
-						sc09.setSecurity_SubStandard_3(mycode1[2].trim());
-						sc09.setSecurity_Doubtful_3(mycode1[3].trim());
-						sc09.setSecurity_Loss_3(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A31")) {
-						sc09.setSector_Standard_a1(mycode1[1].trim());
-						sc09.setSector_SubStandard_a1(mycode1[2].trim());
-						sc09.setSector_Doubtful_a1(mycode1[3].trim());
-						sc09.setSector_Loss_a1(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A32")) {
-						sc09.setSector_Standard_a2(mycode1[1].trim());
-						sc09.setSector_SubStandard_a2(mycode1[2].trim());
-						sc09.setSector_Doubtful_a2(mycode1[3].trim());
-						sc09.setSector_Loss_a2(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A33")) {
-						sc09.setSector_Standard_a3(mycode1[1].trim());
-						sc09.setSector_SubStandard_a3(mycode1[2].trim());
-						sc09.setSector_Doubtful_a3(mycode1[3].trim());
-						sc09.setSector_Loss_a3(mycode1[4].trim());
-					} else if ((mycode1[0].trim()).equalsIgnoreCase("A34")) {
-						sc09.setSector_Standard_a4(mycode1[1].trim());
-						sc09.setSector_SubStandard_a4(mycode1[2].trim());
-						sc09.setSector_Doubtful_a4(mycode1[3].trim());
-						sc09.setSector_Loss_a4(mycode1[4].trim());
-					}else if((mycode1[0].trim()).equalsIgnoreCase("Generated at")){
-
-						sc09.setCcdpFiletimeStamp(mycode1[1].trim());
-					}
-
-					log.info("sc09:-"+sc09+"   size:-"+sc09.getSector_SubStandard_a1());
-					log.info("timestamp:-"+sc09.getCcdpFiletimeStamp());
-					status=1;
-				}else if(mycodes.contains("Generated at")){
-					log.info("into if gen");
-					status=1;
-
-				}else{
-					log.info( "invalid data");
-					status=0;
-				}
-
-			}
-			log.info("status:-"+status);
-			int updatetime = ccdpSftpDao.updateCCDPFiletime ( timeStamp,circleCode,quarterEndDate,reportName);
-			if(status==1) {
-				log.info("sc09:-" + sc09 + "   size:-" + sc09.getSector_SubStandard_a1());
-				updatedTabData.put("sc09Data", sc09);
-				updatedTabData.put("message", FETCH_DATA + timeStamp);
-				updatedTabData.put("status", true);
-				updatedTabData.put("fileAndDataStatus", 1);
-			}else{
-
-
-				int cnt=ccdpSftpDao.getCountdata(circleCode,quarterEndDate,reportName);
-				String prevtime= ccdpSftpDao.getCCDPTimeStamp(circleCode,quarterEndDate,reportName);
-				if(cnt>=1){
-					log.info("into sts 3");
-					updatedTabData.put("message", FETCH_DATA + prevtime);
-					updatedTabData.put("fileAndDataStatus", 3);
-					updatedTabData.put("status",true);
-				}else{
-					log.info("into sts 2");
-					updatedTabData.put("message","The data generated at "+timeStamp+" has invalid data. Kindly regenerate files at CCDP and try again");
-					updatedTabData.put("fileAndDataStatus", 2);
-					updatedTabData.put("status",false);
-				}
-
-			}
-
-			return updatedTabData;
-		} catch (IOException e) {
-			updatedTabData.put("message","The data generated has invalid data. Kindly regenerate files at CCDP and try again");
-			updatedTabData.put("fileAndDataStatus", 2);
-			updatedTabData.put("status",false);
-			return updatedTabData;
-			//throw new RuntimeException(e);
-
-		}catch(Exception e){
-			updatedTabData.put("message","The data generated has invalid data. Kindly regenerate files at CCDP and try again");
-			updatedTabData.put("fileAndDataStatus", 2);
-			updatedTabData.put("status",false);
-			return updatedTabData;
-		}
-    }
+1|5001|5002|5003|5004|5005|5006|5007|5008|5009|5010|5011|5012|5013|5014|5015|5016|5017|5018|5019|5020|5021|5022|5023|5024|5025|5026|5027|5028|5029|5030
+4|4091|4092|4093|4094|4095|4096|4097|4098|4099|4100|4101|4102|4103|4104|4105|4106|4107|4108|4109|4110|4111|4112|4113|4114|4115|4116|4117|4118|4119|4120
+5|121|122|123|124|125|126|127|128|129|130|131|132|133|134|135|136|137|138|139|140|141|142|143|144|145|146|147|148|149|150
+6|151|152|153|154|155|156|157|158|159|160|161|162|163|164|165|166|167|168|169|170|171|172|173|174|175|176|177|178|179|180
+7|181|182|183|184|185|186|187|188|189|190|191|192|193|194|195|196|197|198|199|200|201|202|203|204|205|206|207|208|209|210
+8|211|212|213|214|215|216|217|218|219|220|221|222|223|224|225|226|227|228|229|230|231|232|233|234|235|236|237|238|239|240
+9|4755|4760|4765|4770|4775|4780|4785|4790|4795|4800|4805|4810|4815|4820|4825|4830|4835|4840|4845|4850|4855|4860|4865|4870|4875|4880|4885|4890|4895|4900
+11|301|302|303|304|305|306|307|308|309|310|311|312|313|314|315|316|317|318|319|320|321|322|323|324|325|326|327|328|329|330
+12|2331|2332|2333|2334|2335|2336|2337|2338|2339|2340|2341|2342|2343|2344|2345|2346|2347|2348|2349|2350|2351|2352|2353|2354|2355|2356|2357|2358|2359|2360
+13|361|362|363|364|365|366|367|368|369|370|371|372|373|374|375|376|377|378|379|380|381|382|383|384|385|386|387|388|389|390
+14|391|392|393|394|395|396|397|398|399|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420
+15|421|422|423|424|425|426|427|428|429|430|431|432|433|434|435|436|437|438|439|440|441|442|443|444|445|446|447|448|449|450
+16|3805|3810|3815|3820|3825|3830|3835|3840|3845|3850|3855|3860|3865|3870|3875|3880|3885|3890|3895|3900|3905|3910|3915|3920|3925|3930|3935|3940|3945|3950
+17|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950
+18|5951|5952|5953|5954|5955|5956|5957|5958|5959|5960|5961|5962|5963|5964|5965|5966|5967|5968|5969|5970|5971|5972|5973|5974|5975|5976|5977|5978|5979|5980
+20|571|572|573|574|575|576|577|578|579|580|581|582|583|584|585|586|587|588|589|590|591|592|593|594|595|596|597|598|599|600
+21|601|602|603|604|605|606|607|608|609|610|611|612|613|614|615|616|617|618|619|620|621|622|623|624|625|626|627|628|629|630
+22|631|632|633|634|635|636|637|638|639|640|641|642|643|644|645|646|647|648|649|650|651|652|653|654|655|656|657|658|659|660
+23|661|662|663|664|665|666|667|668|669|670|671|672|673|674|675|676|677|678|679|680|681|682|683|684|685|686|687|688|689|690
+24|691|692|693|694|695|696|697|698|699|700|701|702|703|704|705|706|707|708|709|710|711|712|713|714|715|716|717|718|719|720
+25|721|722|723|724|725|726|727|728|729|730|731|732|733|734|735|736|737|738|739|740|741|742|743|744|745|746|747|748|749|750
+26|751|752|753|754|755|756|757|758|759|760|761|762|763|764|765|766|767|768|769|770|771|772|773|774|775|776|777|778|779|780
+27|4627|4634|4641|4648|4655|4662|4669|4676|4683|4690|4697|4704|4711|4718|4725|4732|4739|4746|4753|4760|4767|4774|4781|4788|4795|4802|4809|4816|4823|4830
+29|841|842|843|844|845|846|847|848|849|850|851|852|853|854|855|856|857|858|859|860|861|862|863|864|865|866|867|868|869|870
+30|871|872|873|874|875|876|877|878|879|880|881|882|883|884|885|886|887|888|889|890|891|892|893|894|895|896|897|898|899|900
+31|901|902|903|904|905|906|907|908|909|910|911|912|913|914|915|916|917|918|919|920|921|922|923|924|925|926|927|928|929|930
+32|931|932|933|934|935|936|937|938|939|940|941|942|943|944|945|946|947|948|949|950|951|952|953|954|955|956|957|958|959|960
+33|3544|3548|3552|3556|3560|3564|3568|3572|3576|3580|3584|3588|3592|3596|3600|3604|3608|3612|3616|3620|3624|3628|3632|3636|3640|3644|3648|3652|3656|3660
+34|1083|1086|1089|1092|1095|1098|1101|1104|1107|1110|1113|1116|1119|1122|1125|1128|1131|1134|1137|1140|1143|1146|1149|1152|1155|1158|1161|1164|1167|1170
+35|4868|4866|4864|4862|4860|4858|4856|4854|4852|4850|4848|4846|4844|4842|4840|4838|4836|4834|4832|4830|4828|4826|4824|4822|4820|4818|4816|4814|4812|4810
+36|1051|1052|1053|1054|1055|1056|1057|1058|1059|1060|1061|1062|1063|1064|1065|1066|1067|1068|1069|1070|1071|1072|1073|1074|1075|1076|1077|1078|1079|1080
+37|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460
+38|1111|1112|1113|1114|1115|1116|1117|1118|1119|1120|1121|1122|1123|1124|1125|1126|1127|1128|1129|1130|1131|1132|1133|1134|1135|1136|1137|1138|1139|1140
+39|702|704|706|708|710|712|714|716|718|720|722|724|726|728|730|732|734|736|738|740|742|744|746|748|750|752|754|756|758|760
+Generated at|23.01.2025 18:24:43
