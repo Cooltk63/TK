@@ -4,7 +4,7 @@ import java.util.*;
 public class SC10Processor {
 
     public void setSC10Data(SC10 sc10, Map<Integer, String[]> rowData) {
-        // List of field names as per SC10.java (excluding row numbers)
+        // Define field names as per SC10.java (without row numbers)
         String[] fieldNames = {
             "stcNstaff", "offResidenceA", "otherPremisesA", "electricFitting",
             "totalA", "computers", "compSoftwareInt", "compSoftwareNonint",
@@ -16,19 +16,33 @@ public class SC10Processor {
             "premisesUnderCons", "grandTotal"
         };
 
-        // Process each row from 1 to 39
-        for (int row = 1; row <= 39; row++) {
-            String[] data = rowData.getOrDefault(row, new String[30]); // Get row data or set empty values
+        // Step 1: Ensure all row numbers from 1 to 39 exist in rowData
+        for (int i = 1; i <= 39; i++) {
+            if (!rowData.containsKey(i)) {
+                rowData.put(i, new String[30]);  // Create an empty array of 30 values
+                Arrays.fill(rowData.get(i), ""); // Fill missing rows with empty strings (important for frontend calculations)
+            } else if (rowData.get(i).length < 30) {
+                rowData.put(i, Arrays.copyOf(rowData.get(i), 30)); // Ensure all rows have exactly 30 values
+            }
+        }
+
+        // Step 2: Sort row numbers to maintain correct order
+        List<Integer> sortedRows = new ArrayList<>(rowData.keySet());
+        Collections.sort(sortedRows);
+
+        // Step 3: Iterate over sorted rows and set values dynamically
+        for (int row : sortedRows) {
+            String[] data = rowData.get(row); // Retrieve data for the current row
 
             for (int index = 0; index < fieldNames.length; index++) {
                 try {
-                    // Construct the setter name dynamically (e.g., "setComputers5")
+                    // Construct the correct setter method name, e.g., setComputers5
                     String setterName = "set" + capitalize(fieldNames[index]) + row;
 
-                    // Get the setter method from SC10 class
+                    // Get the setter method from SC10 class using Reflection
                     Method setterMethod = SC10.class.getMethod(setterName, String.class);
 
-                    // Invoke the setter method with value or empty string if missing
+                    // Invoke the setter method with extracted value or empty string if missing
                     setterMethod.invoke(sc10, getValue(data, index + 1));
 
                 } catch (NoSuchMethodException e) {
@@ -40,12 +54,18 @@ public class SC10Processor {
         }
     }
 
-    // Capitalizes first letter of field name to match setter method format
+    /**
+     * Capitalizes the first letter of a field name to match setter method naming conventions.
+     * Example: "computers" -> "Computers"
+     */
     private String capitalize(String input) {
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 
-    // Helper method to safely get value from array
+    /**
+     * Safely retrieves a value from the given data array.
+     * If the index is out of bounds, returns an empty string ("").
+     */
     private String getValue(String[] data, int index) {
         return index < data.length ? data[index].trim() : "";
     }
