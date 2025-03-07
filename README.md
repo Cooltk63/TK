@@ -1,137 +1,46 @@
-public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
-        log.info("Inside SC10DaoImpl getSaveBySftp");
-        Map<String, Object> updatedTabData = new HashMap<>();
-
-        // Extract input parameters from the map
-        String quarterEndDate = (String) map.get("qed");
-        String circleCode = (String) map.get("circleCode");
-        String reportName = (String) map.get("reportName");
-
-        log.info("Quarter End Date: " + quarterEndDate);
-
-        // Extract year, month, and day from quarterEndDate (format: dd/MM/yyyy)
-        String[] dateParts = quarterEndDate.split("/");
-        String yyyy = dateParts[2];
-        String mm = dateParts[1];
-        String dd = dateParts[0];
-
-        // Generate required date formats
-        String sessionDate = yyyy + mm + dd;  // Format: YYYYMMDD
-        String qDate = dd + mm + yyyy;  // Format: DDMMYYYY
-
-        // Get branch code based on circleCode and reportName
-        String branchCode = ccdpSftpDao.getBrcodeforsftp(circleCode, reportName);
-
-        log.info("Session Date: " + sessionDate);
-        log.info("Branch Code: " + branchCode);
-        log.info("Fetching file...");
-
-        try {
-            // Retrieve file path from properties
-            PropertiesConfiguration config = new PropertiesConfiguration("common.properties");
-            String mainPath = config.getProperty("ReportDirCCDP").toString();
-
-            log.info("Generating the FILE NAME WITH PATH");
-            String filePath = mainPath + qDate + "/IFAMS_SCH10_" + sessionDate + "_" + circleCode + ".txt";
-            log.info("Received File Path: " + filePath);
-
-            List<String> lines = new ArrayList<>();
-
-            // Read the file
-            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (!line.trim().isEmpty()) {
-                        lines.add(line);
-                    }
-                }
-            }
-
-            // Initialize SC10 object and storage for row data
-            SC10 sc10 = new SC10();
-            Map<Integer, String[]> rowData = new HashMap<>();
-            String timeStamp = "";
-
-            // Process each line from the file
-            for (String line : lines) {
-                log.info("Processing line: " + line);
-                String[] columns = line.split("\\|");
-
-                // Extract timestamp if present
-                if (columns[0].trim().equalsIgnoreCase("Generated at")) {
-                    timeStamp = columns[1].trim();
-//                    sc10.setGeneratedTimeStamp(timeStamp);
-                    updatedTabData.put("FILETIMESTAMP", timeStamp);
-                    continue;
-                }
-
-                // Parse row number and store data
-                int rowNumber = Integer.parseInt(columns[0].trim());
-                rowData.put(rowNumber, columns);
-            }
-
-
-            // Define field names as per SC10.java (without row numbers)
-            String[] fieldNames = {
-                    "stcNstaff", "offResidenceA", "otherPremisesA", "electricFitting",
-                    "totalA", "computers", "compSoftwareInt", "compSoftwareNonint",
-                    "compSoftwareTotal", "motor", "offResidenceB", "stcLho",
-                    "otherPremisesB", "otherMachineryPlant", "totalB", "totalFurnFix",
-                    "landNotRev", "landRev", "landRevEnh", "offBuildNotRev",
-                    "offBuildRev", "offBuildRevEnh", "residQuartNotRev", "residQuartRev",
-                    "residQuartRevEnh", "premisTotal", "revtotal", "totalC",
-                    "premisesUnderCons", "grandTotal"
-            };
-
-            // Step 1: Sort row numbers to maintain correct order
-            List<Integer> sortedRows = new ArrayList<>(rowData.keySet());
-            Collections.sort(sortedRows);
-
-            // Step 2: Iterate over sorted rows and set values dynamically
-            for (int row : sortedRows) {
-                if (!rowData.containsKey(row)) {
-                    log.info("Skipping row " + row + " as it's not present in the file.");
-                    continue;  //  Skip missing row without setting any data
-                }
-
-                String[] data = rowData.get(row);  //  Retrieve existing row data (guaranteed to be non-null)
-
-                for (int index = 1; index <= 30; index++) {  //  Ensure all 30 values are processed
-                    try {
-                        String setterName = "set" + capitalize(fieldNames[index - 1]) + row;  //  Adjust index correctly
-                        Method setterMethod = SC10.class.getMethod(setterName, String.class);
-                        setterMethod.invoke(sc10, data[index].trim());  //  Only set values for present rows
-
-                    } catch (NoSuchMethodException e) {
-                        log.warn("No setter found: " + fieldNames[index - 1] + row);
-                    } catch (Exception e) {
-                        log.error("Error setting value for: " + fieldNames[index - 1] + row, e);
-                    }
-                }
-            }
-
-            // Update timestamp in CCDPFiletime Table database
-            int updateTime = ccdpSftpDao.updateCCDPFiletime(timeStamp, circleCode, quarterEndDate, reportName);
-
-            log.info("TImeStamp Updated for CCDP_FILE_TIME : Status :" +updateTime + "reportName: " + reportName);
-
-
-
-            // Return response
-            updatedTabData.put("sc10Data", sc10);
-            updatedTabData.put("message", "Data successfully extracted and mapped ");
-            updatedTabData.put("status", true);
-            updatedTabData.put("fileAndDataStatus", 1);
-
-        } catch (IOException e) {
-            updatedTabData.put("message", "Error reading file: " + e.getMessage());
-            updatedTabData.put("fileAndDataStatus", 2);
-            updatedTabData.put("status", false);
-        } catch (Exception e) {
-            updatedTabData.put("message", "Unexpected error: " + e.getMessage());
-            updatedTabData.put("fileAndDataStatus", 2);
-            updatedTabData.put("status", false);
-        }
-
-        return updatedTabData;
-    }
+org.apache.catalina.core.ApplicationContext.log HTMLManager: FAIL - Deploy Upload Failed, Exception: [org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (54895524) exceeds the configured maximum (52428800)]
+        java.lang.IllegalStateException: org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (54895524) exceeds the configured maximum (52428800)
+                at org.apache.catalina.connector.Request.parseParts(Request.java:2627)
+                at org.apache.catalina.connector.Request.parseParameters(Request.java:2910)
+                at org.apache.catalina.connector.Request.getParameter(Request.java:1058)
+                at org.apache.catalina.connector.RequestFacade.getParameter(RequestFacade.java:309)
+                at org.apache.catalina.filters.CsrfPreventionFilter.doFilter(CsrfPreventionFilter.java:352)
+                at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165)
+                at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+                at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+                at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165)
+                at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+                at org.apache.catalina.filters.HttpHeaderSecurityFilter.doFilter(HttpHeaderSecurityFilter.java:129)
+                at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165)
+                at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+                at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+                at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+                at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:597)
+                at org.apache.catalina.valves.RequestFilterValve.process(RequestFilterValve.java:355)
+                at org.apache.catalina.valves.RemoteAddrValve.invoke(RemoteAddrValve.java:54)
+                at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+                at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+                at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:673)
+                at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+                at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+                at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+                at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+                at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+                at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)
+                at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+                at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+                at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+                at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+                at java.base/java.lang.Thread.run(Thread.java:1575)
+        Caused by: org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (54895524) exceeds the configured maximum (52428800)
+                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.init(FileItemIteratorImpl.java:161)
+                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.getMultiPartStream(FileItemIteratorImpl.java:205)
+                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.findNextItem(FileItemIteratorImpl.java:224)
+                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.<init>(FileItemIteratorImpl.java:142)
+                at org.apache.tomcat.util.http.fileupload.FileUploadBase.getItemIterator(FileUploadBase.java:252)
+                at org.apache.tomcat.util.http.fileupload.FileUploadBase.parseRequest(FileUploadBase.java:276)
+                at org.apache.catalina.connector.Request.parseParts(Request.java:2586)
+                ... 31 more
+07-Mar-2025 14:07:22.327 INFO [http-nio-7001-exec-278] org.apache.catalina.core.ApplicationContext.log HTMLManager: list: Listing contexts for virtual host 'localhost'
+^C
+[oracle@cbops-dev-crsapp2 logs]$
