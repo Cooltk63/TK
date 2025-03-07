@@ -1,46 +1,35 @@
-org.apache.catalina.core.ApplicationContext.log HTMLManager: FAIL - Deploy Upload Failed, Exception: [org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (54895524) exceeds the configured maximum (52428800)]
-        java.lang.IllegalStateException: org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (54895524) exceeds the configured maximum (52428800)
-                at org.apache.catalina.connector.Request.parseParts(Request.java:2627)
-                at org.apache.catalina.connector.Request.parseParameters(Request.java:2910)
-                at org.apache.catalina.connector.Request.getParameter(Request.java:1058)
-                at org.apache.catalina.connector.RequestFacade.getParameter(RequestFacade.java:309)
-                at org.apache.catalina.filters.CsrfPreventionFilter.doFilter(CsrfPreventionFilter.java:352)
-                at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165)
-                at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-                at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
-                at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165)
-                at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-                at org.apache.catalina.filters.HttpHeaderSecurityFilter.doFilter(HttpHeaderSecurityFilter.java:129)
-                at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:165)
-                at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-                at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
-                at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
-                at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:597)
-                at org.apache.catalina.valves.RequestFilterValve.process(RequestFilterValve.java:355)
-                at org.apache.catalina.valves.RemoteAddrValve.invoke(RemoteAddrValve.java:54)
-                at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
-                at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
-                at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:673)
-                at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
-                at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
-                at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
-                at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
-                at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
-                at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)
-                at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
-                at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
-                at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
-                at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
-                at java.base/java.lang.Thread.run(Thread.java:1575)
-        Caused by: org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (54895524) exceeds the configured maximum (52428800)
-                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.init(FileItemIteratorImpl.java:161)
-                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.getMultiPartStream(FileItemIteratorImpl.java:205)
-                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.findNextItem(FileItemIteratorImpl.java:224)
-                at org.apache.tomcat.util.http.fileupload.impl.FileItemIteratorImpl.<init>(FileItemIteratorImpl.java:142)
-                at org.apache.tomcat.util.http.fileupload.FileUploadBase.getItemIterator(FileUploadBase.java:252)
-                at org.apache.tomcat.util.http.fileupload.FileUploadBase.parseRequest(FileUploadBase.java:276)
-                at org.apache.catalina.connector.Request.parseParts(Request.java:2586)
-                ... 31 more
-07-Mar-2025 14:07:22.327 INFO [http-nio-7001-exec-278] org.apache.catalina.core.ApplicationContext.log HTMLManager: list: Listing contexts for virtual host 'localhost'
-^C
-[oracle@cbops-dev-crsapp2 logs]$
+1|5001|5002|5003|5004|5005|5006|5007|5008|5009|5010|5011|5012|5013|5014|5015|5016|5017|5018|5019|5020|5021|5022|5023|5024|5025|5026|5027|5028|5029|5030
+3|4091|4092|4093|4094|4095|4096|4097|4098|4099|4100|4101|4102|4103|4104|4105|4106|4107|4108|4109|4110|4111|4112|4113|4114|4115|4116|4117|4118|4119|4120
+4|121|122|123|124|125|126|127|128|129|130|131|132|133|134|135|136|137|138|139|140|141|142|143|144|145|146|147|148|149|150
+5|151|152|153|154|155|156|157|158|159|160|161|162|163|164|165|166|167|168|169|170|171|172|173|174|175|176|177|178|179|180
+6|181|182|183|184|185|186|187|188|189|190|191|192|193|194|195|196|197|198|199|200|201|202|203|204|205|206|207|208|209|210
+7|211|212|213|214|215|216|217|218|219|220|221|222|223|224|225|226|227|228|229|230|231|232|233|234|235|236|237|238|239|240
+9|4755|4760|4765|4770|4775|4780|4785|4790|4795|4800|4805|4810|4815|4820|4825|4830|4835|4840|4845|4850|4855|4860|4865|4870|4875|4880|4885|4890|4895|4900
+10|301|302|303|304|305|306|307|308|309|310|311|312|313|314|315|316|317|318|319|320|321|322|323|324|325|326|327|328|329|330
+11|2331|2332|2333|2334|2335|2336|2337|2338|2339|2340|2341|2342|2343|2344|2345|2346|2347|2348|2349|2350|2351|2352|2353|2354|2355|2356|2357|2358|2359|2360
+12|361|362|363|364|365|366|367|368|369|370|371|372|373|374|375|376|377|378|379|380|381|382|383|384|385|386|387|388|389|390
+13|391|392|393|394|395|396|397|398|399|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420
+14|421|422|423|424|425|426|427|428|429|430|431|432|433|434|435|436|437|438|439|440|441|442|443|444|445|446|447|448|449|450
+18|3805|3810|3815|3820|3825|3830|3835|3840|3845|3850|3855|3860|3865|3870|3875|3880|3885|3890|3895|3900|3905|3910|3915|3920|3925|3930|3935|3940|3945|3950
+19|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950|950
+20|5951|5952|5953|5954|5955|5956|5957|5958|5959|5960|5961|5962|5963|5964|5965|5966|5967|5968|5969|5970|5971|5972|5973|5974|5975|5976|5977|5978|5979|5980
+21|571|572|573|574|575|576|577|578|579|580|581|582|583|584|585|586|587|588|589|590|591|592|593|594|595|596|597|598|599|600
+22|601|602|603|604|605|606|607|608|609|610|611|612|613|614|615|616|617|618|619|620|621|622|623|624|625|626|627|628|629|630
+24|631|632|633|634|635|636|637|638|639|640|641|642|643|644|645|646|647|648|649|650|651|652|653|654|655|656|657|658|659|660
+25|661|662|663|664|665|666|667|668|669|670|671|672|673|674|675|676|677|678|679|680|681|682|683|684|685|686|687|688|689|690
+26|691|692|693|694|695|696|697|698|699|700|701|702|703|704|705|706|707|708|709|710|711|712|713|714|715|716|717|718|719|720
+27|721|722|723|724|725|726|727|728|729|730|731|732|733|734|735|736|737|738|739|740|741|742|743|744|745|746|747|748|749|750
+28|751|752|753|754|755|756|757|758|759|760|761|762|763|764|765|766|767|768|769|770|771|772|773|774|775|776|777|778|779|780
+29|4627|4634|4641|4648|4655|4662|4669|4676|4683|4690|4697|4704|4711|4718|4725|4732|4739|4746|4753|4760|4767|4774|4781|4788|4795|4802|4809|4816|4823|4830
+30|841|842|843|844|845|846|847|848|849|850|851|852|853|854|855|856|857|858|859|860|861|862|863|864|865|866|867|868|869|870
+31|871|872|873|874|875|876|877|878|879|880|881|882|883|884|885|886|887|888|889|890|891|892|893|894|895|896|897|898|899|900
+32|901|902|903|904|905|906|907|908|909|910|911|912|913|914|915|916|917|918|919|920|921|922|923|924|925|926|927|928|929|930
+33|931|932|933|934|935|936|937|938|939|940|941|942|943|944|945|946|947|948|949|950|951|952|953|954|955|956|957|958|959|960
+34|3544|3548|3552|3556|3560|3564|3568|3572|3576|3580|3584|3588|3592|3596|3600|3604|3608|3612|3616|3620|3624|3628|3632|3636|3640|3644|3648|3652|3656|3660
+35|1083|1086|1089|1092|1095|1098|1101|1104|1107|1110|1113|1116|1119|1122|1125|1128|1131|1134|1137|1140|1143|1146|1149|1152|1155|1158|1161|1164|1167|1170
+36|4868|4866|4864|4862|4860|4858|4856|4854|4852|4850|4848|4846|4844|4842|4840|4838|4836|4834|4832|4830|4828|4826|4824|4822|4820|4818|4816|4814|4812|4810
+37|1051|1052|1053|1054|1055|1056|1057|1058|1059|1060|1061|1062|1063|1064|1065|1066|1067|1068|1069|1070|1071|1072|1073|1074|1075|1076|1077|1078|1079|1080
+38|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460|1460
+39|1111|1112|1113|1114|1115|1116|1117|1118|1119|1120|1121|1122|1123|1124|1125|1126|1127|1128|1129|1130|1131|1132|1133|1134|1135|1136|1137|1138|1139|1140
+40|702|704|706|708|710|712|714|716|718|720|722|724|726|728|730|732|734|736|738|740|742|744|746|748|750|752|754|756|758|760
+Generated at|23.01.2025 18:24:43
