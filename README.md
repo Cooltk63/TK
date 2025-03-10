@@ -1,85 +1,46 @@
-public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.IntStream;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SC10DaoImpl {
+
+    private static final Logger log = LoggerFactory.getLogger(SC10DaoImpl.class);
+
+    public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
         log.info("Inside SC10DaoImpl getSaveBySftp");
         Map<String, Object> updatedTabData = new HashMap<>();
 
-        // Extract input parameters from the map
-        String quarterEndDate = (String) map.get("qed");
-        String circleCode = (String) map.get("circleCode");
-        String reportName = (String) map.get("reportName");
-
-        log.info("Quarter End Date: " + quarterEndDate);
-
-        // Extract year, month, and day from quarterEndDate (format: dd/MM/yyyy)
-        String[] dateParts = quarterEndDate.split("/");
-        String yyyy = dateParts[2];
-        String mm = dateParts[1];
-        String dd = dateParts[0];
-
-        // Generate required date formats
-        String sessionDate = yyyy + mm + dd;  // Format: YYYYMMDD
-        String qDate = dd + mm + yyyy;  // Format: DDMMYYYY
-
-        // Get branch code based on circleCode and reportName
-        String branchCode = ccdpSftpDao.getBrcodeforsftp(circleCode, reportName);
-
-        log.info("Session Date: " + sessionDate);
-        log.info("Branch Code: " + branchCode);
-        log.info("Fetching file...");
-
         try {
+            // Extract input parameters
+            String quarterEndDate = (String) map.get("qed");
+            String circleCode = (String) map.get("circleCode");
+            String reportName = (String) map.get("reportName");
+
+            // Convert quarter date to required formats
+            String[] dateParts = quarterEndDate.split("/");
+            String sessionDate = dateParts[2] + dateParts[1] + dateParts[0]; // YYYYMMDD
+            String qDate = dateParts[0] + dateParts[1] + dateParts[2]; // DDMMYYYY
+
+            // Fetch branch code from the database
+            String branchCode = ccdpSftpDao.getBrcodeforsftp(circleCode, reportName);
+            log.info("Branch Code: {}", branchCode);
+
             // Retrieve file path from properties
             PropertiesConfiguration config = new PropertiesConfiguration("common.properties");
-            String mainPath = config.getProperty("ReportDirCCDP").toString();
+            String filePath = config.getProperty("ReportDirCCDP") + qDate +
+                    "/IFAMS_SCH10_" + sessionDate + "_" + circleCode + ".txt";
+            log.info("File Path: {}", filePath);
 
-            log.info("Generating the FILE NAME WITH PATH");
-            String filePath = mainPath + qDate + "/IFAMS_SCH10_" + sessionDate + "_" + circleCode + ".txt";
-            log.info("Received File Path: " + filePath);
-
-            int[] rowNumber = { 1,3,4,36,5,6,7,37,9,33,10,11,12,13,14,18,34,
-                    38,19,20,21,39,22,40,24,25,26,27,28,
-                    29,30,31,35,32 };
-            log.info("Array Length : " + rowNumber.length);
-            int rowNumberCount = 0;
-
-            List<String> lines = new ArrayList<>();
-
-            // Read the file
-            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (!line.trim().isEmpty()) {
-                        lines.add(line);
-                    }
-                }
-            }
-
-            // Initialize SC10 object and storage for row data
-            SC10 sc10 = new SC10();
-            Map<Integer, String[]> rowData = new HashMap<>();
-            String timeStamp = "";
-
-            // Process each line from the file
-            for (String line : lines) {
-                log.info("Processing line: " + line);
-                String[] columns = line.split("\\|");
-
-                // Extract timestamp if present
-                if (columns[0].trim().equalsIgnoreCase("Generated at")) {
-                    timeStamp = columns[1].trim();
-//                    sc10.setGeneratedTimeStamp(timeStamp);
-                    updatedTabData.put("FILETIMESTAMP", timeStamp);
-                    continue;
-                }
-
-                // Parse row number and store data
-                log.info("rowNumberCount BEFORE : " + rowNumberCount);
-                int rowNum = rowNumber[rowNumberCount++];
-                log.info("rowNumberCount Afer : " + rowNumberCount);
-                rowData.put(rowNum, columns);
-            }
-
-
-            // Define field names as per SC10.java (without row numbers)
+            // Row numbers and corresponding field names
+            int[] rowNumber = {1, 3, 4, 36, 5, 6, 7, 37, 9, 33, 10, 11, 12, 13, 14, 18, 34, 38, 19, 20, 21, 39, 22, 40, 24, 25, 26, 27, 28, 29, 30, 31, 35, 32};
             String[] fieldNames = {
                     "stcNstaff", "offResidenceA", "otherPremisesA", "electricFitting",
                     "totalA", "computers", "compSoftwareInt", "compSoftwareNonint",
@@ -91,51 +52,78 @@ public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
                     "premisesUnderCons", "grandTotal"
             };
 
-            // Step 1: Sort row numbers to maintain correct order
-            List<Integer> sortedRows = new ArrayList<>(rowData.keySet());
-            Collections.sort(sortedRows);
+            // Cache setter methods using MethodHandles for better performance
+            Map<Integer, MethodHandles.Lookup> methodCache = new HashMap<>();
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+            SC10 sc10 = new SC10();
 
-            // Step 2: Iterate over sorted rows and set values dynamically
-            for (int row : sortedRows) {
-                if (!rowData.containsKey(row)) {
-                    log.info("Skipping row " + row + " as it's not present in the file.");
-                    continue;  //  Skip missing row without setting any data
+            IntStream.range(0, rowNumber.length).forEach(i -> {
+                try {
+                    String setterName = "set" + capitalize(fieldNames[i]) + rowNumber[i];
+                    MethodType methodType = MethodType.methodType(void.class, String.class);
+                    methodCache.put(rowNumber[i], lookup.findVirtual(SC10.class, setterName, methodType));
+                } catch (NoSuchMethodException | IllegalAccessException e) {
+                    log.warn("No setter found for: {}", fieldNames[i] + rowNumber[i]);
                 }
+            });
 
-                String[] data = rowData.get(row);  //  Retrieve existing row data (guaranteed to be non-null)
+            // Read file and map data
+            String timeStamp = "";
+            Map<Integer, String> rowData = new HashMap<>();
 
-                for (int index = 1; index <= 30; index++) {  //  Ensure all 30 values are processed
-                    try {
-                        String setterName = "set" + capitalize(fieldNames[index - 1]) + row;  //  Adjust index correctly
-                        Method setterMethod = SC10.class.getMethod(setterName, String.class);
-                        setterMethod.invoke(sc10, data[index].trim());  //  Only set values for present rows
+            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
+                String line;
+                int rowIndex = 0;
 
-                    } catch (NoSuchMethodException e) {
-                        log.warn("No setter found: " + fieldNames[index - 1] + row);
-                    } catch (Exception e) {
-                        log.error("Error setting value for: " + fieldNames[index - 1] + row, e);
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (line.trim().isEmpty()) continue;
+
+                    log.info("Processing line: {}", line);
+                    String[] columns = line.split("\\|");
+
+                    // Extract timestamp if present
+                    if (columns[0].trim().equalsIgnoreCase("Generated at")) {
+                        timeStamp = columns[1].trim();
+                        updatedTabData.put("FILETIMESTAMP", timeStamp);
+                        continue;
+                    }
+
+                    // Map the second column data to respective row numbers
+                    if (rowIndex < rowNumber.length) {
+                        rowData.put(rowNumber[rowIndex], columns[1].trim());
+                        rowIndex++;
                     }
                 }
             }
 
-            // Update timestamp in CCDPFiletime Table database
+            // Invoke setters using cached method handles
+            rowData.forEach((row, value) -> {
+                Optional.ofNullable(methodCache.get(row)).ifPresent(methodHandle -> {
+                    try {
+                        methodHandle.invoke(sc10, value);
+                    } catch (Throwable e) {
+                        log.error("Error setting value for row {}: {}", row, e.getMessage());
+                    }
+                });
+            });
+
+            // Update timestamp in the database
             int updateTime = ccdpSftpDao.updateCCDPFiletime(timeStamp, circleCode, quarterEndDate, reportName);
-
-            log.info("TImeStamp Updated for CCDP_FILE_TIME : Status :" +updateTime + "reportName: " + reportName);
-
-
+            log.info("TimeStamp Updated: {}", updateTime);
 
             // Return response
             updatedTabData.put("sc10Data", sc10);
-            updatedTabData.put("message", "Data successfully extracted and mapped ");
+            updatedTabData.put("message", "Data successfully extracted and mapped");
             updatedTabData.put("status", true);
             updatedTabData.put("fileAndDataStatus", 1);
 
         } catch (IOException e) {
+            log.error("File reading error: {}", e.getMessage());
             updatedTabData.put("message", "Error reading file: " + e.getMessage());
             updatedTabData.put("fileAndDataStatus", 2);
             updatedTabData.put("status", false);
         } catch (Exception e) {
+            log.error("Unexpected error: {}", e.getMessage());
             updatedTabData.put("message", "Unexpected error: " + e.getMessage());
             updatedTabData.put("fileAndDataStatus", 2);
             updatedTabData.put("status", false);
@@ -143,3 +131,11 @@ public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
 
         return updatedTabData;
     }
+
+    /**
+     * Capitalizes the first letter of the given string.
+     */
+    private String capitalize(String str) {
+        return str == null || str.isEmpty() ? str : str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+}
