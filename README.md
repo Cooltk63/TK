@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} %clr(%-5level){red, yellow, green} %clr(%logger{36}){white} - %msg%n
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level:%file:%line - %highlight(%msg){ERROR=red, WARN=yellow, INFO=yellow, DEBUG=green, TRACE=magenta}%n
             </pattern>
         </encoder>
     </appender>
