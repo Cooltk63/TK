@@ -1,10 +1,8 @@
-EX8pme9taApNvzZj_ne5cWYBI1kwc-vNvFNbNADqS1DauQ?e=RNsL2f&wdOrigin=TEAMS-MAGLEV.teams_ns.rwc&wdExp=TEAMS-TREATMENT&wdhostclicktime=1741861268042&web=1:2 Refused to connect to 'blob:https://crsuat.info.sbi/51f99a00-f68f-4161-a4b9-446732c6fbde' because it violates the following Content Security Policy directive: "default-src 'self'". Note that 'connect-src' was not explicitly set, so 'default-
-
-
-This is the heraders i have added 
-
-add_header X-XSS-Protection "1; mode=block";
-add_header X-Frame-Options "DENY" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self';" always;
+ private Optional<String> getSC10ReportStatus(String circleCode,String qed){
+        log.info("### Getting Report Status From NON CR for Schedule 10");
+        log.info("circleCode:-" + circleCode);
+        log.info("qed:-" + qed);
+        String qry="select NVL(NONCR_FLAG,'10') from BS_NONCR where NONCR_CIRCLE=? and NONCR_QDATE=to_date(?,'dd/mm/yyyy') AND NONCR_NAME=?";
+        /*String Flag = */
+        return Optional.ofNullable(jdbcTemplate.queryForObject(qry, new Object[]{circleCode, qed, "Schedule 10"}, String.class));
+    }
