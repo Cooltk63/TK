@@ -51,3 +51,9 @@
         return null;
     }
     
+
+
+
+Could not load [org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyFactorySpi]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.         java.lang.IllegalStateException: Illegal access: this web application instance has been stopped already. Could not load [org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyFactorySpi]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+
+I am getting this error for above provided code while using the tomcat server how to solved this error.
