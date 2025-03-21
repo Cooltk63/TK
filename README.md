@@ -1,20 +1,15 @@
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 
-public class StreamToByteArray {
-    public static byte[] convertStreamToByteArray(InputStream keyStream) throws IOException {
-        if (keyStream == null) {
-            throw new IllegalArgumentException("InputStream cannot be null");
-        }
-
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = keyStream.read(buffer)) != -1) {
-                byteArrayOutputStream.write(buffer, 0, bytesRead);
-            }
-            return byteArrayOutputStream.toByteArray();
-        }
+public class KeyLoader {
+    public static PrivateKey loadPrivateKey(String filePath) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA"); // No Bouncy Castle needed
+        return keyFactory.generatePrivate(keySpec);
     }
 }
