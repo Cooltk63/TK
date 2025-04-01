@@ -1,27 +1,37 @@
-#!/bin/bash
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 
-# Get the directory where the script is located
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+public class AESDecryption {
+    public static void main(String[] args) throws Exception {
+        // Read the encrypted file
+        byte[] encryptedData = Files.readAllBytes(Paths.get("path/to/encrypted/file"));
 
-# Define destination directory (modify this to your Tomcat webapps directory)
-DEST_DIR="/path/to/tomcat/webapps"  # Change this to your Tomcat directory
+        // Read the key file (assuming it's stored as raw bytes)
+        byte[] keyBytes = Files.readAllBytes(Paths.get("path/to/key/file"));
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
 
-# Check if destination directory exists
-if [ ! -d "$DEST_DIR" ]; then
-    echo "Destination directory $DEST_DIR does not exist."
-    exit 1
-fi
+        // IV (Assuming it is provided separately or stored in the encrypted file)
+        byte[] ivBytes = new byte[16]; // Replace with actual IV
+        IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
 
-# Copy .war files from the script's directory to the destination
-echo "Copying .war files from $SCRIPT_DIR to $DEST_DIR..."
-cp -v "$SCRIPT_DIR"/*.war "$DEST_DIR"/
+        // Initialize Cipher
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
 
-# Change ownership to oracle
-echo "Changing ownership to oracle..."
-chown oracle:oracle "$DEST_DIR"/*.war
+        // Decode Base64 (if applicable)
+        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
 
-# Set full permissions (777)
-echo "Setting full permissions (777)..."
-chmod 777 "$DEST_DIR"/*.war
+        // Decrypt
+        byte[] decryptedData = cipher.doFinal(encryptedBytes);
 
-echo "Deployment completed successfully!"
+        // Save the decrypted file
+        Files.write(Paths.get("path/to/decrypted/file"), decryptedData);
+
+        System.out.println("Decryption completed successfully!");
+    }
+}
