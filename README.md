@@ -1,30 +1,40 @@
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Base64;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 
-public class AESKeyDecoder {
+public class AESDecryptor {
     public static void main(String[] args) throws Exception {
-        // Read the key file
-        byte[] keyFileContent = Files.readAllBytes(Paths.get("path/to/key/file"));
+        // Load encrypted file as raw bytes (DO NOT Base64 decode)
+        byte[] encryptedData = Files.readAllBytes(Paths.get("path/to/encrypted/file"));
 
-        // Convert file content to String
-        String base64Key = new String(keyFileContent).trim(); // Remove extra spaces/newlines
+        // Extract the IV (first 16 bytes)
+        byte[] iv = Arrays.copyOfRange(encryptedData, 0, 16);
 
-        // Decode Base64
-        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
+        // Extract actual ciphertext (after IV)
+        byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
 
-        // Ensure key is valid AES size (16, 24, or 32 bytes)
-        if (decodedKey.length >= 32) {
-            decodedKey = Arrays.copyOf(decodedKey, 32); // Use 32 bytes for AES-256
-        } else if (decodedKey.length >= 24) {
-            decodedKey = Arrays.copyOf(decodedKey, 24); // Use 24 bytes for AES-192
-        } else if (decodedKey.length >= 16) {
-            decodedKey = Arrays.copyOf(decodedKey, 16); // Use 16 bytes for AES-128
-        } else {
-            throw new IllegalArgumentException("Invalid AES key length: " + decodedKey.length + " bytes");
-        }
+        // Load and decode the AES key
+        byte[] keyBytes = Files.readAllBytes(Paths.get("path/to/key/file"));
+        byte[] decodedKey = Base64.getDecoder().decode(new String(keyBytes).trim());
 
-        System.out.println("Decoded AES key length: " + decodedKey.length + " bytes");
+        // Ensure valid AES key length
+        byte[] finalKey = new byte[32]; // AES-256
+        System.arraycopy(decodedKey, 0, finalKey, 0, Math.min(decodedKey.length, finalKey.length));
+
+        // Set up AES decryption
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKeySpec secretKey = new SecretKeySpec(finalKey, "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+
+        // Decrypt data
+        byte[] decryptedData = cipher.doFinal(cipherText);
+
+        // Print or save decrypted output
+        System.out.println("Decrypted Data:\n" + new String(decryptedData, "UTF-8"));
     }
 }
