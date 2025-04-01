@@ -2,43 +2,60 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Arrays;
 
 public class AESDecryption {
-    
+
     public static void main(String[] args) {
         try {
-            // 🔹 Base64 Encoded Encrypted Data (Ciphertext)
-            String base64CipherText = "YOUR_BASE64_ENCRYPTED_CIPHERTEXT"; // Replace with your actual Base64 encrypted string
-            System.out.println("Ciphertext (Base64): " + base64CipherText);
+            // 🔹 Load Encrypted File (Read as raw bytes, NOT Base64)
+            byte[] encryptedData = Files.readAllBytes(Paths.get("C:\\Users\\v1012297\\Downloads\\keys\\IFAMS_SCH10_20240331_002_Encrypted"));
+            System.out.println("Encrypted data length: " + encryptedData.length);
 
-            // 🔹 Base64 Encoded Key
-            String base64Key = "YOUR_BASE64_KEY"; // Replace with your actual Base64 key
-            System.out.println("Key (Base64): " + base64Key);
+            // 🔹 Extract IV (First 16 bytes)
+            byte[] iv = Arrays.copyOfRange(encryptedData, 0, 16);
+            System.out.println("IV Length: " + iv.length);
 
-            // 🔹 Extract the key (assuming 256-bit AES, so it's 32 bytes)
-            byte[] decodedKey = Base64.getDecoder().decode(base64Key);
-            SecretKeySpec secretKey = new SecretKeySpec(decodedKey, "AES");
+            // 🔹 Extract Actual Ciphertext (After IV)
+            byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
+            System.out.println("CipherText Length: " + cipherText.length);
 
-            // 🔹 Extract the IV (first 16 bytes from the ciphertext)
-            byte[] decodedCipherText = Base64.getDecoder().decode(base64CipherText);
-            byte[] iv = new byte[16];
-            System.arraycopy(decodedCipherText, 0, iv, 0, iv.length);
+            // 🔹 Load Key File (Base64 encoded key)
+            byte[] keyBytes = Files.readAllBytes(Paths.get("C:\\Users\\v1012297\\Downloads\\keys\\IFAMS_SCH10_20240331_002_Dynamic_Key.key"));
+            String keyBase64 = new String(keyBytes).trim();
+            System.out.println("Raw Key File (Base64): " + keyBase64);
 
-            // 🔹 Extract the actual ciphertext (after the IV)
-            byte[] cipherText = new byte[decodedCipherText.length - iv.length];
-            System.arraycopy(decodedCipherText, iv.length, cipherText, 0, cipherText.length);
-            
-            // 🔹 Initialize Cipher for AES/CBC/PKCS5Padding Decryption
+            // 🔹 Decode Base64 key
+            byte[] decodedKey = Base64.getDecoder().decode(keyBase64);
+            System.out.println("Decoded Key Length: " + decodedKey.length);
+
+            // 🔹 Ensure Valid AES Key Length (16, 24, or 32 bytes)
+            byte[] finalKey;
+            if (decodedKey.length == 16 || decodedKey.length == 24 || decodedKey.length == 32) {
+                finalKey = decodedKey; // Key is already valid
+                System.out.println("finalKey Length: " + finalKey.length);
+            } else {
+                // If key length is invalid, adjust it
+                finalKey = new byte[16]; // Default to AES-128 (16 bytes)
+                System.arraycopy(decodedKey, 0, finalKey, 0, Math.min(decodedKey.length, finalKey.length));
+                System.out.println("finalKey Length: " + finalKey.length);
+            }
+
+            // 🔹 Setup AES Decryption (AES/CBC/PKCS5Padding)
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            SecretKeySpec secretKey = new SecretKeySpec(finalKey, "AES");
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
 
-            // 🔹 Decrypt the ciphertext
+            // 🔹 Decrypt Data
             byte[] decryptedData = cipher.doFinal(cipherText);
-            
-            // 🔹 Print the Decrypted Data (assuming UTF-8 encoding)
-            System.out.println("Decrypted Data: " + new String(decryptedData, "UTF-8"));
+
+            // 🔹 Print or Save Decrypted Output
+            System.out.println("Decrypted Data:\n" + new String(decryptedData, "UTF-8"));
+
         } catch (Exception e) {
             System.err.println("Decryption Error: " + e.getMessage());
             e.printStackTrace();
