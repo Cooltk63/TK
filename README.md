@@ -1,32 +1,26 @@
 DECLARE
-    v_clob CLOB;
-    v_blob BLOB;
-    v_varchar VARCHAR2(32767);
+    v_blob      BLOB;
+    v_clob      CLOB;
+    v_dest_offset NUMBER := 1;
+    v_src_offset NUMBER := 1;
+    v_amount NUMBER := DBMS_LOB.LOBMAXSIZE;
+    v_base64    CLOB;
 BEGIN
-    -- Retrieve BLOB data into a variable
-    SELECT crs_reports_data INTO v_blob 
+    -- Retrieve PDF BLOB from table
+    SELECT crs_reports_data INTO v_blob
     FROM reports_submission_id 
     WHERE ROWNUM = 1;
 
-    -- Create a temporary CLOB
-    DBMS_LOB.CREATETEMPORARY(v_clob, TRUE);
+    -- Create temporary CLOB to store Base64
+    DBMS_LOB.CREATETEMPORARY(v_base64, TRUE);
 
-    -- Convert BLOB to CLOB
-    DBMS_LOB.CONVERTTOCLOB(
-        dest_lob    => v_clob,
-        src_blob    => v_blob, 
-        amount      => DBMS_LOB.LOBMAXSIZE,
-        dest_offset => 1,
-        src_offset  => 1
-    );
+    -- Convert BLOB to Base64 encoded CLOB
+    v_base64 := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(DBMS_LOB.SUBSTR(v_blob, DBMS_LOB.GETLENGTH(v_blob), 1)));
 
-    -- Convert CLOB to VARCHAR2 (taking first 32,767 characters)
-    v_varchar := DBMS_LOB.SUBSTR(v_clob, 32767, 1);
-
-    -- Print or use the result
-    DBMS_OUTPUT.PUT_LINE(v_varchar);
+    -- Print the Base64 output
+    DBMS_OUTPUT.PUT_LINE(v_base64);
 
     -- Free temporary CLOB
-    DBMS_LOB.FREETEMPORARY(v_clob);
+    DBMS_LOB.FREETEMPORARY(v_base64);
 END;
 /
