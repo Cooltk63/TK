@@ -5,11 +5,11 @@ DECLARE
     v_base64     CLOB;
     v_length     NUMBER;
     v_offset     NUMBER := 1;
-    v_chunk_size NUMBER := 32767;
+    v_chunk_size NUMBER := 30000; -- Slightly less than 32767 for safety
 BEGIN
     -- Retrieve BLOB data from table
-    SELECT crs_reports_data INTO v_blob
-    FROM reports_submission_id
+    SELECT reports_data INTO v_blob
+    FROM crs_reports
     WHERE ROWNUM = 1;
 
     -- Get total BLOB length
@@ -23,15 +23,22 @@ BEGIN
         -- Extract RAW chunk from BLOB
         v_raw := DBMS_LOB.SUBSTR(v_blob, v_chunk_size, v_offset);
 
-        -- Encode RAW chunk to Base64 and append to CLOB
-        DBMS_LOB.WRITEAPPEND(v_base64, 
-            UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(v_raw)));
+        -- Encode RAW chunk to Base64
+        DECLARE
+            v_encoded VARCHAR2(32767);
+        BEGIN
+            v_encoded := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(v_raw));
+
+            -- Append to CLOB
+            DBMS_LOB.WRITEAPPEND(v_base64, LENGTH(v_encoded), v_encoded);
+        END;
 
         -- Move to next chunk
         v_offset := v_offset + v_chunk_size;
     END LOOP;
 
     -- Output the Base64 result
+    DBMS_OUTPUT.PUT_LINE('Base64 Encoded Data:');
     DBMS_OUTPUT.PUT_LINE(v_base64);
 
     -- Free temporary CLOB
