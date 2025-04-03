@@ -1,66 +1,10 @@
-import javax.crypto.*;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Base64;
+D:\jdk1.8.0_351\bin\java.exe "-javaagent:E:\Tushar Khade\Softwares\2025-IDE\IntelliSD\lib\idea_rt.jar=65034" -Dfile.encoding=UTF-8 -classpath "D:\jdk1.8.0_351\jre\lib\charsets.jar;D:\jdk1.8.0_351\jre\lib\deploy.jar;D:\jdk1.8.0_351\jre\lib\ext\access-bridge-64.jar;D:\jdk1.8.0_351\jre\lib\ext\cldrdata.jar;D:\jdk1.8.0_351\jre\lib\ext\dnsns.jar;D:\jdk1.8.0_351\jre\lib\ext\jaccess.jar;D:\jdk1.8.0_351\jre\lib\ext\jfxrt.jar;D:\jdk1.8.0_351\jre\lib\ext\localedata.jar;D:\jdk1.8.0_351\jre\lib\ext\nashorn.jar;D:\jdk1.8.0_351\jre\lib\ext\sunec.jar;D:\jdk1.8.0_351\jre\lib\ext\sunjce_provider.jar;D:\jdk1.8.0_351\jre\lib\ext\sunmscapi.jar;D:\jdk1.8.0_351\jre\lib\ext\sunpkcs11.jar;D:\jdk1.8.0_351\jre\lib\ext\zipfs.jar;D:\jdk1.8.0_351\jre\lib\javaws.jar;D:\jdk1.8.0_351\jre\lib\jce.jar;D:\jdk1.8.0_351\jre\lib\jfr.jar;D:\jdk1.8.0_351\jre\lib\jfxswt.jar;D:\jdk1.8.0_351\jre\lib\jsse.jar;D:\jdk1.8.0_351\jre\lib\management-agent.jar;D:\jdk1.8.0_351\jre\lib\plugin.jar;D:\jdk1.8.0_351\jre\lib\resources.jar;D:\jdk1.8.0_351\jre\lib\rt.jar;F:\Projects\CRS Projects\CRS_Revamp\Backend\decryption_IFAMS\out\production\decryption_IFAMS" decryptPayload
+Decryption Error: Illegal base64 character 3f
+java.lang.IllegalArgumentException: Illegal base64 character 3f
+	at java.util.Base64$Decoder.decode0(Base64.java:714)
+	at java.util.Base64$Decoder.decode(Base64.java:526)
+	at java.util.Base64$Decoder.decode(Base64.java:549)
+	at decryptPayload.decryptPayload(decryptPayload.java:46)
+	at decryptPayload.main(decryptPayload.java:30)
 
-public class decryptPayload {
-
-    private static final int TAG_LENGTH_BIT = 128;
-    private static final String AES_ALGO = "AES";
-    private static final String AES_CIPHER = "AES/CBC/PKCS5Padding";
-
-    public static void main(String[] args) {
-        try {
-            // 1️⃣ Read Encrypted File (Base64 Encoded)
-            String encryptedBase64 = new String(Files.readAllBytes(Paths.get("C:\\Users\\v1012297\\Downloads\\keys\\IFAMS_SCH10_20240331_002_Encrypted")));
-
-            // 2️⃣ Read the Key File (Plain Text Key)
-            String keyString = new String(Files.readAllBytes(Paths.get("C:\\Users\\v1012297\\Downloads\\keys\\IFAMS_SCH10_20240331_002_Dynamic_Key.key")));
-
-           String DecodedKey= Arrays.toString(Base64.getDecoder().decode(keyString));
-
-            // 3️⃣ Decrypt using EncryptedData & DecodedKey
-            String decryptedText = decryptPayload(encryptedBase64, DecodedKey);
-
-            // 4️⃣ Print Decrypted Data
-            System.out.println("Decrypted Data:\n" + decryptedText);
-
-        } catch (Exception e) {
-            System.err.println("Decryption Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public static String decryptPayload(String encryptedText, String secretKey) throws Exception {
-
-        String decryptedText;
-        //IvParameterSpec iv;
-        try {
-            byte[] encryptedTextByte = Base64.getDecoder().decode(encryptedText);
-            byte[] keybyte = secretKey.getBytes(StandardCharsets.UTF_8);
-            byte[] ivKey = Arrays.copyOf(keybyte, 16);
-            //iv = new IvParameterSpec(ivKey);
-            SecretKey secretKeyObject = new SecretKeySpec(keybyte, AES_ALGO);
-            System.out.println("ivKey==>" + ivKey);
-            Cipher cipher = Cipher.getInstance(AES_CIPHER);
-            //cipher.init(Cipher.DECRYPT_MODE, secretKeyObject, iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKeyObject, new GCMParameterSpec(TAG_LENGTH_BIT, ivKey));//R
-            byte[] decryptedByte = cipher.doFinal(encryptedTextByte);
-            decryptedText = new String(decryptedByte);
-
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
-                 | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw new Exception(e.getMessage());
-        }
-        return decryptedText;
-    }
-
-
-}
+Process finished with exit code 0
