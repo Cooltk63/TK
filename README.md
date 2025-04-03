@@ -1,61 +1,156 @@
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Base64;
+    @Override
+    public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
+        log.info("Inside SC10DaoImpl Reading the .TXT File");
+        Map<String, Object> updatedTabData = new HashMap<>();
 
-public class AESDecryption {
-    public static void main(String[] args) {
+        // Extract input parameters from the map
+        String quarterEndDate = (String) map.get("qed");
+        String circleCode = (String) map.get("circleCode");
+        String reportName = (String) map.get("reportName");
+
+        log.info("Quarter End Date: " + quarterEndDate);
+
+        // Extract year, month, and day from quarterEndDate (format: dd/MM/yyyy)
+        String[] dateParts = quarterEndDate.split("/");
+        String yyyy = dateParts[2];
+        String mm = dateParts[1];
+        String dd = dateParts[0];
+
+        // Generate required date formats
+        String sessionDate = yyyy + mm + dd;  // Format: YYYYMMDD
+        String qDate = dd + mm + yyyy;  // Format: DDMMYYYY
+
+        log.info("Session Date: " + sessionDate);
+        log.info("Fetching file...");
+
         try {
-            // 1️⃣ Read Encrypted File
-            byte[] encryptedData = Files.readAllBytes(Paths.get("C:\\Users\\v1012297\\Downloads\\keys\\IFAMS_SCH10_20240331_002_Encrypted"));
-            System.out.println("🔹 Encrypted Data Length: " + encryptedData.length);
+            // Retrieve file path from properties
+            PropertiesConfiguration config = new PropertiesConfiguration("common.properties");
 
-            // 2️⃣ Extract IV (First 16 bytes)
-            if (encryptedData.length < 16) throw new IllegalArgumentException("Invalid encrypted file! Size too small.");
-            byte[] iv = Arrays.copyOfRange(encryptedData, 0, 16);
-            System.out.println("IV Length: " + iv.length);
+            //Path where file get Read
+            String mainPath = config.getProperty("ReportDirIFAMSS").toString();
 
-            // 3️⃣ Extract CipherText (After IV)
-            byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
-            System.out.println("🔹 CipherText Length: " + cipherText.length);
+            // Building the FileName Here with Complete Path
+            String filePath = mainPath + qDate + "/IFAMS_SCH10_" + sessionDate + "_" + circleCode + ".txt";
 
-            // 4️⃣ Read and Decode the Key File
-            byte[] keyBytes = Files.readAllBytes(Paths.get("C:\\Users\\v1012297\\Downloads\\keys\\IFAMS_SCH10_20240331_002_Dynamic_Key.key"));
-            String keyBase64 = new String(keyBytes).trim();
-            System.out.println("🔹 Base64 Encoded Key Length: " + keyBase64.length());
+            log.info("File Reading Path : " + mainPath);
 
-            // 5️⃣ Decode Base64 Key
-            byte[] decodedKey = Base64.getDecoder().decode(keyBase64);
-            System.out.println("🔹 Decoded Key Length: " + decodedKey.length);
+            log.info("File Received Path: " + filePath);
 
-            // 6️⃣ Validate Key Size (Must Be 16, 24, or 32 Bytes)
-            if (decodedKey.length != 16 && decodedKey.length != 24 && decodedKey.length != 32) {
-                throw new IllegalArgumentException("Invalid AES Key Length: " + decodedKey.length);
+
+            int[] rowNumber = {1, 3, 4, 36, 5, 6, 7, 37, 9, 33, 10, 11, 12, 13, 14, 18, 34,
+                    38, 19, 20, 21, 39, 22, 40, 24, 25, 26, 27, 28,
+                    29, 30, 31, 35, 32};
+            int rowNumberCount = 0;
+
+            List<String> lines = new ArrayList<>();
+
+            // Read the file
+            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (!line.trim().isEmpty()) {
+                        lines.add(line);
+                    }
+                }
             }
 
-            // 7️⃣ Perform AES Decryption
-            byte[] decryptedData = decryptAES(cipherText, decodedKey, iv);
-            System.out.println("✅ Decrypted Data:\n" + new String(decryptedData, "UTF-8"));
+            // Initialize SC10 object and storage for row data
+            SC10 sc10 = new SC10();
+            Map<Integer, String[]> rowData = new HashMap<>();
+            String timeStamp = "";
 
+            // Process each line from the file
+            for (String line : lines) {
+                String[] columns = line.split("\\|");
+
+                //  Replace null or empty values with "0"
+                for (int i = 0; i < columns.length; i++) {
+                    if (columns[i] == null || columns[i].trim().isEmpty()) {
+//                        log.warn("Empty value found at index " + i + ". Replacing with 0.");
+                        columns[i] = "0";  //  Set empty values to "0"
+                    }
+                }
+
+                // Extract timestamp if present
+                if (columns[0].trim().equalsIgnoreCase("Generated at")) {
+                    timeStamp = columns[1].trim();
+                    log.info("Time Stamp Extracted from .txt File ::" + timeStamp);
+                    updatedTabData.put("FILETIMESTAMP", timeStamp);
+                    continue;
+                }
+
+                // Parse row number and store data
+                int rowNum = rowNumber[rowNumberCount++];
+                rowData.put(rowNum, columns);
+            }
+
+
+            // Define field names as per SC10.java (without row numbers)
+            String[] fieldNames = {
+                    "stcNstaff", "offResidenceA", "otherPremisesA", "electricFitting",
+                    "totalA", "computers", "compSoftwareInt", "compSoftwareNonint",
+                    "compSoftwareTotal", "motor", "offResidenceB", "stcLho",
+                    "otherPremisesB", "otherMachineryPlant", "totalB", "totalFurnFix",
+                    "landNotRev", "landRev", "landRevEnh", "offBuildNotRev",
+                    "offBuildRev", "offBuildRevEnh", "residQuartNotRev", "residQuartRev",
+                    "residQuartRevEnh", "premisTotal", "revtotal", "totalC",
+                    "premisesUnderCons", "grandTotal"
+            };
+
+            // Step 1: Sort row numbers to maintain correct order
+            List<Integer> sortedRows = new ArrayList<>(rowData.keySet());
+            Collections.sort(sortedRows);
+
+            // Step 2: Iterate over sorted rows and set values dynamically
+            for (int row : sortedRows) {
+                log.info("row : " + row);
+                if (!rowData.containsKey(row)) {
+                    log.info("Skipping row " + row + " as it's not present in the file.");
+                    continue;  //  Skip missing row without setting any data
+                }
+
+                String[] data = rowData.get(row);
+
+                //  Retrieve existing row data (guaranteed to be non-null)
+
+                for (int index = 1; index <= 30; index++) {  //  Ensure all 30 values are processed
+                    try {
+
+                        String setterName = "set" + capitalize(fieldNames[index - 1]) + row;  //  Adjust index correctly
+                        Method setterMethod = SC10.class.getMethod(setterName, String.class);
+                        setterMethod.invoke(sc10, data[index].trim());  //  Only set values for present rows
+
+                    } catch (NoSuchMethodException e) {
+                        log.warn("No setter found: " + fieldNames[index - 1] + row);
+                    } catch (Exception e) {
+                        log.error("Error setting value for: " + fieldNames[index - 1] + row, e);
+                    }
+                }
+            }
+
+            // Update timestamp in CCDPFiletime Table database
+            log.info("Updating / Inserting Data into CCDPFiletime " + "FILE Extracted timeStamp ::" + timeStamp + "circleCode ::" + circleCode + "quarterEndDate ::" + quarterEndDate + "reportName ::" + reportName);
+            int updateTime = ccdpSftpDao.updateCCDPFiletime(timeStamp, circleCode, quarterEndDate, reportName);
+
+            log.info("TImeStamp Updated for CCDP_FILE_TIME : Status :" + updateTime + "reportName: " + reportName);
+
+
+            // Return response
+            updatedTabData.put("sc10Data", sc10);
+            updatedTabData.put("message", "Data received from IFAMS and imported successfully");
+            updatedTabData.put("status", true);
+            updatedTabData.put("fileAndDataStatus", 1);
+
+        } catch (IOException e) {
+            updatedTabData.put("message", "Error reading file: " + e.getMessage());
+            updatedTabData.put("fileAndDataStatus", 2);
+            updatedTabData.put("status", false);
         } catch (Exception e) {
-            System.err.println("❌ Decryption Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private static byte[] decryptAES(byte[] cipherText, byte[] secretKey, byte[] iv) throws Exception {
-        if (iv.length != 16) {
-            throw new IllegalArgumentException("❌ Invalid IV length: " + iv.length + ". Must be 16 bytes.");
+            updatedTabData.put("message", "Unexpected error: " + e.getMessage());
+            updatedTabData.put("fileAndDataStatus", 2);
+            updatedTabData.put("status", false);
         }
 
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec keySpec = new SecretKeySpec(secretKey, "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-        return cipher.doFinal(cipherText);
+        return updatedTabData;
     }
-}
