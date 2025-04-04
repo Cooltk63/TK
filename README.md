@@ -8,3 +8,17 @@ public static void decryptFile(String encryptedFilePath, String decryptedFilePat
     // Save decrypted content as a new .txt file
     Files.write(Paths.get(decryptedFilePath), decryptedBytes);
 }
+
+
+
+// Path of the encrypted file (without any extension)
+String encryptedFilePath = mainPath + qDate + "/IFAMS_SCH10_" + sessionDate + "_" + circleCode;
+
+// Define the decrypted file path (explicitly adding .txt extension)
+String decryptedFilePath = encryptedFilePath + "_decrypted.txt";
+
+// Call decryption method
+decryptFile(encryptedFilePath, decryptedFilePath);
+
+// Now use the decrypted file for reading
+filePath = decryptedFilePath;
