@@ -96,3 +96,38 @@ public class YourApp {
         }
     }
 }
+
+xxxxx
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.io.FileOutputStream;
+import java.security.SecureRandom;
+
+public class KeyAndIVGenerator {
+
+    public static void main(String[] args) throws Exception {
+        // Generate AES 256-bit Key
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        keyGen.init(256); // AES-256
+        SecretKey secretKey = keyGen.generateKey();
+        byte[] keyBytes = secretKey.getEncoded();
+
+        // Generate 16-byte IV
+        byte[] ivBytes = new byte[16];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(ivBytes);
+
+        // Save Key to file
+        try (FileOutputStream keyOut = new FileOutputStream("aes.key")) {
+            keyOut.write(keyBytes);
+        }
+
+        // Save IV to file
+        try (FileOutputStream ivOut = new FileOutputStream("aes.iv")) {
+            ivOut.write(ivBytes);
+        }
+
+        System.out.println("Key and IV generated successfully.");
+    }
+}
