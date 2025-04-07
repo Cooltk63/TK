@@ -70,3 +70,29 @@ public class AESFileTool {
         }
     }
 }
+
+
+
+xxxxxx
+import your.package.name.AESFileTool;
+
+public class YourApp {
+    public static void main(String[] args) {
+        try {
+            String inputFile = "data/input.txt";
+            String encryptedFile = "data/output.aes";
+            String decryptedFile = "data/output_decrypted.txt";
+            String keyFile = "data/aes.key";
+            String ivFile = "data/aes.iv";
+
+            // Encrypt the file
+            AESFileTool.encrypt(inputFile, encryptedFile, keyFile, ivFile);
+
+            // Decrypt the file
+            AESFileTool.decrypt(encryptedFile, decryptedFile, keyFile, ivFile);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
