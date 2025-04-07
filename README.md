@@ -1,24 +1,72 @@
-public static void decryptFile(String encryptedFilePath, String decryptedFilePath) throws Exception {
-    // Read encrypted file as bytes
-    byte[] encryptedBytes = Files.readAllBytes(Paths.get(encryptedFilePath));
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-    // Perform decryption (Replace this with your actual decryption logic)
-    byte[] decryptedBytes = decrypt(encryptedBytes);  // You must implement this method
+public class AESFileTool {
 
-    // Save decrypted content as a new .txt file
-    Files.write(Paths.get(decryptedFilePath), decryptedBytes);
+    private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
+
+    public static byte[] readBytes(String path) throws Exception {
+        return Files.readAllBytes(Paths.get(path));
+    }
+
+    public static void encrypt(String inputPath, String outputPath, String keyPath, String ivPath) throws Exception {
+        byte[] keyBytes = readBytes(keyPath);
+        byte[] ivBytes = readBytes(ivPath);
+        byte[] inputBytes = readBytes(inputPath);
+
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE,
+                new SecretKeySpec(keyBytes, "AES"),
+                new IvParameterSpec(ivBytes));
+
+        byte[] encrypted = cipher.doFinal(inputBytes);
+        Files.write(Paths.get(outputPath), encrypted);
+        System.out.println("Encrypted file written to: " + outputPath);
+    }
+
+    public static void decrypt(String inputPath, String outputPath, String keyPath, String ivPath) throws Exception {
+        byte[] keyBytes = readBytes(keyPath);
+        byte[] ivBytes = readBytes(ivPath);
+        byte[] inputBytes = readBytes(inputPath);
+
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE,
+                new SecretKeySpec(keyBytes, "AES"),
+                new IvParameterSpec(ivBytes));
+
+        byte[] decrypted = cipher.doFinal(inputBytes);
+        Files.write(Paths.get(outputPath), decrypted);
+        System.out.println("Decrypted file written to: " + outputPath);
+    }
+
+    public static void main(String[] args) {
+        if (args.length != 5) {
+            System.out.println("Usage:");
+            System.out.println("  java -jar AESFileTool.jar encrypt <inputFilePath> <outputFilePath> <keyFilePath> <ivFilePath>");
+            System.out.println("  java -jar AESFileTool.jar decrypt <inputFilePath> <outputFilePath> <keyFilePath> <ivFilePath>");
+            return;
+        }
+
+        String operation = args[0];
+        String inputPath = args[1];
+        String outputPath = args[2];
+        String keyPath = args[3];
+        String ivPath = args[4];
+
+        try {
+            if ("encrypt".equalsIgnoreCase(operation)) {
+                encrypt(inputPath, outputPath, keyPath, ivPath);
+            } else if ("decrypt".equalsIgnoreCase(operation)) {
+                decrypt(inputPath, outputPath, keyPath, ivPath);
+            } else {
+                System.out.println("Invalid operation. Use 'encrypt' or 'decrypt'.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
-
-
-
-// Path of the encrypted file (without any extension)
-String encryptedFilePath = mainPath + qDate + "/IFAMS_SCH10_" + sessionDate + "_" + circleCode;
-
-// Define the decrypted file path (explicitly adding .txt extension)
-String decryptedFilePath = encryptedFilePath + "_decrypted.txt";
-
-// Call decryption method
-decryptFile(encryptedFilePath, decryptedFilePath);
-
-// Now use the decrypted file for reading
-filePath = decryptedFilePath;
