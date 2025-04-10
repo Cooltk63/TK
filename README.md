@@ -1,4 +1,4 @@
-Got it. Here's a revised version of the email that focuses only on your personal concern and keeps the tone professional yet firm:
+Thanks for the clarification. Here’s the updated version of the email including the specific detail about the rating:
 
 
 ---
@@ -9,13 +9,13 @@ Dear [Manager's Name],
 
 I’m writing to raise a personal concern regarding [Team Member's Name].
 
-During recent conversations, [he/she/they] have spoken to me in an arrogant tone and have responded in a disrespectful manner. I find this behavior unacceptable and unprofessional. I expect basic respect in all work-related interactions, regardless of the discussion topic.
+Recently, [he/she/they] have spoken to me in an arrogant and disrespectful tone during our interactions. I find this behavior unprofessional and personally unacceptable. I expect mutual respect in all work-related communication.
 
-Additionally, I’ve come to know that performance ratings, which are meant to be confidential, have been leaked. I believe this is a serious issue and raises questions about how such sensitive information became available to team members.
+Additionally, I was surprised to learn that [Team Member's Name] is aware of the performance rating I gave during the appraisal process — specifically, that I lowered it by 0.10. This information was confidential, and I’m concerned about how it was leaked. This raises serious questions about the handling of sensitive data.
 
-If this behavior continues or is not addressed, I will have no choice but to escalate the matter to HR, as it is directly affecting me and my ability to work comfortably and respectfully.
+If this behavior and breach of confidentiality are not addressed, I will have no choice but to escalate the matter to HR, as it is directly affecting me and my working environment.
 
-I request your support in resolving this at the earliest.
+I would appreciate your support in resolving this issue promptly.
 
 Best regards,
 [Your Full Name]
@@ -24,4 +24,4 @@ Best regards,
 
 ---
 
-Let me know if you want it even more direct or want to add specific examples.
+Let me know if you want to include a request for a one-on-one discussion or keep it just as written.
