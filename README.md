@@ -1,27 +1,78 @@
-Thanks for the clarification. Here’s the updated version of the email including the specific detail about the rating:
+package com.example.auth.service;
+
+import com.example.auth.dao.AuthDao;
+import com.example.auth.entity.BsUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+
+@Service
+public class AuthServiceImpl implements UserDetailsService {
+
+    @Autowired
+    private AuthDao authDao;
+
+    @Override
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        BsUser user = authDao.findByUserId(userId);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found: " + userId);
+        }
+
+        // Grant authority based on user_role column
+        return new org.springframework.security.core.userdetails.User(
+                user.getUserId(),
+                user.getPassword(), // make sure password is hashed
+                Collections.singletonList(new SimpleGrantedAuthority(user.getUserRole()))
+        );
+    }
+}
 
 
----
+xxxxxx
 
-Subject: Concern Regarding Team Member's Behavior and Confidentiality Breach
+package com.example.auth.dao;
 
-Dear [Manager's Name],
+import com.example.auth.entity.BsUser;
 
-I’m writing to raise a personal concern regarding [Team Member's Name].
+public interface AuthDao {
+    BsUser findByUserId(String userId);
+}
 
-Recently, [he/she/they] have spoken to me in an arrogant and disrespectful tone during our interactions. I find this behavior unprofessional and personally unacceptable. I expect mutual respect in all work-related communication.
-
-Additionally, I was surprised to learn that [Team Member's Name] is aware of the performance rating I gave during the appraisal process — specifically, that I lowered it by 0.10. This information was confidential, and I’m concerned about how it was leaked. This raises serious questions about the handling of sensitive data.
-
-If this behavior and breach of confidentiality are not addressed, I will have no choice but to escalate the matter to HR, as it is directly affecting me and my working environment.
-
-I would appreciate your support in resolving this issue promptly.
-
-Best regards,
-[Your Full Name]
-[Your Designation]
+xxxxx
 
 
----
 
-Let me know if you want to include a request for a one-on-one discussion or keep it just as written.
+package com.example.auth.dao.impl;
+
+import com.example.auth.dao.AuthDao;
+import com.example.auth.entity.BsUser;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@Transactional
+public class AuthDaoImpl implements AuthDao {
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    public BsUser findByUserId(String userId) {
+        try {
+            return entityManager
+                    .createQuery("SELECT u FROM BsUser u WHERE u.userId = :userId", BsUser.class)
+                    .setParameter("userId", userId)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+}
