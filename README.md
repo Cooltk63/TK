@@ -1,22 +1,33 @@
-Thanks! Here's an updated version of the reply, incorporating your points clearly and professionally:
+# 1. Use Tomcat with JDK 17
+FROM tomcat:10.1-jdk17
+
+# 2. Clean default apps (optional)
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# 3. Set timezone (for consistency in logs)
+ENV TZ=Asia/Kolkata
+
+# 4. Copy your Spring Boot WAR file into the Tomcat webapps directory
+COPY target/your-app.war /usr/local/tomcat/webapps/ROOT.war
+
+# 5. Expose port 8080 for Tomcat
+EXPOSE 8080
+
+# 6. Start Tomcat server
+CMD ["catalina.sh", "run"]
 
 
----
 
-Subject: Re: BS Revamp Project Plan Update
+version: '3.8'
 
-Hi Anil,
-
-As requested, I have prepared the detailed plan capturing granular-level activities, along with the planned start and end dates for each task. The Excel sheet with the updated information is attached for your reference.
-
-Regarding the creation of a single DB and elimination of schema-based setup, we will aim to complete it within the same timeline. However, please note that there could be minor extensions in case of any unforeseen or uncertain issues.
-
-Do let me know if you need any further details or modifications.
-
-Thanks & Regards,
-Falguni Rajan Nakhwa
-
-
----
-
-Let me know if you want to add the names of any team members or specifics from the file.
+services:
+  springboot-app:
+    build: .
+    container_name: my-springboot-container
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@10.67.78.89:1522:XE
+      - SPRING_DATASOURCE_USERNAME=testUsernsme
+      - SPRING_DATASOURCE_PASSWORD=password1
+    restart: always
