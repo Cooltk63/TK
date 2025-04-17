@@ -1,8 +1,8 @@
 {
   "proxies": {
     "default": {
-      "httpProxy": "http://your-proxy-address:port",
-      "httpsProxy": "http://your-proxy-address:port",
+      "httpProxy": "http://swe.xde.rty:2022",
+      "httpsProxy": "http://swe.xde.rty:2022",
       "noProxy": "localhost,127.0.0.1"
     }
   }
