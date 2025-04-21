@@ -1,26 +1,22 @@
-# Stage 1: Build WAR using Maven
-FROM maven:3.9.4-eclipse-temurin-17 AS build
+Here’s a polished version of your mail you can send to your manager:
 
-# Set working directory in container
-WORKDIR /app
 
-# Copy source code into container
-COPY . .
+---
 
-# Build the WAR file (skip tests if you want)
-RUN mvn clean package -DskipTests
+Subject: Updated Milestone Planning and Request Regarding Yearly Reports
 
-# Stage 2: Tomcat base image
-FROM tomcat:10.1-jdk17-temurin
+Hi [Manager's Name],
 
-# Clean default webapps
-RUN rm -rf /usr/local/tomcat/webapps/*
+As requested, I have updated the milestone planning, factoring in the inclusion of freshers working on the project. However, I would like to highlight that there might be some uncertainty, as new team members will be adjusting to the project work, and setting milestones with this in mind may involve some unpredictability.
 
-# Copy WAR from build stage
-COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+Additionally, I would like to request that the yearly reports be considered for inclusion in the new change request (CR) or planned for the next quarter.
 
-# Expose port
-EXPOSE 8080
+Please let me know if you need any further details or clarifications.
 
-# Start Tomcat
-CMD ["catalina.sh", "run"]
+Thanks & Regards,
+[Your Name]
+
+
+---
+
+Would you like a few more versions depending on the tone you want (formal, slightly casual, very brief)?
