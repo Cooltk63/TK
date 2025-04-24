@@ -1,9 +1,15 @@
-@Query(value = "SELECT cr.REPORTS_DATA, rs.FILE_PATH, cr.REPORTS_SUBMISSION_ID, cr.SFTP_STATUS " +
-               "FROM CRS_REPORTS cr " +
-               "LEFT JOIN REPORT_SUBMISSION rs ON cr.REPORTS_SUBMISSION_ID = rs.SUBMISSION_ID " +
-               "WHERE cr.SFTP_STATUS = 0 AND rs.FILE_PATH IS NOT NULL",
-       countQuery = "SELECT count(*) FROM CRS_REPORTS cr " +
-                    "LEFT JOIN REPORT_SUBMISSION rs ON cr.REPORTS_SUBMISSION_ID = rs.SUBMISSION_ID " +
-                    "WHERE cr.SFTP_STATUS = 0 AND rs.FILE_PATH IS NOT NULL",
-       nativeQuery = true)
-Page<CrsReports> getData(Pageable pageable);
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:7000") // allow React origin
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true); // if using cookies/session
+    }
+}
