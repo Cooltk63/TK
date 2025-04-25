@@ -1,74 +1,132 @@
-import javax.crypto.Cipher;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.*;
-import java.security.spec.KeySpec;
-import java.util.Base64;
+This is encryption code here
 
-public class AESGCMEncryptorFixed {
-    private static final String ALGORITHM = "AES";
-    private static final String TRANSFORMATION = "AES/GCM/PKCS5Padding";
-    private static final int GCM_TAG_LENGTH = 16; // in bytes
-    private static final int ITERATIONS = 1000;
-    private static final int KEY_LENGTH = 256;
+const passphrase = "juVI+XqX90tQSqYPAmtVxg==";
 
-    // Hardcoded Base64-encoded IV and Salt
-    private static final String BASE64_IV = "muWlNQ9H3DjYTsVI";
-    private static final String BASE64_SALT = "4Q0V9q2/XWsN4JjWFPGstw==";
+async function decryptData(iv, salt, passphrase, encryptedData) {
+    const encoder = new TextEncoder();
+    const passphraseBuffer = encoder.encode(passphrase);
 
-    public static void main(String[] args) throws Exception {
-        runTest();
-    }
+    const encryptedArray = base64ToArrayBuffer(encryptedData);
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        passphraseBuffer,
+        {name: 'PBKDF2'},
+        false,
+        ['deriveKey']
+    );
 
-    public static void runTest() throws Exception {
-        String password = "juVI+XqX90tQSqYPAmtVxg=="; // Must match frontend
-        String plainText = "Hello from Java backend!";
+    salt = base64ToArrayBuffer(salt);
+    iv = base64ToArrayBuffer(iv);
 
-        System.out.println("=== ENCRYPTION PHASE ===");
-        String encryptedData = encrypt(plainText, password);
-        System.out.println("Original Text : " + plainText);
-        System.out.println("Encrypted Data (Base64): " + encryptedData);
-        System.out.println("IV (Base64): " + BASE64_IV);
-        System.out.println("Salt (Base64): " + BASE64_SALT);
-        System.out.println("Password (Base64): " + password);
+    try {
+        const derivedKey = await crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: salt,  //crypto.getRandomValues(new Uint8Array(16)),
+                iterations: 1000,
+                hash: "SHA-256"
+            },
+            keyMaterial,
+            {
+                name: "AES-GCM",
+                length: 256
+            },
+            true,
+            ["encrypt", "decrypt"]
+        );
 
-        System.out.println("\n=== DECRYPTION PHASE ===");
-        String decryptedData = decrypt(encryptedData, password);
-        System.out.println("Decrypted Data: " + decryptedData);
-    }
+        //console.log('444444');
 
-    public static String encrypt(String data, String password) throws Exception {
-        byte[] ivBytes = Base64.getDecoder().decode(BASE64_IV);
-        byte[] saltBytes = Base64.getDecoder().decode(BASE64_SALT);
 
-        SecretKeySpec key = deriveKey(password, saltBytes);
+        const decryptedData = await crypto.subtle.decrypt({name: 'AES-GCM', iv}, derivedKey, encryptedArray);
+        //console.log('5555555');
+        const dec = new TextDecoder();
 
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, ivBytes);
-        cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
-
-        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-
-    public static String decrypt(String encryptedData, String password) throws Exception {
-        byte[] ivBytes = Base64.getDecoder().decode(BASE64_IV);
-        byte[] saltBytes = Base64.getDecoder().decode(BASE64_SALT);
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
-
-        SecretKeySpec key = deriveKey(password, saltBytes);
-
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, ivBytes);
-        cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
-
-        byte[] decrypted = cipher.doFinal(encryptedBytes);
-        return new String(decrypted);
-    }
-
-    private static SecretKeySpec deriveKey(String password, byte[] salt) throws Exception {
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        byte[] keyBytes = factory.generateSecret(spec).getEncoded();
-        return new SecretKeySpec(keyBytes, ALGORITHM);
+        //return { iv, salt, dec.decode(decryptedData)};
+        return dec.decode(decryptedData)
+    } catch (e) {
+        console.error(e)
     }
 }
+
+function decrypt(iv, salt, data) {
+    return decryptData(iv, salt, passphrase, data)
+        .then(value => {
+            try {
+                return value;
+            } catch (e) {
+                console.error("decrypt  " + e);
+            }
+        })
+        .catch(() => {
+        });
+}
+
+
+function base64ToArrayBuffer(base64Text) {
+    const binaryString = atob(base64Text);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+module.exports = decrypt
+
+
+
+xxxxxxxxxxxxxx
+
+This is decryption code here
+
+const passphrase = "juVI+XqX90tQSqYPAmtVxg==";
+
+async function encryptData(iv, salt, passphrase, data) {
+  const encoder = new TextEncoder();
+  const passphraseBuffer = encoder.encode(passphrase);
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    passphraseBuffer,
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+
+  const derivedKey = await crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: salt, //crypto.getRandomValues(new Uint8Array(16)),
+      iterations: 1000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    {
+      name: "AES-GCM",
+      length: 256,
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  const encodedData = new TextEncoder().encode(data);
+  const encryptedData = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    derivedKey,
+    encodedData
+  );
+
+  return { iv, salt, encryptedData };
+}
+
+function encrypt(iv, salt, data) {
+    return encryptData(iv, salt, passphrase, data)
+        .then(value => {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(value.encryptedData)));
+        })
+        .catch((e) => {
+            console.error(e);
+        });
+}
+
+export {encrypt}
