@@ -1,12 +1,18 @@
+package com.example.filter;
+
+import lombok.extern.slf4j.Slf4j;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
- * Filter to intercept requests (except /login), decrypt JSON body, and forward it.
+ * Servlet filter to intercept all HTTP requests and decrypt the request body,
+ * excluding specific endpoints like /login.
  */
-@WebFilter(urlPatterns = "/*")
+@Slf4j // Lombok annotation for logging (replaces manual Logger definition)
+@WebFilter("/*") // Filter applies to all incoming requests
 public class DecryptionFilter implements Filter {
 
     @Override
@@ -16,98 +22,102 @@ public class DecryptionFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) request;
         String uri = httpReq.getRequestURI();
 
-        // Skip decryption for /login
-        if (uri.equals("/login")) {
+        // Skip decryption for login requests
+        if (uri.contains("/login")) {
             chain.doFilter(request, response);
-            return;
+        } else {
+            try {
+                // Wrap the request with decrypted content
+                DecryptionRequestWrapper decryptedRequest = new DecryptionRequestWrapper(httpReq);
+                chain.doFilter(decryptedRequest, response);
+            } catch (Exception e) {
+                log.error("Error decrypting request body: {}", e.getMessage(), e);
+                throw new ServletException("Decryption failed");
+            }
         }
-
-        // Wrap and pass the decrypted request
-        DecryptionRequestWrapper wrappedRequest = new DecryptionRequestWrapper(httpReq);
-        chain.doFilter(wrappedRequest, response);
     }
 }
+
+
 xxxxxx
 
 
+package com.example.filter;
+
+import com.example.util.AESGCMFrontendCompatible;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ReadListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
- * Wrapper for HTTP request to replace encrypted JSON body with decrypted content.
+ * Custom request wrapper that reads the incoming request body,
+ * decrypts encrypted fields recursively, and presents the modified input stream.
  */
+@Slf4j
 public class DecryptionRequestWrapper extends HttpServletRequestWrapper {
 
     private final String decryptedBody;
 
     public DecryptionRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        String originalBody = extractBody(request);
 
+        // Read the original request body as a String
+        String originalBody = request.getReader().lines().reduce("", (acc, line) -> acc + line);
+
+        // Convert the JSON string to Jackson's JsonNode
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(originalBody); // Parse JSON
+        JsonNode root = mapper.readTree(originalBody);
 
-        // Recursively decrypt all text nodes
+        // Recursively decrypt fields inside the JSON
         JsonNode decryptedJson = decryptRecursive(root);
-        decryptedBody = mapper.writeValueAsString(decryptedJson); // Convert back to JSON string
+
+        // Convert decrypted JsonNode back to string
+        this.decryptedBody = mapper.writeValueAsString(decryptedJson);
     }
 
-    // Helper to read raw request body
-    private String extractBody(HttpServletRequest request) throws IOException {
-        BufferedReader reader = request.getReader();
-        StringBuilder builder = new StringBuilder();
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-        }
-
-        return builder.toString();
-    }
-
-    // Recursively decrypt all textual fields
+    /**
+     * Recursively traverses JSON nodes and decrypts string values.
+     * @param node - Current JSON node
+     * @return - Node with decrypted values
+     */
     private JsonNode decryptRecursive(JsonNode node) {
         if (node.isObject()) {
             ObjectNode obj = (ObjectNode) node;
-            Iterator<Map.Entry<String, JsonNode>> fields = obj.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> entry = fields.next();
-                obj.replace(entry.getKey(), decryptRecursive(entry.getValue()));
-            }
+            obj.fieldNames().forEachRemaining(field ->
+                obj.replace(field, decryptRecursive(obj.get(field)))
+            );
             return obj;
         } else if (node.isArray()) {
-            ArrayNode arr = (ArrayNode) node;
-            for (int i = 0; i < arr.size(); i++) {
-                arr.set(i, decryptRecursive(arr.get(i)));
+            ArrayNode array = (ArrayNode) node;
+            for (int i = 0; i < array.size(); i++) {
+                array.set(i, decryptRecursive(array.get(i)));
             }
-            return arr;
+            return array;
         } else if (node.isTextual()) {
+            // Attempt decryption for textual values
             try {
-                String decrypted = AESGCMFrontendCompatible.decrypt(node.asText(), "juVI+XqX90tQSqYPAmtVxg==");
-                return new TextNode(decrypted); // return decrypted string as JSON node
+                String decrypted = AESGCMFrontendCompatible.decrypt(node.asText(), AESGCMFrontendCompatible.BASE64_PASSWORD);
+                return new TextNode(decrypted);
             } catch (Exception e) {
-                return node; // fallback to original if decryption fails
+                log.debug("Skipping decryption for: {}", node.asText());
+                return node;
             }
         } else {
-            return node; // leave non-text fields untouched
+            return node; // Leave other types (boolean, number) untouched
         }
     }
 
-    // Return decrypted input stream
     @Override
     public ServletInputStream getInputStream() {
         ByteArrayInputStream byteStream = new ByteArrayInputStream(decryptedBody.getBytes(StandardCharsets.UTF_8));
-
         return new ServletInputStream() {
             public int read() {
                 return byteStream.read();
@@ -131,29 +141,35 @@ public class DecryptionRequestWrapper extends HttpServletRequestWrapper {
     }
 }
 
-xxx
+xxxxxx
 
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+<dependencies>
+    <!-- Lombok for logging, boilerplate removal -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.18.30</version>
+        <scope>provided</scope>
+    </dependency>
 
-@Configuration
-public class FilterConfig {
-    @Bean
-    public FilterRegistrationBean<DecryptionFilter> registerDecryptionFilter() {
-        FilterRegistrationBean<DecryptionFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new DecryptionFilter());
-        registrationBean.addUrlPatterns("/*");
-        return registrationBean;
-    }
+    <!-- Jackson for JSON parsing -->
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.15.0</version>
+    </dependency>
+</dependencies>
+
+
+
+{
+  "username": "enVjdXUwM3Nxbmhrc3Fsdw==",
+  "password": "c3VwZXJlbmNyeXB0ZWRwYXNz",
+  "details": {
+    "email": "am9obkBleGFtcGxlLmNvbQ==",
+    "phone": "MTIzNDU2Nzg5MA=="
+  }
 }
 
 
-xxxx
-
-<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <version>2.14.2</version> <!-- or latest compatible -->
-</dependency>
