@@ -1,95 +1,159 @@
-I need the filter used to intercept the request from frontend other than login url all others url's which used for intercept request & extract the JSON data from then and using this json key to decrypt (decrypt function provided by me as per below) data & then transfer that decrypted data same as per previously sent by frontend but only difference data is decrypted fe can sent map inside map or anything list or single data anything whatever fe is sending just descrypt the data & sent same to backend using the Java 8 filter with spring mvc 
+import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
+/**
+ * Filter to intercept requests (except /login), decrypt JSON body, and forward it.
+ */
+@WebFilter(urlPatterns = "/*")
+public class DecryptionFilter implements Filter {
 
-//below code for Java AES/GCM Encryption 7 Decryption in my case only used the decryption without changing anything inside the code as per below
-import javax.crypto.Cipher;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.spec.KeySpec;
-import java.util.Base64;
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-public class AESGCMFrontendCompatible {
+        HttpServletRequest httpReq = (HttpServletRequest) request;
+        String uri = httpReq.getRequestURI();
 
-    // Constants
-    private static final String ALGORITHM = "AES";
-    private static final String CIPHER_TRANSFORMATION = "AES/GCM/PKCS5Padding";
-    private static final int GCM_TAG_LENGTH = 16; // in bytes (128 bits)
-    private static final int ITERATIONS = 1000;
-    private static final int KEY_LENGTH = 256;
-
-    // Hardcoded values (same as frontend)
-    private static final String BASE64_IV = "HHpJGrIv+FIx7uGu";
-    private static final String BASE64_SALT = "d6PI1Fz7kVbn7Xw+cz1NwQ==";
-    private static final String BASE64_PASSWORD = "juVI+XqX90tQSqYPAmtVxg==";
-
-    public static void main(String[] args) throws Exception {
-        // Input plain text
-        String plainText = "This text will be encrypted and decrypted!";
-
-        System.out.println("========== ENCRYPTION ==========");
-        String encryptedBase64 = encrypt(plainText, BASE64_PASSWORD);
-        System.out.println("Plain Text: " + plainText);
-        System.out.println("Encrypted (Base64): " + encryptedBase64);
-        System.out.println("IV (Base64): " + BASE64_IV);
-        System.out.println("Salt (Base64): " + BASE64_SALT);
-
-        System.out.println("\n========== DECRYPTION ==========");
-        String decryptedText = decrypt("s5jrQ+AJgnJPT6eYChOmUYNokSD8NY/1wzJXTy+D28DReA==", BASE64_PASSWORD);
-        System.out.println("Decrypted: " + decryptedText);
-    }
-
-    public static String encrypt(String plainText, String base64Password) throws Exception {
-        byte[] iv = Base64.getDecoder().decode(BASE64_IV);
-        byte[] salt = Base64.getDecoder().decode(BASE64_SALT);
-        byte[] passwordBytes =  base64Password.getBytes(StandardCharsets.UTF_8);//Base64.getDecoder().decode(base64Password);
-
-        SecretKeySpec key = deriveKey(passwordBytes, salt);
-
-        Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
-        cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
-
-        byte[] cipherText = cipher.doFinal(plainText.getBytes("UTF-8"));
-        return Base64.getEncoder().encodeToString(cipherText);
-    }
-
-    public static String decrypt(String base64CipherText, String base64Password) throws Exception {
-        byte[] iv = Base64.getDecoder().decode(BASE64_IV);
-        byte[] salt = Base64.getDecoder().decode(BASE64_SALT);
-        byte[] encryptedBytes = Base64.getDecoder().decode(base64CipherText);
-        byte[] passwordBytes = base64Password.getBytes(StandardCharsets.UTF_8);//Base64.getDecoder().decode(base64Password);
-
-        SecretKeySpec key = deriveKey(passwordBytes, salt);
-
-        Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
-        cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
-
-        byte[] decrypted = cipher.doFinal(encryptedBytes);
-        return new String(decrypted, "UTF-8");
-    }
-
-    private static SecretKeySpec deriveKey(byte[] passwordBytes, byte[] salt) throws Exception {
-        KeySpec spec = new PBEKeySpec(
-                toCharArray(passwordBytes),
-                salt,
-                ITERATIONS,
-                KEY_LENGTH
-        );
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        byte[] keyBytes = factory.generateSecret(spec).getEncoded();
-        return new SecretKeySpec(keyBytes, ALGORITHM);
-    }
-
-    // Helper: Convert byte[] to char[] for PBEKeySpec
-    private static char[] toCharArray(byte[] bytes) {
-        char[] chars = new char[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
-            chars[i] = (char) (bytes[i] & 0xff);
+        // Skip decryption for /login
+        if (uri.equals("/login")) {
+            chain.doFilter(request, response);
+            return;
         }
-        return chars;
+
+        // Wrap and pass the decrypted request
+        DecryptionRequestWrapper wrappedRequest = new DecryptionRequestWrapper(httpReq);
+        chain.doFilter(wrappedRequest, response);
     }
 }
+xxxxxx
+
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ReadListener;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
+
+/**
+ * Wrapper for HTTP request to replace encrypted JSON body with decrypted content.
+ */
+public class DecryptionRequestWrapper extends HttpServletRequestWrapper {
+
+    private final String decryptedBody;
+
+    public DecryptionRequestWrapper(HttpServletRequest request) throws IOException {
+        super(request);
+        String originalBody = extractBody(request);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(originalBody); // Parse JSON
+
+        // Recursively decrypt all text nodes
+        JsonNode decryptedJson = decryptRecursive(root);
+        decryptedBody = mapper.writeValueAsString(decryptedJson); // Convert back to JSON string
+    }
+
+    // Helper to read raw request body
+    private String extractBody(HttpServletRequest request) throws IOException {
+        BufferedReader reader = request.getReader();
+        StringBuilder builder = new StringBuilder();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            builder.append(line);
+        }
+
+        return builder.toString();
+    }
+
+    // Recursively decrypt all textual fields
+    private JsonNode decryptRecursive(JsonNode node) {
+        if (node.isObject()) {
+            ObjectNode obj = (ObjectNode) node;
+            Iterator<Map.Entry<String, JsonNode>> fields = obj.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                obj.replace(entry.getKey(), decryptRecursive(entry.getValue()));
+            }
+            return obj;
+        } else if (node.isArray()) {
+            ArrayNode arr = (ArrayNode) node;
+            for (int i = 0; i < arr.size(); i++) {
+                arr.set(i, decryptRecursive(arr.get(i)));
+            }
+            return arr;
+        } else if (node.isTextual()) {
+            try {
+                String decrypted = AESGCMFrontendCompatible.decrypt(node.asText(), "juVI+XqX90tQSqYPAmtVxg==");
+                return new TextNode(decrypted); // return decrypted string as JSON node
+            } catch (Exception e) {
+                return node; // fallback to original if decryption fails
+            }
+        } else {
+            return node; // leave non-text fields untouched
+        }
+    }
+
+    // Return decrypted input stream
+    @Override
+    public ServletInputStream getInputStream() {
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(decryptedBody.getBytes(StandardCharsets.UTF_8));
+
+        return new ServletInputStream() {
+            public int read() {
+                return byteStream.read();
+            }
+
+            public boolean isFinished() {
+                return byteStream.available() == 0;
+            }
+
+            public boolean isReady() {
+                return true;
+            }
+
+            public void setReadListener(ReadListener readListener) {}
+        };
+    }
+
+    @Override
+    public BufferedReader getReader() {
+        return new BufferedReader(new InputStreamReader(getInputStream()));
+    }
+}
+
+xxx
+
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class FilterConfig {
+    @Bean
+    public FilterRegistrationBean<DecryptionFilter> registerDecryptionFilter() {
+        FilterRegistrationBean<DecryptionFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new DecryptionFilter());
+        registrationBean.addUrlPatterns("/*");
+        return registrationBean;
+    }
+}
+
+
+xxxx
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.14.2</version> <!-- or latest compatible -->
+</dependency>
