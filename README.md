@@ -1,9 +1,1 @@
-<filter>
-    <filter-name>DecryptionFilter</filter-name>
-    <filter-class>com.yourpackage.filter.DecryptionFilter</filter-class>
-</filter>
-
-<filter-mapping>
-    <filter-name>DecryptionFilter</filter-name>
-    <url-pattern>/api/*</url-pattern> <!-- Adjust as per your secured URL pattern -->
-</filter-mapping>
+https://jrebel.jire.org/476aabcf-1e08-46f1-98d4-c5f29ea67bdd
