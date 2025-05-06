@@ -1,42 +1,23 @@
-import jakarta.servlet.ReadListener;
-import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-import java.io.*;
-
-public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
-
-    private final byte[] cachedBody;
-
-    public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
-        super(request);
-        cachedBody = toByteArray(request.getInputStream());
-    }
-
-    private byte[] toByteArray(InputStream input) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = input.read(buffer)) != -1) {
-            baos.write(buffer, 0, length);
-        }
-        return baos.toByteArray();
-    }
+public class MyJsonFilter implements Filter {
 
     @Override
-    public ServletInputStream getInputStream() {
-        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(cachedBody);
-        return new ServletInputStream() {
-            @Override public int read() throws IOException { return byteArrayInputStream.read(); }
-            @Override public boolean isFinished() { return byteArrayInputStream.available() == 0; }
-            @Override public boolean isReady() { return true; }
-            @Override public void setReadListener(ReadListener readListener) {}
-        };
-    }
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-    @Override
-    public BufferedReader getReader() {
-        return new BufferedReader(new InputStreamReader(getInputStream()));
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(httpRequest);
+
+        String body = new BufferedReader(wrappedRequest.getReader())
+                .lines()
+                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+
+        System.out.println("JSON Payload: " + body);
+
+        chain.doFilter(wrappedRequest, response);
     }
 }
