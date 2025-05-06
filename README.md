@@ -1,91 +1,349 @@
-import React from 'react';
-import axios from 'axios';
+This is controller.js file code for JS
 
-const REST_URIS = {
-  getCircleList: './IFRSArchives/GetCircleList',
-  downloadXLReport: './IFRSArchives/ArchiveReportsDownloadXL',
-  downloadPdfReport: './IFRSArchives/ArchiveReportsDownloadPDF',
-  downloadPdf: './IFRSArchives/ArchiveReportsDownloadPDFUser',
-  downloadXL: './IFRSArchives/ArchiveReportsDownloadXLUser',
-};
+app
+    .controller('downloadJrxmls', function ($scope, $log, $rootScope, $sce, $http, $window, $sessionStorage, $state, $location, $filter, downloadJrxmlsFactory, circleMakerWorklist, Idle, Keepalive, $modal, ModalService, userFactory, AES256) {
+        var downloadJrxmls = this;
+        $scope.started = false;
+        downloadJrxmls.showDiv = false;
+        downloadJrxmls.showAltMesge = false;
+        $scope.sessionUser = JSON.parse(AES256.decrypt($rootScope.globals.currentUser));
+        $scope.heading = '';
 
-const downloadFile = async (url, params, filename) => {
-  try {
-    const response = await axios.post(url, params, { responseType: 'blob' });
-    const blob = new Blob([response.data], { type: response.headers['content-type'] });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } catch (error) {
-    console.error(`Download failed from ${url}`, error);
-  }
-};
+        if ($scope.sessionUser.capacity == '61' || $scope.sessionUser.capacity == '62') {
+            $scope.heading = '1';
+            console.log("insid 61 or  62");
+        } else if ($scope.sessionUser.capacity == '52' || $scope.sessionUser.capacity == '51' || $scope.sessionUser.capacity == '53') {
+            console.log("insid 51 or 52");
+            $scope.heading = '2';
+        } else if ($scope.sessionUser.capacity == '81') {
+            console.log("insid 81");
+            $scope.heading = '4';
+        } else if ($scope.sessionUser.capacity == '91') {
+            console.log("insid 91");
+            $scope.heading = '4';
+        } else if ($scope.sessionUser.capacity == '41') {
+            console.log("insid 41");
+            $scope.heading = '5';
+        } else {
+            $scope.heading = '3';
+            console.log("insid others");
+        }
+        // /////////////////////////16052018
+        downloadJrxmlsFactory.getBrList($scope.sessionUser).then(function (data) {
 
-// MAIN COMPONENT
-const IFRSDownloadReport = ({ isAdmin }) => {
-  const reports = [
-    { name: 'User List' },
-    { name: 'IFRS Collation' },
-    { name: 'IFRS Consolidation' },
-  ];
+            console.log("data" + data + ' length: ' + data.length);
 
-  const handleDownload = (type, reportName) => {
-    const params = { reportName };
+            downloadJrxmls.branchList = data;
 
-    if (isAdmin) {
-      if (type === 'pdf') {
-        downloadFile(REST_URIS.downloadPdfReport, params, 'Admin_Report.pdf');
-      } else {
-        downloadFile(REST_URIS.downloadXLReport, params, 'Admin_Report.xlsx');
-      }
-    } else {
-      if (type === 'pdf') {
-        downloadFile(REST_URIS.downloadPdf, params, 'User_Report.pdf');
-      } else {
-        downloadFile(REST_URIS.downloadXL, params, 'User_Report.xlsx');
-      }
-    }
-  };
+        }, function (errResponse) {
+            console.error('Error while getting branchList');
+        });
+        // ////////////end 16052018
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <h2>{isAdmin ? 'Archived Report Download' : 'User Report Download'}</h2>
-      <table border="1" cellPadding="10">
-        <thead>
-          <tr>
-            <th>Report Name</th>
-            <th>View</th>
-            <th>PRE/POST</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((r, idx) => (
-            <tr key={idx}>
-              <td>{r.name}</td>
-              <td><button>View</button></td>
-              <td>
-                <button
-                  onClick={() => handleDownload('pdf', r.name)}
-                  style={{ backgroundColor: 'red', color: 'white', marginRight: '10px' }}
-                >
-                  PDF
-                </button>
-                <button
-                  onClick={() => handleDownload('xl', r.name)}
-                  style={{ backgroundColor: 'green', color: 'white' }}
-                >
-                  XL
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
 
-export default IFRSDownloadReport;
+        downloadJrxmls.listZ = [];
+        downloadJrxmlsFactory
+            .getListOfReports($scope.sessionUser)
+            .then(function (data) {
+                var listWithZ = [];
+                console.log(data.list1);
+
+                if (!data.list1.length == '0' || !data.list1.length == null) {
+
+                    downloadJrxmls.showDiv = true;
+                    // downloadJrxmls.listOfRows = data;
+                    downloadJrxmls.listOfRows = data.list1;
+
+
+                    downloadJrxmls.listOfCircle = data.list;
+
+
+                    ////////22102018Start
+
+                    listWithZ = $filter("filter")(downloadJrxmls.listOfRows, {
+                        dash_suppresed: 'Z'
+
+                    });
+                    if (listWithZ.length > 0) {
+                        downloadJrxmls.showAltMesge = true;
+                    }
+
+
+                    /*for (i=0;i<listWithZ.length;i++) {
+                                console.log("report with supressed flag  "+JSON.stringify(listWithZ[i].dash_suppresed)+"  * Name * "+JSON.stringify(listWithZ[i].dash_name));
+                            }*/
+
+                    console.log("number of reports with dash suppresed as Z * " + listWithZ.length);
+                    //////22102018End
+
+                    //21082018
+                    downloadJrxmls.FreezedCircles = data.freezedCircles;
+                    //	console.log("******************* freezed Circles  "+downloadJrxmls.FreezedCircles.length+"  *  "+downloadJrxmls.FreezedCircles);
+
+
+                    $scope.selectedBranchCode = 'All Branches';
+
+                    $scope.type = 'PRE';
+
+                } else {
+                    downloadJrxmls.message = 'No reports are found to download.';
+                }
+
+                // downloadJrxmls.listOfRows = data;
+                // $scope.type = 'PRE';
+            }, function (errResponse) {
+
+            });
+
+
+        downloadJrxmls.ind = '';
+        downloadJrxmls.act = '';
+        downloadJrxmls.prep = '';
+        downloadJrxmls.comc = '';
+        downloadJrxmls.brc = '';
+        downloadJrxmls.dashSupp = '';
+        downloadJrxmls.isSupp = '';
+        downloadJrxmls.dParam = '';
+        downloadJrxmls.checkCsv = function (index, action, prePost, compcircle, branchCode, dash_suppresed, isSuppresed, params) {
+
+
+            downloadJrxmls.ind = index;
+            downloadJrxmls.act = action;
+            downloadJrxmls.prep = prePost;
+            downloadJrxmls.comc = compcircle;
+            downloadJrxmls.brc = branchCode;
+            downloadJrxmls.dashSupp = dash_suppresed;
+            downloadJrxmls.isSupp = isSuppresed;
+            downloadJrxmls.dParam = params;
+            $('#myModal999').modal({
+                backdrop: 'static', keyboard: false, modal: true
+            });
+            $('#myModal999').on('shown.bs.modal', function () {
+                $('#myModal999').trigger('focus');
+            });
+
+
+        }
+
+
+        downloadJrxmls.viewReportJrxmlCircle = function (index, action, prePost, compcircle, branchCode, dash_suppresed, isSuppresed, params) {
+            // //////////////added 21052018 begin setting
+            console.log("**************At Circle Level********* dash_param * " + params);
+            var prePostValue = "";
+            //eliminating PRE or POST from file name if it do not contain TYPE drop down
+            if (params.indexOf('TYPE') != '-1') {
+                prePostValue = "_" + prePost;
+            }
+
+            console.log("***************** prePostValue * " + prePostValue);
+
+            console.log("**********  At Circle Level **** index " + index + "  *   action " + action + "  *   prePost " + prePost + "  *  compCode " + compcircle + "  *   dash_suppresed " + dash_suppresed + "  * branchCode " + branchCode);
+
+            var isSup = document.getElementById(index).checked;
+            console.log(" isSuppresed Circle Level " + isSup);
+            var cirCode = $scope.sessionUser.circleCode;
+            //alert(dash_suppresed);
+            console.log("brc - " + branchCode);
+            console.log(compcircle);
+            console.log(prePost);
+
+            var saveAsName = "";
+            if (!branchCode || branchCode == "All Branches") {
+                console.log("save as for circle*");
+                saveAsName = $scope.sessionUser.circleName
+                    .substring(0, 3);
+
+            } else if (branchCode != "All Branches") {
+                console.log("save as for brcode***");
+                saveAsName = branchCode;
+            }
+
+            console.log("save as Name ******  " + saveAsName);
+            // //////////////added 21052018 End
+            downloadJrxmls.pdfContent = '';
+            console.log(action + "--" + compcircle);
+            var report = downloadJrxmls.listOfRows[index];
+            console.log(report);
+            var params = {
+                'report': report,
+                'user': $scope.sessionUser,
+                'type': action,
+                'prePost': prePost,
+                'compcircle': compcircle,
+                'branchCode': branchCode,
+                'dash_suppresed': dash_suppresed,
+                'isSuppresed': isSup
+            };
+
+            downloadJrxmlsFactory
+                .viewReportCircle(params)
+                .then(function (data) {
+                    if (action == "view") {
+
+                        var file = new Blob([data], {
+                            type: 'text/html'
+                        });
+                        $('#visualizador').show();
+                        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                            window.navigator
+                                .msSaveOrOpenBlob(file, saveAsName + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + ".html");
+                        } else {
+                            var url = URL
+                                .createObjectURL(file);
+                            downloadJrxmls.pdfContent = $sce
+                                .trustAsResourceUrl(url);
+                            // document.getElementById('visualizador').setAttribute('src',url);
+                        }
+                    } else if (action == "downloadPDF") {
+
+                        var file1 = new Blob([data], {
+                            type: 'application/pdf'
+                        });
+
+                        saveAs(file1, saveAsName + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + ".pdf");
+                    } else if (action == "download") {
+
+                        var file2 = new Blob([data], {
+                            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        });
+                        saveAs(file2, saveAsName + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + ".xlsx");
+                    } else if (action.substring(0, 11) == "downloadCSV") {
+
+
+                        //alert("Please verify the credit and debit amount before uploading the file to FRT!!")
+                        var filetype = "";
+                        var extension = action.substring(11, 12);
+                        if (extension == "C") {
+
+                            extension = ".txt";
+                            filetype = 'application/text/plain;charset=utf-8';
+                        } else {
+                            extension = ".txt";
+                            filetype = 'application/text/plain;charset=utf-8';
+                        }
+                        var file3 = new Blob([data], {
+                            type: filetype
+                        });
+                        saveAs(file3, saveAsName + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + extension);
+                    }
+
+                }, function (errResponse) {
+
+                });
+        }
+
+        // //////////////////////////////////////////////////////
+        downloadJrxmls.clearcheckcircle = function () {
+            downloadJrxmls.checkcircle = false;
+            downloadJrxmls.checkcircleMessage = "";
+            return false;
+        }
+        downloadJrxmls.viewReportJrxml = function (index, action, prePost, compcircle, dash_suppresed, isSuppresed, params) {
+            console.log("****************At FRT Level******* dash_param * " + params);
+            var prePostValue = "";
+            //eliminating PRE or POST from file name if it do not contain TYPE drop down
+            if (params.indexOf('TYPE') != '-1') {
+                prePostValue = "_" + prePost;
+            }
+
+            console.log("***************** prePostValue * " + prePostValue);
+
+            console.log("**********  At FRT Level **** index " + index + "  *   action " + action + "  *   prePost " + prePost + "  *  circle " + compcircle + "  *   dash_suppresed " + dash_suppresed);
+            downloadJrxmls.checkcircle = false;
+            downloadJrxmls.pdfContent = '';
+            console.log(action + "--" + compcircle);
+            var report = downloadJrxmls.listOfRows[index];
+            console.log("***************$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  FreezedCircles length " + downloadJrxmls.FreezedCircles.length);
+            // console.log("@@@@@@@@@@@@@@@@@@
+            // "+JSON.stringify(report));
+            // console.log("-------------
+            // "+report.dash_param.indexOf('COMP'));
+            // console.log("------------ "+compcircle);
+            if (compcircle == undefined && report.dash_param.indexOf('COMP') != '-1') {
+
+                downloadJrxmls.checkcircleMessage = "Please select circle";
+                downloadJrxmls.checkcircle = true;
+                return false;
+            }
+            /*if (compcircle == undefined
+								&& report.dash_param.indexOf('CIRCLE_LIST') != '-1') {
+							downloadJrxmls.checkcircle = true;
+
+							return false;
+						}*/
+            if (compcircle == undefined && report.dash_param.indexOf('CIRCLE_LIST') != '-1' && downloadJrxmls.FreezedCircles.length > 0) {
+                downloadJrxmls.checkcircleMessage = "Please select circle";
+                downloadJrxmls.checkcircle = true;
+
+                return false;
+            } else if (downloadJrxmls.FreezedCircles.length == 0 && report.dash_param.indexOf('CIRCLE_LIST') != '-1') {
+
+                downloadJrxmls.checkcircleMessage = "No circle has been freezed to generate Consolidation Report";
+                downloadJrxmls.checkcircle = true;
+                console.log("------------*****************************inside No circle has been freezed");
+                return false;
+            }
+
+
+            var isSup = document.getElementById(index).checked;
+
+            console.log(" isSuppresed FRT Level " + isSup);
+            var params = {
+                'report': report,
+                'user': $scope.sessionUser,
+                'type': action,
+                'prePost': prePost,
+                'compcircle': compcircle,
+                'dash_suppresed': dash_suppresed,
+                'isSuppresed': isSup
+
+            };
+
+            downloadJrxmlsFactory
+                .viewReport(params)
+                .then(function (data) {
+                    if (action == "view") {
+
+                        var file = new Blob([data], {
+                            type: 'application/pdf'
+                        });
+                        $('#visualizador').show();
+                        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                            window.navigator
+                                .msSaveOrOpenBlob(file, $scope.sessionUser.circleName
+                                    .substring(0, 3) + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + ".pdf");
+                        } else {
+                            var url = URL
+                                .createObjectURL(file);
+                            downloadJrxmls.pdfContent = $sce
+                                .trustAsResourceUrl(url);
+                            // document.getElementById('visualizador').setAttribute('src',url);
+                        }
+                    } else if (action == "downloadPDF") {
+
+                        var file1 = new Blob([data], {
+                            type: 'application/pdf'
+                        });
+
+                        saveAs(file1, $scope.sessionUser.circleName
+                            .substring(0, 3) + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + ".pdf");
+                    } else if (action == "download") {
+
+                        var file2 = new Blob([data], {
+                            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        });
+                        saveAs(file2, $scope.sessionUser.circleName
+                            .substring(0, 3) + "_" + $scope.sessionUser.quarterEndDate + "_" + report.dash_name + prePostValue + ".xlsx");
+                    }
+
+                }, function (errResponse) {
+
+                });
+        }
+
+        // //////////////////////////////////////////////////
+
+    });
+
+
+
