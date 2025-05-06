@@ -1,148 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Paper, useTheme } from '@mui/material';
-import useApi from '../../common/hooks/useApi';
-import CustomizedDataGrid from '../../common/components/ui/CustomizedDataGrid';
-import { ViewButton, CreateButton } from '../../common/components/ui/Buttons';
-import Chip from '@mui/material/Chip';
-import _ from 'lodash';
-import { useNavigate } from 'react-router-dom';
-import { CIRCLE_MAKER_REPORT_ROUTES } from '../../common/constants/RoutesConstants';
+import React from 'react';
+import axios from 'axios';
+import {
+  Container,
+  Typography,
+  Grid,
+  Button,
+  Paper,
+  Box,
+} from '@mui/material';
 
-// Main Worklist Component
-const Worklist = () => {
-  const { callApi } = useApi();
-  const navigate = useNavigate();
-  const [reports, setReports] = useState([]);
-  const theme = useTheme();
+// REST endpoints
+const REST_URIS = {
+  getCircleList: './IFRSArchives/GetCircleList',
+  downloadXLReport: './IFRSArchives/ArchiveReportsDownloadXL',
+  downloadPdfReport: './IFRSArchives/ArchiveReportsDownloadPDF',
+  downloadPdf: './IFRSArchives/ArchiveReportsDownloadPDFUser',
+  downloadXL: './IFRSArchives/ArchiveReportsDownloadXLUser',
+};
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const responseData = await callApi(
-          '/Maker/getCircleMakerWorklist',
-          {
-            userId: 'Ot8DorIJK6+qObfKwkxJMQ==',
-            token:
-              '0b6KGqWJGylD+5vKS9zFjxiOpIn5+VQGJMWKxPAdl8qZUDmEb4jrF23SHc29Mwmz3viAJRmB881nKmhEXM9d2fCw4WlKO8GzzQtA+cwilEMfT2SoAebJgo4sevLJfOZXfl7g0g9/Jabb4cq5DrV1hxppOB/GPhw+s+VdeyVMOL5xd2sjvXwBno+93vdfldfAMB1vWSXKsI9RjbaGmHLshExBgaACzlaBj23vvGdWLBA6qNMIjso7xIg1rZ3FGUduLxvV6EqCjqikV0GuRGmrLtIFjiUjHCF2Nh13h74oVkrCXr9sSBzxTjcTsgSFfb+WYZZP4LrfCpcXiXukpmHIgljZyliMoVY7saERGmfQpQARCuACsrXtottPoKNPpgCuCixtrEc0/sbU5lvQOLyjgVjT8udPXYWh0xMwTsXOfPZ387u9AiMGGbhGvLBbntXuETdEarN9PWp9BG1q7InETl4KMCYeanTtrDoWoUFu917gGPgqJgP5j02Slk/fE1q8SsLqAu9XAh61Dn6DA4O6PADA+RZQAhCh0PuLR55cFt924YjNqJHt8L0ZQpKUcinHwrg4F8T5IDNCFLY3ZlJW2uivM3HhpssXtxbHECXuPmmA2QuEk2nrBy8Mx0114tUFES3YA/aNj81GpKcpU4bBjK6w5XMTkL2pAJxj+WMbGMyc0+1imJdoP96nGH3DZZRDMl9yJaj5P/vf3dcyZTfR8Nxwvh5sPa/3I5SNLwq0CQrCoDikyeclrKuGT3Os7LN/6uJgGbWgRaTtVgxD81w7SFp/omK3nPZ6YOsmFffBoUU0G7k4Fpm9Q1fHVK6/9kXa',
-            userName: 'sm0XGrx5vORvI5VfrOCuQQ==',
-            circleCode: 'g67NlTGq/d69f9B13WAYgw==',
-            circleName: 'Z8+tsGJTuPXPCGnx8OlsVTaj7n22HNIpEMvUwk9HBYE=',
-            role: 'IQMW/o3omv+iKZEyHaUnVA==',
-            capacity: 'UbJLInb+u/gNUf1afJjMxQ==',
-            status: '79hx7ep46vyiygd8wTYTIg==',
-            quarterEndDate: 'bYCfZKKhIWkOC6hdCucpGQ==',
-            previousQuarterEndDate: 'I7RUPiw1mWI4ZTorGvDrYQ==',
-            previousYearEndDate: 'DnnDac/ckErvYzkYhjxAkA==',
-            financialYear: 'iTB2kqR+RIDSOZKIWPHqNA==',
-            quarter: '6BfdfWe6m61gZvT94N+WQQ==',
-            isBranchFinal: '/benKZlAFyUD3QY0MMMozw==',
-            isCheckerDig: 'gYSBy8u0wUc9jhNHPw6+mg==',
-            isAuditorDig: 'gYSBy8u0wUc9jhNHPw6+mg==',
-            isCircleExist: '4nqgE0lTJM1BIqmxFphfIQ==',
-          },
-          'POST'
-        );
+// Service object
+const IFRSArchivesService = {
+  getCircleList: async (params) => {
+    try {
+      const response = await axios.post(REST_URIS.getCircleList, params);
+      return response.data;
+    } catch (error) {
+      console.error('Error while getting circle list:', error);
+      throw error;
+    }
+  },
 
-        if (responseData && responseData.length > 0) {
-          setReports(responseData);
-          console.log(responseData);
-        } else {
-          console.log('No response data');
-        }
-      } catch (error) {
-        console.error('Error fetching Circle Maker Worklist:', error.message);
-      }
-    };
+  downloadXLReport: async (params) =>
+    downloadFile(REST_URIS.downloadXLReport, params, 'Admin_Report.xlsx'),
 
-    fetchData();
-  }, []);
+  downloadPdfReport: async (params) =>
+    downloadFile(REST_URIS.downloadPdfReport, params, 'Admin_Report.pdf'),
 
-  function renderStatus(status) {
-    const colors = {
-      savedbymaker: 'success',
-      reportnotcreated: 'error',
-      reportinitiated: 'default',
-    };
+  downloadPdf: async (params) =>
+    downloadFile(REST_URIS.downloadPdf, params, 'User_Report.pdf'),
 
-    return <Chip label={status} color={colors[_.lowerCase(status).replace(/\s+/g, '')]} size="small" />;
+  downloadXL: async (params) =>
+    downloadFile(REST_URIS.downloadXL, params, 'User_Report.xlsx'),
+};
+
+// File download handler
+const downloadFile = async (url, params, filename) => {
+  try {
+    const response = await axios.post(url, params, {
+      responseType: 'blob',
+    });
+
+    const blob = new Blob([response.data], {
+      type: response.headers['content-type'],
+    });
+
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (error) {
+    console.error(`Error downloading from ${url}:`, error);
+    throw error;
   }
+};
 
-  // Column definitions
-  const columns = [
-    {
-      field: 'name',
-      headerName: 'Report Name',
-      flex: 1.5,
-    },
-    {
-      field: 'checkerRemarks',
-      headerName: 'Checker Remarks',
-      headerAlign: 'center', 
-      align: 'center' ,
-      flex: 1.5,
-      sortable: false,
-      renderCell: (params) => (
-        <span style={{ color: !params.value ? theme.palette.grey[500] : 'inherit' }}>
-          {!params.value ? 'checker remarks will appear here' : params.value}
-        </span>
-      ),
-    },
-    {
-      field: 'pendingStatus',
-      headerName: 'Status',
-      headerAlign: 'center', 
-      align: 'center' ,
-      flex: 1.5,
-      hideable: false,
-      renderCell: (params) => renderStatus(params.value),
-    },
-    {
-      field: 'actions',
-      headerName: 'Action',
-      headerAlign: 'center', 
-      align: 'center' ,
-      flex: 2,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            '& .MuiDataGrid-cell:focus': {
-              outline: 'none', // Remove focus outline for cells
-            },
-            gap: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            m: 1,
-          }}
-        >
-          <ViewButton
-            onClickHandler={() => {
-              console.log(params.row, 'clicked on view');
-            }}
-          />
-          <CreateButton
-            onClickHandler={() => {
-              handleCreate(params.row);
-            }}
-          />
-        </Box>
-      ),
-    },
-  ];
+const IFRSArchivesComponent = () => {
+  const sampleParams = { reportId: '123', date: '2025-03-31' };
 
-  const handleCreate = (report) => {
-    CIRCLE_MAKER_REPORT_ROUTES[report.reportMasterId]
-      ? navigate('./' + CIRCLE_MAKER_REPORT_ROUTES[report.reportMasterId], { state: { report } })
-      : console.log('Invalid ReportMasterID');
+  const handleGetCircleList = async () => {
+    try {
+      const data = await IFRSArchivesService.getCircleList(sampleParams);
+      console.log('Circle List:', data);
+      alert('Circle List fetched. Check console.');
+    } catch (error) {
+      alert('Failed to fetch circle list.');
+    }
   };
 
   return (
-    <Paper sx={{ width: '100%'}}>
-      <CustomizedDataGrid rows={reports} columns={columns} getRowId={(row) => row.reportMasterId} />
-    </Paper>
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ padding: 4, borderRadius: 3, mt: 5 }}>
+        <Typography variant="h5" gutterBottom>
+          IFRS Archive Reports
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Button fullWidth variant="contained" onClick={handleGetCircleList}>
+              Get Circle List
+            </Button>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Admin Reports
+            </Typography>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Button fullWidth variant="outlined" onClick={() => IFRSArchivesService.downloadXLReport(sampleParams)}>
+              Download Excel
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button fullWidth variant="outlined" onClick={() => IFRSArchivesService.downloadPdfReport(sampleParams)}>
+              Download PDF
+            </Button>
+          </Grid>
+
+          <Grid item xs={12} mt={2}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              User Reports
+            </Typography>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Button fullWidth variant="outlined" onClick={() => IFRSArchivesService.downloadXL(sampleParams)}>
+              Download Excel
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button fullWidth variant="outlined" onClick={() => IFRSArchivesService.downloadPdf(sampleParams)}>
+              Download PDF
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Container>
   );
 };
 
-export default Worklist;
+export default IFRSArchivesComponent;
