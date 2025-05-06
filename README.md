@@ -1,4 +1,4 @@
-[06/05, 11:09 am] Falguni Nakhwa - TCS: import jakarta.servlet.ReadListener;
+import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
@@ -11,15 +11,24 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
 
     public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
         super(request);
-        InputStream requestInputStream = request.getInputStream();
-        this.cachedBody = requestInputStream.readAllBytes(); // Java 9+ (or use ByteArrayOutputStream for earlier)
+        cachedBody = toByteArray(request.getInputStream());
+    }
+
+    private byte[] toByteArray(InputStream input) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = input.read(buffer)) != -1) {
+            baos.write(buffer, 0, length);
+        }
+        return baos.toByteArray();
     }
 
     @Override
     public ServletInputStream getInputStream() {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.cachedBody);
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(cachedBody);
         return new ServletInputStream() {
-            @Override public int read() { return byteArrayInputStream.read(); }
+            @Override public int read() throws IOException { return byteArrayInputStream.read(); }
             @Override public boolean isFinished() { return byteArrayInputStream.available() == 0; }
             @Override public boolean isReady() { return true; }
             @Override public void setReadListener(ReadListener readListener) {}
@@ -29,25 +38,5 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
     @Override
     public BufferedReader getReader() {
         return new BufferedReader(new InputStreamReader(getInputStream()));
-    }
-}
-[06/05, 11:09 am] Falguni Nakhwa - TCS: import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-
-public class MyJsonFilter implements Filter {
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(httpRequest);
-
-        String jsonBody = new String(wrappedRequest.getInputStream().readAllBytes());
-        System.out.println("JSON Payload: " + jsonBody);
-
-        // Proceed with the wrapped request
-        chain.doFilter(wrappedRequest, response);
     }
 }
