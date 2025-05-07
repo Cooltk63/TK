@@ -1,123 +1,115 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Button, Modal, Box
+  Table, TableBody, TableCell, tableCellClasses,
+  TableContainer, TableHead, TableRow, Paper,
+  Button, Dialog, DialogTitle, DialogContent, IconButton
 } from '@mui/material';
-import useApi from "../../../common/hooks/useApi";
+
 import {
-  Close as CloseIcon,
   Visibility as VisibilityIcon,
   PictureAsPdf as PictureAsPdfIcon,
   Description as DescriptionIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 
-const loginUser = JSON.parse(localStorage.getItem('user'));
+import useApi from "../../../common/hooks/useApi";
+import axios from 'axios';
 
-// Table styles
+// Styling for table cells
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${TableCell.head}`]: {
+  [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
     color: theme.palette.common.white,
   },
-  [`&.${TableCell.body}`]: {
+  [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
   },
 }));
+
+// Styling for table rows
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover },
-  '&:last-child td, &:last-child th': { border: 0 },
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
 }));
 
-// Modal styling
-const modalStyle = {
-  position: 'absolute',
-  top: '5%',
-  left: '5%',
-  width: '90%',
-  height: '90%',
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  p: 2,
-  overflow: 'auto'
-};
-
 const IFRSDownloadReport = () => {
-  const { data, error, isLoading, callApi } = useApi();
+  const loginUser = JSON.parse(localStorage.getItem('user'));
+  const { callApi } = useApi();
+
   const [rows, setRows] = useState([]);
-  const [receivedData, setReceivedData] = useState({});
-  const [openModal, setOpenModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const loadData = async () => {
-    try {
-      const responseData = await callApi('/Admin/getListOfReports', loginUser, 'POST');
-      setReceivedData(responseData);
-      setRows(responseData?.list1 || []);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
-  };
+  // Load report data on component mount
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const data = await callApi('/Admin/getListOfReports', loginUser, 'POST');
+        setRows(data?.list1 || []);
+      } catch (error) {
+        console.error("Error fetching report list:", error);
+      }
+    };
+    fetchReports();
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
-
-  // Main Action Handler
-  const actionHandler = async (type, data) => {
+  // Handles button actions for view/download
+  const actionHandler = async (type, report) => {
     const payload = {
       dash_suppresed: null,
       isSuppresed: false,
-      report: data,
+      report: report,
       user: loginUser
     };
 
     try {
-      const response = await fetch('/Admin/viewReportJrxmlCircle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const response = await axios.post('/Admin/viewReportJrxmlCircle', payload, {
+        responseType: 'blob' // Important for handling byte[] from backend
       });
 
-      if (!response.ok) throw new Error('Failed to fetch blob');
+      const blob = new Blob([response.data], {
+        type: type === 'downloadExcel' ? 'application/vnd.ms-excel' : 'application/pdf'
+      });
 
-      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
 
       if (type === 'view') {
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);        // set blob URL
-        setOpenModal(true);    // open modal
+        setPdfUrl(blobUrl); // Set PDF blob URL for preview
+        setDialogOpen(true); // Open modal
       } else {
-        // download logic for PDF or Excel
-        const contentType = type === 'downloadPDF' ? 'application/pdf' : 'application/vnd.ms-excel';
-        const filename = type === 'downloadPDF' ? 'report.pdf' : 'report.xlsx';
-
-        const downloadUrl = window.URL.createObjectURL(new Blob([blob], { type: contentType }));
+        // For download actions
         const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.setAttribute('download', filename);
+        link.href = blobUrl;
+        link.download = type === 'downloadPDF' ? 'report.pdf' : 'report.xls';
         document.body.appendChild(link);
         link.click();
         link.remove();
       }
 
-    } catch (err) {
-      console.error(`${type} action failed:`, err);
+    } catch (error) {
+      console.error(`Error on ${type}:`, error);
     }
   };
 
   return (
     <>
       <TableContainer component={Paper}>
-        <Table aria-label="customized table">
+        <Table aria-label="report table">
           <TableHead>
             <TableRow>
               <StyledTableCell>Report Name</StyledTableCell>
-              <StyledTableCell colSpan={3} sx={{ textAlign: 'center' }}>Actions</StyledTableCell>
+              <StyledTableCell colSpan={3} align="center">Actions</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row) => (
               <StyledTableRow key={row.dash_name}>
-                <StyledTableCell>{row.dash_name || "HELLO"}</StyledTableCell>
+                <StyledTableCell>{row.dash_name || "Unnamed Report"}</StyledTableCell>
                 <StyledTableCell>
                   <Button size="small" onClick={() => actionHandler('view', row)}>
                     <VisibilityIcon />
@@ -139,17 +131,30 @@ const IFRSDownloadReport = () => {
         </Table>
       </TableContainer>
 
-      {/* Modal for PDF preview */}
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box sx={modalStyle}>
-          <Button onClick={() => setOpenModal(false)} variant="contained" color="error" size="small" sx={{ float: 'right' }}>
-            <CloseIcon fontSize="small" />
-          </Button>
+      {/* Dialog to show PDF preview */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Preview Report
+          <IconButton
+            aria-label="close"
+            onClick={() => setDialogOpen(false)}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
           {pdfUrl && (
-            <iframe src={pdfUrl} title="PDF Preview" width="100%" height="100%" frameBorder="0" />
+            <iframe
+              src={pdfUrl}
+              title="PDF Viewer"
+              width="100%"
+              height="600px"
+              style={{ border: 'none' }}
+            />
           )}
-        </Box>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
