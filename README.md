@@ -68,11 +68,9 @@ const IFRSDownloadReport = () => {
     };
 
     try {
-      const response = await axios.post('/Admin/viewReportJrxmlCircle', payload, {
-        responseType: 'blob' // Important for handling byte[] from backend
-      });
+      const response = await callApi('/Admin/viewReportJrxmlCircle', payload,'POST');
 
-      const blob = new Blob([response.data], {
+      const blob = new Blob([response], {
         type: type === 'downloadExcel' ? 'application/vnd.ms-excel' : 'application/pdf'
       });
 
@@ -159,4 +157,7 @@ const IFRSDownloadReport = () => {
   );
 };
 
-export default IFRSDownloadReport;l
+export default IFRSDownloadReport;
+
+
+i am using the callApi my created inbuilt function to sent BE api call need some changes accordinglt but while hit on view button model opend but shoe erroe 'Failed to load PDF document.'
