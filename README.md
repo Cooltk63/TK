@@ -1,36 +1,54 @@
-F:\Projects\BSA Projects\BS_Revamp>npm run dev
-
-> bs_revamp@0.0.0 dev
-> vite
-
-F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:64
-                throw new Error(
-                      ^
-
-Error: Cannot find module @rollup/rollup-win32-x64-msvc. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.
-    at requireWithFriendlyError (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:64:9)
-    at Object.<anonymous> (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:73:76)
-    at Module._compile (node:internal/modules/cjs/loader:1730:14)
-    at Object..js (node:internal/modules/cjs/loader:1895:10)
-    at Module.load (node:internal/modules/cjs/loader:1465:32)
-    ... 2 lines matching cause stack trace ...
-    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
-    at cjsLoader (node:internal/modules/esm/translators:266:5)
-    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:200:7) {
-  [cause]: Error: Access is denied.
-  \\?\F:\Projects\BSA Projects\BS_Revamp\node_modules\@rollup\rollup-win32-x64-msvc\rollup.win32-x64-msvc.node
-      at Object..node (node:internal/modules/cjs/loader:1921:18)
-      at Module.load (node:internal/modules/cjs/loader:1465:32)
-      at Function._load (node:internal/modules/cjs/loader:1282:12)
-      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
-      at Module.require (node:internal/modules/cjs/loader:1487:12)
-      at require (node:internal/modules/helpers:135:16)
-      at requireWithFriendlyError (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:46:10)
-      at Object.<anonymous> (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:73:76)
-      at Module._compile (node:internal/modules/cjs/loader:1730:14) {
-    code: 'ERR_DLOPEN_FAILED'
+{
+  "name": "bs_revamp",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/joy": "^5.0.0-beta.52",
+    "@mui/lab": "^7.0.0-beta.11",
+    "@mui/material": "^7.0.2",
+    "@mui/x-charts": "^8.0.0",
+    "@mui/x-data-grid": "^8.0.0",
+    "@mui/x-date-pickers": "^8.0.0",
+    "@mui/x-tree-view": "^8.0.0",
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
+    "@reduxjs/toolkit": "^2.7.0",
+    "@tanstack/react-query": "^5.74.4",
+    "@tanstack/react-query-devtools": "^5.74.4",
+    "axios": "^1.8.4",
+    "crypto-js": "^4.2.0",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.5.0",
+    "lodash": "^4.17.21",
+    "prop-types": "^15.8.1",
+    "react": "^19.0.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.5.1",
+    "redux-persist": "^6.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "vite": "^6.3.1"
   }
 }
-
-Node.js v22.15.0
