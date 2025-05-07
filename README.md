@@ -16,6 +16,7 @@ import {
 import useApi from "../../../common/hooks/useApi";
 import axios from 'axios';
 
+
 // Styling for table cells
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -68,7 +69,9 @@ const IFRSDownloadReport = () => {
     };
 
     try {
-      const response = await callApi('/Admin/viewReportJrxmlCircle', payload,'POST');
+
+      const response = await callApi('/Admin/viewReportJrxmlCircle', payload, 'POST', 'arraybuffer');
+ 
 
       const blob = new Blob([response], {
         type: type === 'downloadExcel' ? 'application/vnd.ms-excel' : 'application/pdf'
@@ -160,4 +163,4 @@ const IFRSDownloadReport = () => {
 export default IFRSDownloadReport;
 
 
-i am using the callApi my created inbuilt function to sent BE api call need some changes accordinglt but while hit on view button model opend but shoe erroe 'Failed to load PDF document.'
+Still getting the failed ot load pdf error insted of single call use 3 different calls for each time to view, downloadPdf ,downloadExcel click & used below sample provided code just for reference to how view is handled here and displayed use the below code reference for everthing & do not changes my code working functionality 
