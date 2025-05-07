@@ -1,188 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { styled } from '@mui/material/styles';
-import {
-  Table, TableBody, TableCell, tableCellClasses,
-  TableContainer, TableHead, TableRow, Paper,
-  Button, Dialog, DialogTitle, DialogContent, IconButton
-} from '@mui/material';
+F:\Projects\BSA Projects\BS_Revamp>npm run dev
 
-import {
-  Visibility as VisibilityIcon,
-  PictureAsPdf as PictureAsPdfIcon,
-  Description as DescriptionIcon,
-  Close as CloseIcon
-} from '@mui/icons-material';
+> bs_revamp@0.0.0 dev
+> vite
 
-import useApi from "../../../common/hooks/useApi";
+F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:64
+                throw new Error(
+                      ^
 
-// Styling for table cells
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
+Error: Cannot find module @rollup/rollup-win32-x64-msvc. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.
+    at requireWithFriendlyError (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:64:9)
+    at Object.<anonymous> (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:73:76)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    ... 2 lines matching cause stack trace ...
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at cjsLoader (node:internal/modules/esm/translators:266:5)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:200:7) {
+  [cause]: Error: Access is denied.
+  \\?\F:\Projects\BSA Projects\BS_Revamp\node_modules\@rollup\rollup-win32-x64-msvc\rollup.win32-x64-msvc.node
+      at Object..node (node:internal/modules/cjs/loader:1921:18)
+      at Module.load (node:internal/modules/cjs/loader:1465:32)
+      at Function._load (node:internal/modules/cjs/loader:1282:12)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.require (node:internal/modules/cjs/loader:1487:12)
+      at require (node:internal/modules/helpers:135:16)
+      at requireWithFriendlyError (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:46:10)
+      at Object.<anonymous> (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:73:76)
+      at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+    code: 'ERR_DLOPEN_FAILED'
+  }
+}
 
-// Styling for table rows
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover,
-  },
-  '&:last-child td, &:last-child th': {
-    border: 0,
-  },
-}));
-
-const IFRSDownloadReport = () => {
-  const loginUser = JSON.parse(localStorage.getItem('user'));
-  const { callApi } = useApi();
-
-  const [rows, setRows] = useState([]);
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Load report data
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const data = await callApi('/Admin/getListOfReports', loginUser, 'POST');
-        setRows(data?.list1 || []);
-      } catch (error) {
-        console.error("Error fetching report list:", error);
-      }
-    };
-    fetchReports();
-  }, []);
-
-  const viewReport = async (report) => {
-    const payload = {
-      dash_suppresed: null,
-      isSuppresed: false,
-      report,
-      user: loginUser
-    };
-
-    try {
-      const response = await callApi('/Admin/viewReportJrxmlCircle', payload, 'POST', 'arraybuffer');
-      const blob = new Blob([response], { type: 'application/pdf' });
-      const blobUrl = window.URL.createObjectURL(blob);
-      setPdfUrl(blobUrl);
-      setDialogOpen(true);
-    } catch (error) {
-      console.error('Error viewing report:', error);
-    }
-  };
-
-  const downloadPdf = async (report) => {
-    const payload = {
-      dash_suppresed: null,
-      isSuppresed: false,
-      report,
-      user: loginUser
-    };
-
-    try {
-      const response = await callApi('/Admin/viewReportJrxmlCircle', payload, 'POST', 'arraybuffer');
-      const blob = new Blob([response], { type: 'application/pdf' });
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = 'report.pdf';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-    }
-  };
-
-  const downloadExcel = async (report) => {
-    const payload = {
-      dash_suppresed: null,
-      isSuppresed: false,
-      report,
-      user: loginUser
-    };
-
-    try {
-      const response = await callApi('/Admin/viewReportJrxmlCircle', payload, 'POST', 'arraybuffer');
-      const blob = new Blob([response], { type: 'application/vnd.ms-excel' });
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = 'report.xls';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error('Error downloading Excel:', error);
-    }
-  };
-
-  return (
-    <>
-      <TableContainer component={Paper}>
-        <Table aria-label="report table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Report Name</StyledTableCell>
-              <StyledTableCell colSpan={3} align="center">Actions</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <StyledTableRow key={row.dash_name}>
-                <StyledTableCell>{row.dash_name || "Unnamed Report"}</StyledTableCell>
-                <StyledTableCell>
-                  <Button size="small" onClick={() => viewReport(row)}>
-                    <VisibilityIcon />
-                  </Button>
-                </StyledTableCell>
-                <StyledTableCell>
-                  <Button size="small" color="error" onClick={() => downloadPdf(row)}>
-                    <PictureAsPdfIcon />
-                  </Button>
-                </StyledTableCell>
-                <StyledTableCell>
-                  <Button size="small" color="success" onClick={() => downloadExcel(row)}>
-                    <DescriptionIcon />
-                  </Button>
-                </StyledTableCell>
-              </StyledTableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Dialog to show PDF preview */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
-          Preview Report
-          <IconButton
-            aria-label="close"
-            onClick={() => setDialogOpen(false)}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {pdfUrl && (
-            <iframe
-              src={pdfUrl}
-              title="PDF Viewer"
-              width="100%"
-              height="600px"
-              style={{ border: 'none' }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
-
-export default IFRSDownloadReport;
+Node.js v22.15.0
