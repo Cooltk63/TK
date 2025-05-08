@@ -1,10 +1,4 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: V1015698
-  Date: 30-10-2024
-  Time: 15:07
-  To change this template use File | Settings | File Templates.
---%>
+\
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="wrapper">
     <div class="header header-filter" style="background-image: url('assets/img/bg2.jpeg');">
