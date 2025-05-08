@@ -83,7 +83,7 @@ const IFRSDownloadReport = () => {
         isSuppresed: false,
       };
 
-      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'application/json');
+      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'blob');
 
       if (responseData) {
         const blob = new Blob([responseData], { type: 'application/pdf' }); // Change to PDF blob
@@ -110,7 +110,7 @@ const IFRSDownloadReport = () => {
         isSuppresed: false,
       };
 
-      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'application/pdf');
+      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'blob');
 
       if (responseData) {
         let fileName = circleName + '_' + qed + '_' + report.dash_name + '.pdf';
@@ -136,7 +136,7 @@ const IFRSDownloadReport = () => {
         isSuppresed: false,
       };
 
-      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'application/pdf');
+      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'blob');
 
       if (responseData) {
         let fileName = circleName + '_' + qed + '_' + report.dash_name + '.pdf';
@@ -231,3 +231,5 @@ const IFRSDownloadReport = () => {
 };
 
 export default IFRSDownloadReport;
+
+This is working for pdf view perfectly but downloading the empty or 0 byte size files for PDF & EXCEl
