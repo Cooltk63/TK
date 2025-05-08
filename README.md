@@ -1,239 +1,205 @@
- @RequestMapping(value = "/viewReportJrxml", method = RequestMethod.POST)
-    public void viewReport(@RequestBody Map<String, Object> map, HttpServletResponse response)
-            throws JRException, ConfigurationException, SQLException, IOException {
-        byte[] pdfContent = null;
-        LinkedHashMap list = (LinkedHashMap) map.get("user");
-        String circleCode = (String) list.get("circleCode");
-        String userId = (String) list.get("userId");
-        String quarterEndDate = (String) list.get("quarterEndDate");
-        LinkedHashMap reportList = (LinkedHashMap) map.get("report");
-        String jrxmlName = (String) reportList.get("dash_jrxml");
-        String parameters = (String) reportList.get("dash_param");
-        String prePost = (String) map.get("prePost");
-        String dash_dwnload = (String) map.get("type");
-        //log.info("**************  parameters  " + parameters);
-        String circle = "";
-        ArrayList circleList = null;
+import React, { useState, useEffect } from 'react';
+import { styled } from '@mui/material/styles';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  tableCellClasses,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+} from '@mui/material';
 
+import {
+  Visibility as VisibilityIcon,
+  PictureAsPdf as PictureAsPdfIcon,
+  Description as DescriptionIcon,
+} from '@mui/icons-material';
 
-        if (parameters.contains("CIRCLE_LIST")) {
-            circleList = (ArrayList) map.get("compcircle");
+import useApi from '../../../common/hooks/useApi';
+import ReportViewer from '../../../common/components/viewer/ReportViewer';
+import downloadFile from '../../../common/components/viewer/DownloadFile';
 
+// Styling for table cells
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
 
-        }
-        if (parameters.contains("CIRCLE_CODE")) {
-            circle = (String) map.get("compcircle");
+// Styling for table rows
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+}));
 
-        }
+const IFRSDownloadReport = () => {
+  const loginUser = JSON.parse(localStorage.getItem('user'));
+  const { callApi } = useApi();
 
-        //log.info("  " + circleList + "   ************  " + circle);
+  const [rows, setRows] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const qed = loginUser.quarterEndDate;
+  const circleName = loginUser.circleName.substring(0, 3);
 
-        String para[] = null;
-        if (parameters != "null") {
-            para = parameters.split(",");
-        }
+  // Load report data on component mount
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const data = await callApi('/Admin/getListOfReports', loginUser, 'POST');
+        setRows(data?.list1 || []);
+      } catch (error) {
+        console.error('Error fetching report list:', error);
+      }
+    };
+    fetchReports();
+  }, []);
 
-        Map param = new HashMap();
-        for (String listOfParameters : para) {
-            //log.info("parameters" + listOfParameters);
+  // For Pdf view
+  const handleView = async (report) => {
+    console.log('Inside View Report');
+    setSelectedRow(report);
+    try {
+      const payload = {
+        report: report,
+        user: loginUser,
+        type: 'view',
+        dash_suppresed: null,
+        isSuppresed: false,
+      };
 
-            if (listOfParameters.equalsIgnoreCase("DATE")) {
-                param.put(listOfParameters, quarterEndDate);
-            }
-            if (listOfParameters.equalsIgnoreCase("CIRCLE_CODE")) {
-
-                param.put(listOfParameters, circle);
-            }
-            if (listOfParameters.equalsIgnoreCase("CIRCLE_LIST")) {
-
-                param.put(listOfParameters, circleList);
-            }
-
-            if (listOfParameters.contains("TYPE")) {
-                param.put(listOfParameters, prePost);
-            }
-
-            if (listOfParameters.equalsIgnoreCase("COMP")) {
-                param.put("COMP", circleList);
-            }
-
-        }
-        param.put("ZERO", map.get("isSuppresed"));
-        //log.info("pre post ------- " + prePost);
-
-        //log.info("jrxmlName " + jrxmlName);
-        //log.info("circleCode " + circleCode);
-        //log.info("quarterEndDate " + quarterEndDate);
-        //log.info("userId " + userId);
-        //log.info("dash_dwnload " + dash_dwnload);
-
-        /*
-         * Map param = new HashMap(); param.put("DATE", quarterEndDate);
-         * param.put("CIRCLE_CODE", circleCode); param.put("TYPE", "PRE");
-         */
-
-        Configuration config = new PropertiesConfiguration("common.properties");
-        param.put("SUBREPORT_DIR", config.getProperty("REPORT_HOME_DIR") + "jasper" + File.separator);
-
-        /*String sourceFilePath = config.getProperty("REPORT_HOME_DIR") + "jrxmls" + File.separator + jrxmlName
-                + ".jrxml";
-*/
-        Connection con = dataSource.getConnection();
-
-        String checkPath = config.getProperty("REPORT_HOME_DIR") + "created" + File.separator + circleCode
-                + File.separator + quarterEndDate.replaceAll("/", "");
-        String outFilePath = null;
-        String contentType = null;
-        String extention = null;
-        File file2 = null;
-        try {
-            if (dash_dwnload.equalsIgnoreCase("view") || dash_dwnload.equalsIgnoreCase("downloadPDF")) {
-
-                outFilePath = config.getProperty("REPORT_HOME_DIR") + "created" + File.separator + circleCode
-                        + File.separator + quarterEndDate.replaceAll("/", "") + File.separator + circleCode + "_"
-                        + quarterEndDate.replaceAll("/", "") + "_" + jrxmlName + ".pdf";
-
-                File check = new File(CleanPath.cleanString(checkPath));
-                if (!check.exists())
-                    check.mkdirs();
-                JasperPrint jasperPrint;
-
-                String JasperFilePath = config.getProperty("REPORT_HOME_DIR") + "jasper" + File.separator + jrxmlName
-                        + ".jasper";
-                //CommonFunction cf = new CommonFunction();
-                //boolean compiledFlag = cf.complieJrxml(jrxmlName);
-                //log.info("File Compiled");
-                //log.info("outFilePath" + outFilePath);
-                ////log.info("sourceFilePath" + sourceFilePath);
-
-                //log.info("compiled done");
-
-                jasperPrint = JasperFillManager.fillReport(JasperFilePath, param, con);
-                //log.info("filled  done");
-                JasperExportManager.exportReportToPdfFile(jasperPrint, outFilePath);
-                //log.info("export done");
-
-                file2 = new File(outFilePath);
-                pdfContent = FileUtils.readFileToByteArray(file2);
-                // FileInputStream stream=new FileInputStream(file2);
-                OutputStream os = (OutputStream) response.getOutputStream();
-                // IOUtils.copy(stream, response.getOutputStream());
-                contentType = "application/pdf";
-                extention = ".pdf";
-                response.setContentType(contentType);
-
-                response.setHeader("Content-Disposition", "attachment: filename=" + jrxmlName + extention);
-                os.write(pdfContent);
-                os.flush();
-                // os.close();
-                // byte[] pdfContent = FileUtils.readFileToByteArray(file2);
-                // response.flushBuffer();
-                // stream.close();
-                // file2.delete();
-            } else {
-
-                //adding these parameters to make amounts as numeric in Excel format
-                param.put("isExcel", true);
-                param.put("IS_DETECT_CELL_TYPE", true);
-                outFilePath = config.getProperty("REPORT_HOME_DIR") + "created" + File.separator + circleCode
-                        + "_" + quarterEndDate.replaceAll("/", "") + "_" + jrxmlName + ".xls";
-                //log.info("output file path : " + outFilePath);
-                ////log.info("Source file path : " + sourceFilePath);
-
-                JasperReport jasperReport;
-                JasperPrint jasperPrint;
-
-                File check = new File(checkPath);
-                if (!check.exists())
-                    check.mkdirs();
-                String JasperFilePath = config.getProperty("REPORT_HOME_DIR") + "jasper" + File.separator + jrxmlName
-                        + ".jasper";
-
-                //CommonFunction cf = new CommonFunction();
-                //boolean compiledFlag = cf.complieJrxml(jrxmlName);
-                ////log.info("File Compiled");
-                ////log.info("compiled done");
-                param.put("IS_IGNORE_PAGINATION", true);
-
-                jasperPrint = JasperFillManager.fillReport(JasperFilePath, param, con);
-                //log.info("printing done");
-
-                OutputStream out2 = new FileOutputStream(new File(outFilePath));
-
-                JRXlsxExporter excelExporter = new JRXlsxExporter();
-                /*
-                 * excelExporter.setParameter(JRXlsExporterParameter.
-                 * JASPER_PRINT, jasperPrint);
-                 * excelExporter.setParameter(JRXlsExporterParameter.
-                 * OUTPUT_STREAM, out2);
-                 * excelExporter.setParameter(JRXlsExporterParameter.
-                 * IS_DETECT_CELL_TYPE, Boolean.TRUE);
-                 * excelExporter.setParameter(JRXlsExporterParameter.
-                 * IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
-                 *
-                 * excelExporter.setParameter(JRXlsExporterParameter.
-                 * IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
-                 * excelExporter.setParameter(JRXlsExporterParameter.
-                 * IS_IGNORE_CELL_BORDER, Boolean.TRUE);
-                 * excelExporter.exportReport();
-                 */
-                //log.info("************new ************* method called");
-                excelExporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-                excelExporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out2));
-                SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-                // configuration.setOnePagePerSheet(true);
-                configuration.setDetectCellType(true);
-                configuration.setWhitePageBackground(false);
-                configuration.setRemoveEmptySpaceBetweenRows(true);
-                configuration.setIgnoreCellBorder(true);
-                excelExporter.setConfiguration(configuration);
-
-                excelExporter.exportReport();
-
-                file2 = new File(outFilePath);
-                pdfContent = FileUtils.readFileToByteArray(file2);
-                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                extention = ".xlsx";
-                response.setContentType(contentType);
-                response.setHeader("Content-Disposition", "attachment;filename=" + jrxmlName + extention);
-                // response.setHeader("Content-disposition","inline;filename="+fileName);
-                OutputStream out1 = (OutputStream) response.getOutputStream();
-                out1.write(pdfContent);
-                out1.flush();
-                // out1.close();
-                // file2.delete();
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            //log.info("file download try again");
-            if (null != file2 && file2.exists()) {
-                try {
-                    //log.info("file download trying");
-                    file2 = new File(outFilePath);
-                    pdfContent = FileUtils.readFileToByteArray(file2);
-                    OutputStream os = (OutputStream) response.getOutputStream();
-                    response.setContentType(contentType);
-                    response.setHeader("Content-Disposition", "attachment: filename=" + jrxmlName + extention);
-                    os.write(pdfContent);
-                    os.flush();
-                    //os.close();
-                    // byte[] pdfContent = FileUtils.readFileToByteArray(file2);
-                    // response.flushBuffer();
-                    // stream.close();
-                    file2.delete();
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                    //log.info("file download failing");
-                }
-            }
-        } finally {
-            if (file2.exists()) {
-                file2.delete();
-            }
-            if (null != con) {
-                con.close();
-            }
-        }
+      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'application/json');
+      console.log('Getting view Data ', responseData);
+      if (responseData) {
+        const blob = new Blob([responseData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob); // Create a URL for the Blob
+        console.log('URl created :::', url);
+        setPdfUrl(blob); // ArrayBuffer
+        setDialogOpen(true);
+      } else {
+        console.error('No response found');
+      }
+    } catch (error) {
+      console.error('Error fetching Circle Maker MiscellaneousWorklist:', error.message);
     }
+  };
+
+  // For Pdf Download
+  const handlePDFDownload = async (report) => {
+    console.log('Inside handleDownload PDF');
+    setSelectedRow(report);
+    try {
+      const payload = {
+        report: report,
+        user: loginUser,
+        type: 'downloadPDF',
+        dash_suppresed: null,
+        isSuppresed: false,
+      };
+
+      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'application/pdf');
+
+      if (responseData) {
+        let fileName = circleName + '_' + qed + '_' + report.dash_name + '.pdf';
+        downloadFile(responseData, 'pdf', fileName);
+      } else {
+        console.error('No response found');
+      }
+    } catch (error) {
+      console.error('Error while downloading PDF:', error.message);
+    }
+  };
+
+  // For Excel Download
+  const handleExcelDownload = async (report) => {
+    console.log('Inside handleDownload Excel');
+    setSelectedRow(report);
+    try {
+      const payload = {
+        report: report,
+        user: loginUser,
+        type: 'download',
+        dash_suppresed: null,
+        isSuppresed: false,
+      };
+
+      const responseData = await callApi('/Admin/viewReportJrxml', payload, 'POST', 'application/pdf');
+
+      if (responseData) {
+        let fileName = circleName + '_' + qed + '_' + report.dash_name + '.pdf';
+        downloadFile(responseData, 'excel', fileName);
+      } else {
+        console.error('No response found');
+      }
+    } catch (error) {
+      console.error('Error while downloading PDF:', error.message);
+    }
+  };
+
+  return (
+    <>
+      <TableContainer component={Paper}>
+        <Table aria-label="report table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Report Name</StyledTableCell>
+              <StyledTableCell colSpan={3} align="center">
+                Actions
+              </StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((row) => (
+              <StyledTableRow key={row.dash_name}>
+                <StyledTableCell>{row.dash_name || 'Unnamed Report'}</StyledTableCell>
+                <StyledTableCell>
+                  <Button size="small" onClick={() => handleView(row)}>
+                    <VisibilityIcon />
+                  </Button>
+                </StyledTableCell>
+                <StyledTableCell>
+                  <Button size="small" color="error" onClick={() => handlePDFDownload(row)}>
+                    <PictureAsPdfIcon />
+                  </Button>
+                </StyledTableCell>
+                <StyledTableCell>
+                  <Button size="small" color="success" onClick={() => handleExcelDownload(row)}>
+                    <DescriptionIcon />
+                  </Button>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Dialog to show PDF preview */}
+      <Paper sx={{ width: '100%' }}>
+        {pdfUrl && (
+          <ReportViewer
+            open={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            title={selectedRow.dash_name}
+            bufferData={pdfUrl}
+            type="html"
+            onDownloadPDF={handlePDFDownload}
+          />
+        )}
+      </Paper>
+    </>
+  );
+};
+
+export default IFRSDownloadReport;
