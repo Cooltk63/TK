@@ -1,103 +1,138 @@
-\
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<div class="wrapper">
-    <div class="header header-filter" style="background-image: url('assets/img/bg2.jpeg');">
-        <div class="container">
-            <div class="row tim-row">
-                <div class="col-md-8 col-md-offset-2">
-                    <div class="brand">
-                        <h3 style="color: white;">Archive Reports</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="main main-raised" style="margin: -160px 30px 0px;" ng-init="IFRSArchives.getCircleData();">
-        <div class="section">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12 align-items-center d-flex justify-content-center">
-                        <div class="col-md-5" style="text-align: center;margin: 30px">
-                            <div class="input-group" style="width: 80%">
-                                <label class="input-group-text" for="selectCategory">Select category type</label>
-                                <select class="form-control form-select" id="selectCategory" ng-model="Category" ng-change="IFRSArchives.onChangeCategory()">
-                                    <option selected value="reportwise">Reports</option>
-                                    <option value="consolidation">Consolidation</option>
-                                    <option value="collation">Collation</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12 align-items-center d-flex justify-content-center">
-                        <div class="col-md-5" style="text-align: center;margin: 30px">
-                            <div class="input-group" style="width: 80%">
-                                <label class="input-group-text" for="selectQED">Select Quarter End Date</label>
-                                <select class="form-control form-select" id="selectQED"></select>
-                            </div>
-                        </div>
-                        <div class="col-md-5" style="text-align: center;margin: 30px" id="openCircle">
-                            <div class="input-group" style="width: 80%">
-                                <label class="input-group-text" for="selectCircle">Select Circle</label>
-                                <select class="form-control form-select" id="selectCircle">
-                                    <option data-ng-repeat="row in IFRSArchives.circleList track by $index" value="{{row.CIRCLECODE}}">{{row.CIRCLENAME}}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="container mt-3">
-                <div class="row form-group">
-                    <div class="col-md-12" style="margin-left: 30px">
-                        <div class="col-md-1">
-                            <label class="form-label" for="downloadType">
-                                Download As :
-                            </label>
-                        </div>
-                        <div id="downloadType">
-                            <div class="form-check mr-3 col-md-5">
-                                <input class="form-check-input" name="downloadAs" type="radio" value="PDF"
-                                       id="pdf" checked>
-                                <label for="pdf" style="margin-right: 15px;color: black">
-                                    PDF
-                                </label>
-                                <input name="downloadAs" type="radio" value="EXCEL"
-                                       id="excel">
-                                <label class="form-check-label" for="excel" style="color: black">
-                                    EXCEL
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row" style="text-align: center;margin: 10px">
-                <div class="col-md-12 align-items-center d-flex justify-content-center">
-                    <div style="text-align: center" id="fileNotFound" hidden>
-                        <strong style="color: red">There is no File/Data available for the selected options</strong>
-                    </div>
-                    <div style="text-align: center" id="errorDownload" hidden>
-                        <strong style="color: red">Something went wrong please try again after sometime....</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="container">
-                <div class="row align-items-center d-flex justify-content-center">
-                    <div class="col-md-12" style="text-align: center">
-                        <button class="btn btn-primary" ng-click="IFRSArchives.handleDownload();">
-                            <i class="fa fa-download"></i>  Download</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </div>
-    </div>
-</div>
+import React, { useState } from 'react';
+import {
+  Button, Grid, TextField, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions,
+  Typography, Paper, FormControl, InputLabel, Select
+} from '@mui/material';
+import axios from 'axios';
 
+// Axios configuration
+const api = axios.create({
+  baseURL: '/IFRSWeb',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
 
+const IFRSArchiveDownloads = () => {
+  const [branchCode, setBranchCode] = useState('');
+  const [quarterEndDate, setQuarterEndDate] = useState('');
+  const [reportType, setReportType] = useState('');
+  const [showDialog, setShowDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
+  // Sample report options
+  const reportTypes = [
+    { value: 'IFRS_Summary', label: 'IFRS Summary' },
+    { value: 'IFRS_Branch', label: 'IFRS Branch' },
+    { value: 'IFRS_Circle', label: 'IFRS Circle' }
+  ];
 
+  const validateFields = () => {
+    if (!branchCode || !quarterEndDate || !reportType) {
+      setErrorMessage('All fields are required.');
+      return false;
+    }
+    setErrorMessage('');
+    return true;
+  };
+
+  const downloadReport = async () => {
+    if (!validateFields()) return;
+
+    const payload = {
+      branch_code: branchCode,
+      quarterEndDate,
+      reportType
+    };
+
+    try {
+      const response = await api.post('/IFRSDownloadArchivesController/downloadIFRSArchiveReport', payload, {
+        responseType: 'blob'
+      });
+
+      const fileName = `${reportType}_${quarterEndDate}_${branchCode}.pdf`;
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      setErrorMessage('Download failed. Please try again.');
+      console.error('Download error:', error);
+    }
+  };
+
+  return (
+    <Paper sx={{ padding: 4, maxWidth: 700, margin: 'auto', mt: 5 }}>
+      <Typography variant="h6" gutterBottom>
+        IFRS Archive Report Download
+      </Typography>
+
+      {errorMessage && (
+        <Typography color="error" gutterBottom>
+          {errorMessage}
+        </Typography>
+      )}
+
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Branch Code"
+            value={branchCode}
+            onChange={(e) => setBranchCode(e.target.value)}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Quarter End Date"
+            InputLabelProps={{ shrink: true }}
+            value={quarterEndDate}
+            onChange={(e) => setQuarterEndDate(e.target.value)}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <InputLabel>Report Type</InputLabel>
+            <Select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
+              label="Report Type"
+            >
+              {reportTypes.map((report) => (
+                <MenuItem key={report.value} value={report.value}>
+                  {report.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} textAlign="center">
+          <Button variant="contained" onClick={downloadReport}>
+            Download Report
+          </Button>
+        </Grid>
+      </Grid>
+
+      {/* Optional Dialog for feedback or preview */}
+      <Dialog open={showDialog} onClose={() => setShowDialog(false)}>
+        <DialogTitle>Report Preview</DialogTitle>
+        <DialogContent>
+          {/* Could insert iframe preview if needed */}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Paper>
+  );
+};
+
+export default IFRSArchiveDownloads;
