@@ -1,3 +1,4 @@
+This is mine code
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import {
@@ -76,7 +77,7 @@ const IFRSDownloadReport = () => {
     setSelectedRow(report);
     try {
       const payload = {
-        report,
+        report: report,
         user: loginUser,
         type: 'view',
         dash_suppresed: null,
@@ -103,7 +104,7 @@ const IFRSDownloadReport = () => {
     setSelectedRow(report);
     try {
       const payload = {
-        report,
+        report: report,
         user: loginUser,
         type: 'downloadPDF',
         dash_suppresed: null,
@@ -129,7 +130,7 @@ const IFRSDownloadReport = () => {
     setSelectedRow(report);
     try {
       const payload = {
-        report,
+        report: report,
         user: loginUser,
         type: 'download',
         dash_suppresed: null,
@@ -232,4 +233,55 @@ const IFRSDownloadReport = () => {
 
 export default IFRSDownloadReport;
 
-This is working for pdf view perfectly but downloading the empty or 0 byte size files for PDF & EXCEl
+
+
+// This is code of downloadFile function but i still getting the empty .pdf and excel file on download help me to understand what changes i have to made inside IFRSDownloadReport according to downloadFile file function I am using.
+export default function downloadFile(fileData, format, name, isBase64 = false) {
+    let fileType = '';
+    let fileExtension = '';
+  
+    switch (format) {
+      case 'pdf':
+        fileType = 'application/pdf';
+        fileExtension = 'pdf';
+        break;
+      case 'excel':
+        fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        fileExtension = 'xlsx';
+        break;
+      case 'zip':
+        fileType = 'application/zip';
+        fileExtension = 'zip';
+        break;
+      case 'word':
+        fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        fileExtension = 'docx';
+        break;
+      default:
+        console.error('Unsupported file format');
+        return;
+    }
+  
+    let byteArray;
+    if (isBase64) {
+      const byteCharacters = atob(fileData);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      byteArray = new Uint8Array(byteNumbers);
+    } else {
+      byteArray = new Uint8Array(fileData); // fileData is already ArrayBuffer
+    }
+  
+    const blob = new Blob([byteArray], { type: fileType });
+    const url = URL.createObjectURL(blob);
+  
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name}.${fileExtension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
