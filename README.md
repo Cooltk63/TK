@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 // import { AES256, encryptValues } from '../../utils/encryption';
-import IFRSArchivesService from './IFRSArchivesService'; // Axios service layer
+
 
 const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -210,3 +210,5 @@ function generateQedOptions() {
 }
 
 export default IFRSDownloadArchives;
+
+use the factory methods api calls for integration of api for the same function call and make good design of Fe it look terrible design and make more specious
