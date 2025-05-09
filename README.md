@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Box, Paper, Typography, Button, MenuItem, Select, FormControl, InputLabel,
   RadioGroup, FormControlLabel, Radio, Alert, Stack
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-// import { AES256, encryptValues } from '../../utils/encryption';
-
 
 const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -13,7 +12,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 
 const IFRSDownloadArchives = () => {
-  // const sessionUser = JSON.parse(AES256.decrypt(localStorage.getItem('user')));
+  // Dummy user data in place of encryption-based localStorage
   const sessionUser = {
     userId: 'testUser',
     circleCode: 'CIRC01',
@@ -28,8 +27,6 @@ const IFRSDownloadArchives = () => {
   const [fileNotFound, setFileNotFound] = useState(false);
   const [errorDownload, setErrorDownload] = useState(false);
 
-  // const { passphrase, iv, salt, aesUtil } = encryptValues();
-
   const qed = sessionUser.quarterEndDate;
   const userId = sessionUser.userId;
   const circleCode = sessionUser.circleCode;
@@ -39,16 +36,12 @@ const IFRSDownloadArchives = () => {
   }, []);
 
   const fetchCircleData = async () => {
-    const payload = { qed, userId };
-    // const params = {
-    //   salt,
-    //   iv,
-    //   data: aesUtil.encrypt(salt, iv, passphrase, JSON.stringify(payload)),
-    // };
-    const params = { payload }; // Temporary fallback
     try {
-      const data = await IFRSArchivesService.getCircleList(params);
-      setCircleList(data || []);
+      const response = await axios.post('/ifrs/getCircleList', {
+        qed: qed,
+        userId: userId
+      });
+      setCircleList(response.data || []);
     } catch (err) {
       console.error('Error fetching circle list:', err);
     }
@@ -66,43 +59,40 @@ const IFRSDownloadArchives = () => {
       type: ['consolidation', 'collation'].includes(selectedCategory) ? selectedCategory : undefined,
     };
 
-    // const params = {
-    //   salt,
-    //   iv,
-    //   data: aesUtil.encrypt(salt, iv, passphrase, JSON.stringify(payload)),
-    // };
-    const params = { payload }; // Temporary fallback
-
     try {
-      const response = downloadType === 'PDF'
-        ? await IFRSArchivesService.downloadPdf(params)
-        : await IFRSArchivesService.downloadXL(params);
+      const response = await axios.post(
+        downloadType === 'PDF' ? '/ifrs/downloadPdf' : '/ifrs/downloadXL',
+        payload
+      );
 
-      if (response.flag) {
+      if (response.data.flag) {
+        const fileName = `${circleCode}_IFRS_Liabilities_${selectedQed}`;
+        const base64Data = response.data.pdfContent;
+
         if (downloadType === 'PDF') {
           const link = document.createElement('a');
-          link.href = `data:application/pdf;base64,${response.pdfContent}`;
-          link.download = `${circleCode}_IFRS_Liabilities_${selectedQed}.pdf`;
+          link.href = `data:application/pdf;base64,${base64Data}`;
+          link.download = `${fileName}.pdf`;
           link.click();
         } else {
-          const byteCharacters = atob(response.pdfContent);
-          const byteArray = new Uint8Array([...byteCharacters].map(char => char.charCodeAt(0)));
+          const byteCharacters = atob(base64Data);
+          const byteArray = new Uint8Array([...byteCharacters].map(c => c.charCodeAt(0)));
           const blob = new Blob([byteArray], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           });
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `${circleCode}_IFRS_Liabilities_${selectedQed}.xlsx`;
+          link.download = `${fileName}.xlsx`;
           link.click();
           URL.revokeObjectURL(url);
         }
       } else {
-        if (response.displayMessage === 'fileNotFound') setFileNotFound(true);
-        else if (response.displayMessage === 'error') setErrorDownload(true);
+        if (response.data.displayMessage === 'fileNotFound') setFileNotFound(true);
+        else if (response.data.displayMessage === 'error') setErrorDownload(true);
       }
     } catch (err) {
-      alert(`Failed to Download ${downloadType}: ${err}`);
+      alert(`Failed to download ${downloadType}: ${err.message}`);
     }
   };
 
@@ -137,7 +127,7 @@ const IFRSDownloadArchives = () => {
           </Select>
         </FormControl>
 
-        {/* Circle Dropdown */}
+        {/* Circle Dropdown (Only for reportwise) */}
         {selectedCategory === 'reportwise' && (
           <FormControl fullWidth>
             <InputLabel>Circle</InputLabel>
@@ -197,9 +187,9 @@ function generateQedOptions() {
     { label: "Q4 (Jan-Mar)", month: 2, day: 31 },
   ];
 
-  for (let year = 2024; year < endYear; year++) {
+  for (let year = 2024; year <= endYear; year++) {
     quarters.forEach((q, index) => {
-      if (year === endYear - 1 && index >= currentQuarter) return;
+      if (year === endYear && index >= currentQuarter) return;
       const endDate = new Date(q.month === 2 ? year + 1 : year, q.month, q.day);
       const dateStr = `${String(endDate.getDate()).padStart(2, '0')}/${String(endDate.getMonth() + 1).padStart(2, '0')}/${endDate.getFullYear()}`;
       options.push(<MenuItem key={dateStr} value={dateStr}>{`${dateStr} ${q.label}`}</MenuItem>);
@@ -210,5 +200,3 @@ function generateQedOptions() {
 }
 
 export default IFRSDownloadArchives;
-
-use the factory methods api calls for integration of api for the same function call and make good design of Fe it look terrible design and make more specious
