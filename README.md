@@ -138,7 +138,10 @@ const IFRSDownloadArchives = () => {
               onChange={(e) => setSelectedQed(e.target.value)}
               label="Quarter End Date"
             >
-              {generateQedOptions()}
+              {generateQedOptions().map((qed)=>(<MenuItem key={qed.value} value={qed.value}>
+                {qed.label}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
@@ -234,132 +237,3 @@ function generateQedOptions() {
 }
 
 export default IFRSDownloadArchives;
-
-
-This is error I am getting at console
-
-Uncaught Error: Objects are not valid as a React child (found: object with keys {value, label}). If you meant to render a collection of children, use an array instead.
-    at mapIntoArray (react.development.js:440:15)
-    at mapIntoArray (react.development.js:401:32)
-    at mapChildren (react.development.js:454:7)
-    at Object.toArray (react.development.js:759:11)
-    at SelectInput2 (SelectInput.js:238:40)
-    at react-stack-bottom-frame (react-dom-client.development.js:23863:20)
-    at renderWithHooks (react-dom-client.development.js:5529:22)
-    at updateForwardRef (react-dom-client.development.js:8645:19)
-    at beginWork (react-dom-client.development.js:10861:18)
-    at runWithFiberInDEV (react-dom-client.development.js:1519:30)
-mapIntoArray @ react.development.js:440
-mapIntoArray @ react.development.js:401
-mapChildren @ react.development.js:454
-toArray @ react.development.js:759
-SelectInput2 @ SelectInput.js:238
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooks @ react-dom-client.development.js:5529
-updateForwardRef @ react-dom-client.development.js:8645
-beginWork @ react-dom-client.development.js:10861
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-<ForwardRef(SelectInput2)> (async)
-exports.createElement @ react.development.js:1033
-(anonymous) @ emotion-styled-base.browser.development.esm.js:156
-MuiOutlinedInput-input @ emotion-element-489459f2.browser.development.esm.js:34
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooksAgain @ react-dom-client.development.js:5629
-renderWithHooks @ react-dom-client.development.js:5541
-updateForwardRef @ react-dom-client.development.js:8645
-beginWork @ react-dom-client.development.js:10861
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-<MuiOutlinedInputInput> (async)
-exports.jsx @ react-jsx-runtime.development.js:339
-InputBase2 @ InputBase.js:482
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooksAgain @ react-dom-client.development.js:5629
-renderWithHooks @ react-dom-client.development.js:5541
-updateForwardRef @ react-dom-client.development.js:8645
-beginWork @ react-dom-client.development.js:10861
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-<ForwardRef(InputBase2)> (async)
-exports.jsx @ react-jsx-runtime.development.js:339
-OutlinedInput2 @ OutlinedInput.js:219
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooksAgain @ react-dom-client.development.js:5629
-renderWithHooks @ react-dom-client.development.js:5541
-updateForwardRef @ react-dom-client.development.js:8645
-beginWork @ react-dom-client.development.js:10861
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-<ForwardRef(OutlinedInput2)> (async)
-exports.createElement @ react.development.js:1033
-(anonymous) @ emotion-styled-base.browser.development.esm.js:156
-MuiSelect-root @ emotion-element-489459f2.browser.development.esm.js:34
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooksAgain @ react-dom-client.development.js:5629
-renderWithHooks @ react-dom-client.development.js:5541
-updateForwardRef @ react-dom-client.development.js:8645
-beginWork @ react-dom-client.development.js:10861
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-<MuiSelectRoot> (async)
-exports.jsx @ react-jsx-runtime.development.js:339
-Select2 @ Select.js:96
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooksAgain @ react-dom-client.development.js:5629
-renderWithHooks @ react-dom-client.development.js:5541
-updateForwardRef @ react-dom-client.development.js:8645
-beginWork @ react-dom-client.development.js:10861
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-<ForwardRef(Select2)> (async)
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
-IFRSDownloadArchives @ IFRSArchiveDownloads.jsx:136
-react-stack-bottom-frame @ react-dom-client.development.js:23863
-renderWithHooksAgain @ react-dom-client.development.js:5629
-renderWithHooks @ react-dom-client.development.js:5541
-updateFunctionComponent @ react-dom-client.development.js:8897
-beginWork @ react-dom-client.development.js:10522
-runWithFiberInDEV @ react-dom-client.development.js:1519
-performUnitOfWork @ react-dom-client.development.js:15132
-workLoopSync @ react-dom-client.development.js:14956
-renderRootSync @ react-dom-client.development.js:14936
-performWorkOnRoot @ react-dom-client.development.js:14462
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
-performWorkUntilDeadline @ scheduler.development.js:45
-Show 101 more frames
-Show less
-IFRSArchiveDownloads.jsx:136 An error occurred in the <ForwardRef(SelectInput2)> component.
-
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
