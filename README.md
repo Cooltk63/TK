@@ -1,38 +1,41 @@
-> bs_revamp@0.0.0 dev
-> vite
+IFRSArchives.handleQedDropdown = function () {
+        const dropdown = document.getElementById('selectQED');
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth();
+        const currentQuarter = currentMonth < 3 ? 3 : currentMonth < 6 ? 0 : currentMonth < 9 ? 1 : 2;
+        const maxCurrentQuarter = currentQuarter - 1;
+        const isQ1 = currentMonth < 3; // Q1 of a financial year ends in March
+        let startYear = 2024;
 
-F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:64
-                throw new Error(
-                      ^
+        // End year is the financial year that is currently active
+        const endYear = isQ1 ? currentYear : currentYear + 1;
 
-Error: Cannot find module @rollup/rollup-win32-x64-msvc. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.
-    at requireWithFriendlyError (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:64:9)
-    at Object.<anonymous> (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:73:76)
-    at Module._compile (node:internal/modules/cjs/loader:1730:14)
-    at Object..js (node:internal/modules/cjs/loader:1895:10)
-    at Module.load (node:internal/modules/cjs/loader:1465:32)
-    ... 2 lines matching cause stack trace ...
-    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
-    at cjsLoader (node:internal/modules/esm/translators:266:5)
-    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:200:7) {
-  [cause]: Error: Access is denied.
-  \\?\F:\Projects\BSA Projects\BS_Revamp\node_modules\@rollup\rollup-win32-x64-msvc\rollup.win32-x64-msvc.node
-      at Object..node (node:internal/modules/cjs/loader:1921:18)
-      at Module.load (node:internal/modules/cjs/loader:1465:32)
-      at Function._load (node:internal/modules/cjs/loader:1282:12)
-      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
-      at Module.require (node:internal/modules/cjs/loader:1487:12)
-      at require (node:internal/modules/helpers:135:16)
-      at requireWithFriendlyError (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:46:10)
-      at Object.<anonymous> (F:\Projects\BSA Projects\BS_Revamp\node_modules\rollup\dist\native.js:73:76)
-      at Module._compile (node:internal/modules/cjs/loader:1730:14) {
-    code: 'ERR_DLOPEN_FAILED'
-  }
-}
+        const quarters = [
+            { label: "Q1 (April-June)", month: 5, day: 30 },
+            { label: "Q2 (July-September)", month: 8, day: 30 },
+            { label: "Q3 (October-December)", month: 11, day: 31 },
+            { label: "Q4 (January-March)", month: 2, day: 31 },
+        ];
 
-Node.js v22.15.0
-.
-Process finished
+        for (let year = startYear; year < endYear; year++) {
+            quarters.forEach((quarter, index) => {
+                // Stop adding if we've passed the previous quarter in the current financial year
+                if(year === endYear - 1 && index >= maxCurrentQuarter) return;
+                const fyStartYear = year;
+                const fyEndYear = year + 1;
+                const endDate = new Date(
+                    quarter.month === 2 ? fyEndYear : fyStartYear,
+                    quarter.month,
+                    quarter.day
+                );
 
-While running then vite js react application getting this error I am running this project inside organization , or company what is this error meaning and why it came again and again even after so many time pc restarts tell me how to solve this issue if it required admin acess to do so or it will resolved on current user access.
+                const formattedDate = `${endDate.getDate().toString().padStart(2, '0')}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}/${endDate.getFullYear()}`;
+                console.log(formattedDate);
+                const option = document.createElement('option');
+                option.value = formattedDate;
+                option.textContent = `${formattedDate} ${quarter.label}`;
+                dropdown.appendChild(option);
+            });
+        }
+    };
