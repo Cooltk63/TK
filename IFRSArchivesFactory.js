@@ -321,7 +321,4 @@ function generateQedOptions() {
 
 export default IFRSDownloadArchives;
 
-
-
-
 Now this perfetcly work fine but there is iisue that whenver user select the drop downs box which contains the everthing changing size which looks ugly i need the fixed size box or element and one more issue is that file not found alert wont going after clicking somewhere else or do anything it still remains theier until refresh page completly
