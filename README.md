@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
   Box, Typography, Button, MenuItem, Select, FormControl, InputLabel,
-  RadioGroup, FormControlLabel, Radio, Alert, Grid, Paper
+  RadioGroup, FormControlLabel, Radio, Alert, Grid, Paper,
+  FormLabel
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import useApi from '../../../common/hooks/useApi'
+
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -15,26 +16,22 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }));
 
 const IFRSDownloadArchives = () => {
-  const sessionUser = {
-    userId: 'testUser',
-    circleCode: 'CIRC01',
-    quarterEndDate: '31/03/2024',
-  };
 
   const [circleList, setCircleList] = useState([]);
   const [selectedQed, setSelectedQed] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('reportwise');
+  const [selectedCategory, setSelectedCategory] = useState('Reports');
   const [selectedCircle, setSelectedCircle] = useState('');
   const [downloadType, setDownloadType] = useState('PDF');
   const [fileNotFound, setFileNotFound] = useState(false);
   const [errorDownload, setErrorDownload] = useState(false);
 
-  const qed = sessionUser.quarterEndDate;
-  const userId = sessionUser.userId;
-  const circleCode = sessionUser.circleCode;
   const { callApi } = useApi();
+  const loginUser = JSON.parse(localStorage.getItem('user'));
+  const circleCode = loginUser.circleCode;
+  
 
   useEffect(() => {
+    /* Fetch the CircleList Data */
     fetchCircleData();
   }, []);
 
@@ -42,6 +39,20 @@ const IFRSDownloadArchives = () => {
 
   const fetchCircleData = async () => {
     try {
+
+      //Original Param Data Sending 
+      /*  let payload = {
+            'qed' : qed,
+            'userId' : userId
+        }; 
+
+         let params ={
+            'salt': salt,
+            'iv': iv,
+            'data' : aesUtil.encrypt(salt, iv, passphrase, JSON.stringify(payload)),
+        } */
+
+            // Sample payload Sending
         const payload ={
             "salt": "7a47fbbab8c7b37a412441c3427bfad7",
             "iv": "e54a9f072307cea44c42de6191dd8cad",
@@ -58,54 +69,125 @@ const IFRSDownloadArchives = () => {
     }
   };
 
+
+  // For Downloading Excel & PDF 
   const handleDownload = async () => {
-    setFileNotFound(false);
-    setErrorDownload(false);
-    if (!selectedQed) return;
+  setFileNotFound(false);
+  setErrorDownload(false);
 
-    const payload = {
-        "salt": "7a47fbbab8c7b37a412441c3427bfad7",
-        "iv": "e54a9f072307cea44c42de6191dd8cad",
-        "data": "/JFl/bV59121bMnZxZUr72PN32OcLIDpsihlG6tLrJ0ZJWrnCxZBorntJy8tktLy"
-    };
+  if (!selectedQed) return;
 
+  try {
+    let endpoint = '';
+    let fileName = '';
+    let payloadData = {};
 
-    try {
-      const response = await callApi(
-        selectedCategory==='Reports' && downloadType === 'PDF' ? '/IFRSArchives/ArchiveReportsDownloadPDFUser' : '/IFRSArchives/ArchiveReportsDownloadXL',
-        payload,'POST'
-      );
+    // ========================
+    // Business Logic - Payload Setup
+    // ========================
 
-      if (response.flag) {
-        const fileName = `${circleCode}_IFRS_Liabilities_${selectedQed}`;
-        const base64Data = response.pdfContent;
+    if (selectedCategory === 'Reports') {
+      console.log("inside the Cateorgy ",selectedCategory ,'Reports');
+      if (!selectedCircle) return;
 
-        if (downloadType === 'PDF') {
-          const link = document.createElement('a');
-          link.href = `data:application/pdf;base64,${base64Data}`;
-          link.download = `${fileName}.pdf`;
-          link.click();
-        } else {
-          const byteCharacters = atob(base64Data);
-          const byteArray = new Uint8Array([...byteCharacters].map(c => c.charCodeAt(0)));
-          const blob = new Blob([byteArray], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${fileName}.xlsx`;
-          link.click();
-          URL.revokeObjectURL(url);
-        }
-      } else {
-        if (response.displayMessage === 'fileNotFound') setFileNotFound(true);
-        else if (response.displayMessage === 'error') setErrorDownload(true);
-      }
-    } catch (err) {
-      alert(`Failed to download ${downloadType}: ${err.message}`);
+      // --- HARDCODED payload for testing ---
+
+      payloadData = {
+    "salt": "28efa2e15ecf1a0608ef8a2697a104bf",
+    "iv": "db72a10d21c883bd268807df5e4a15fc",
+    "data": "XuJK5PowScaRCRYmsvLnLlRlO5xsMDVwk9FfpzOqHPpMxo8aFyRu+5AIODcrLM25"
+};
+
+      // --- DYNAMIC way for production (commented for now) ---
+      // payloadData = {
+      //   circleCode: selectedCircle,
+      //   qed: selectedQed
+      // };
+
+      fileName = `${selectedCircle}_IFRS_Liabilities_${selectedQed}`;
+      endpoint = downloadType === 'PDF'
+        ? '/IFRSArchives/ArchiveReportsDownloadPDF'
+        : '/IFRSArchives/ArchiveReportsDownloadXL';
+    } 
+    else if (selectedCategory === 'consolidation' || selectedCategory === 'collation') {
+
+      console.log("Inside the category ",selectedCategory)
+
+      // --- HARDCODED payload for testing ---
+      payloadData = {
+    "salt": "28efa2e15ecf1a0608ef8a2697a104bf",
+    "iv": "db72a10d21c883bd268807df5e4a15fc",
+    "data": "hHwHxu+r0UqCs1J9DNWy5AsUWQ8S/fljNnqQUKbfDXK1ZmOZpsf5yVXJ3aSr+4oTHGXqnnA35S1n6xFN1KhOHQ=="
+};
+
+      // --- DYNAMIC way for production (commented for now) ---
+      // payloadData = {
+      //   circleCode: circleCode,
+      //   qed: selectedQed,
+      //   type: selectedCategory
+      // };
+
+      fileName = `IFRS_Liabilities_${selectedCategory}_${selectedQed}`;
+      endpoint = downloadType === 'PDF'
+        ? '/IFRSArchives/ArchiveReportsDownloadPDFUser'
+        : '/IFRSArchives/ArchiveReportsDownloadXLUser';
+    } 
+    else {
+      return; // Unknown category
     }
-  };
+
+    // ========================
+    // Payload Submission
+    // ========================
+
+    // --- HARDCODED request directly without encryption ---
+    const response = await callApi(endpoint, payloadData, 'POST');
+
+    console.log("Response Received for "+endpoint +'::: ',response);
+
+    // --- ENCRYPTED submission for production (commented) ---
+    // const encryptedPayload = {
+    //   salt: salt,
+    //   iv: iv,
+    //   data: aesUtil.encrypt(salt, iv, passphrase, JSON.stringify(payloadData)),
+    // };
+    // const response = await callApi(endpoint, encryptedPayload, 'POST');
+
+    // ========================
+    // File Handling
+    // ========================
+    if (response.flag) {
+      const base64Data = response.pdfContent;
+
+      if (downloadType === 'PDF') {
+        const link = document.createElement('a');
+        link.href = `data:application/pdf;base64,${base64Data}`;
+        link.download = `${fileName}.pdf`;
+        link.click();
+      } else {
+        const byteCharacters = atob(base64Data);
+        const byteArray = new Uint8Array(
+          Array.from(byteCharacters).map(char => char.charCodeAt(0))
+        );
+        const blob = new Blob([byteArray], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${fileName}.xlsx`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } else {
+      if (response.displayMessage === 'fileNotFound') setFileNotFound(true);
+      else if (response.displayMessage === 'error') setErrorDownload(true);
+    }
+
+  } catch (err) {
+    alert(`Failed to download ${downloadType}: ${err.message}`);
+  }
+};
 
   return (
     <StyledPaper elevation={2}>
@@ -116,13 +198,13 @@ const IFRSDownloadArchives = () => {
         <Grid size={{ xs: 2, sm: 4, md: 4 }}>
           <FormControl fullWidth>
             
-            {/* <InputLabel>Category</InputLabel> */}
+            <FormLabel>Category</FormLabel>
             <Select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               label="Category"
             >
-              <MenuItem value="reportwise">Report Wise</MenuItem>
+              <MenuItem value="Reports">Report Wise</MenuItem>
               <MenuItem value="consolidation">Consolidation</MenuItem>
               <MenuItem value="collation">Collation</MenuItem>
             </Select>
@@ -132,7 +214,7 @@ const IFRSDownloadArchives = () => {
         {/* QED */}
         <Grid size={{ xs: 2, sm: 2, md: 4 }}>
           <FormControl fullWidth>
-            <InputLabel>Quarter End Date</InputLabel>
+            <FormLabel>Quarter End Date</FormLabel>
             <Select
               value={selectedQed}
               onChange={(e) => setSelectedQed(e.target.value)}
@@ -147,10 +229,10 @@ const IFRSDownloadArchives = () => {
         </Grid>
 
         {/* Circle (conditional) */}
-        {selectedCategory === 'reportwise' && (
+        {selectedCategory === 'Reports' && (
           <Grid size={{ xs: 2, sm: 2, md: 4 }}>
             <FormControl fullWidth>
-              <InputLabel>Circle</InputLabel>
+              <FormLabel>Circle</FormLabel>
               <Select
                 value={selectedCircle}
                 onChange={(e) => setSelectedCircle(e.target.value)}
@@ -197,6 +279,7 @@ const IFRSDownloadArchives = () => {
   );
 };
 
+/* This is for QED Dropdown */
 function generateQedOptions() {
    const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -238,4 +321,4 @@ function generateQedOptions() {
 
 export default IFRSDownloadArchives;
 
-
+Now this perfetcly work fine but there is iisue that whenver user select the drop downs box which contains the everthing changing size which looks ugly i need the fixed size box or element and one more issue is that file not found alert wont going after clicking somewhere else or do anything it still remains theier until refresh page completly and i again repeat do not change anything else againa nd again only mine required changes I wanted
