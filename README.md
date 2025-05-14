@@ -1,5 +1,201 @@
-const generateQEDOptions = () => {
-  const currentDate = new Date();
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  Box, Typography, Button, MenuItem, Select, FormControl, InputLabel,
+  RadioGroup, FormControlLabel, Radio, Alert, Grid, Paper
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import useApi from '../../../common/hooks/useApi'
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  maxWidth: '100%',
+  margin: 'auto',
+  backgroundColor: '#f5f5f5',
+}));
+
+const IFRSDownloadArchives = () => {
+  const sessionUser = {
+    userId: 'testUser',
+    circleCode: 'CIRC01',
+    quarterEndDate: '31/03/2024',
+  };
+
+  const [circleList, setCircleList] = useState([]);
+  const [selectedQed, setSelectedQed] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('reportwise');
+  const [selectedCircle, setSelectedCircle] = useState('');
+  const [downloadType, setDownloadType] = useState('PDF');
+  const [fileNotFound, setFileNotFound] = useState(false);
+  const [errorDownload, setErrorDownload] = useState(false);
+
+  const qed = sessionUser.quarterEndDate;
+  const userId = sessionUser.userId;
+  const circleCode = sessionUser.circleCode;
+  const { callApi } = useApi();
+
+  useEffect(() => {
+    fetchCircleData();
+  }, []);
+
+  
+
+  const fetchCircleData = async () => {
+    try {
+        const payload ={
+            "salt": "7a47fbbab8c7b37a412441c3427bfad7",
+            "iv": "e54a9f072307cea44c42de6191dd8cad",
+            "data": "uY+KyAu6j6ImOcemBRrujSfKIWVk21DyO6SCmyBoXyuw+LEv91wnUqCmgLgrtvrr"
+        }
+
+      const response = await callApi('/IFRSArchives/GetCircleList',payload ,'POST')
+        
+       
+      console.log("Response Data Received :::"+response)
+      setCircleList(response || []);
+    } catch (err) {
+      console.error('Error fetching circle list:', err);
+    }
+  };
+
+  const handleDownload = async () => {
+    setFileNotFound(false);
+    setErrorDownload(false);
+    if (!selectedQed) return;
+
+    const payload = {
+        "salt": "7a47fbbab8c7b37a412441c3427bfad7",
+        "iv": "e54a9f072307cea44c42de6191dd8cad",
+        "data": "/JFl/bV59121bMnZxZUr72PN32OcLIDpsihlG6tLrJ0ZJWrnCxZBorntJy8tktLy"
+    };
+
+
+    try {
+      const response = await callApi(
+        selectedCategory==='Reports' && downloadType === 'PDF' ? '/IFRSArchives/ArchiveReportsDownloadPDFUser' : '/IFRSArchives/ArchiveReportsDownloadXL',
+        payload,'POST'
+      );
+
+      if (response.flag) {
+        const fileName = `${circleCode}_IFRS_Liabilities_${selectedQed}`;
+        const base64Data = response.pdfContent;
+
+        if (downloadType === 'PDF') {
+          const link = document.createElement('a');
+          link.href = `data:application/pdf;base64,${base64Data}`;
+          link.download = `${fileName}.pdf`;
+          link.click();
+        } else {
+          const byteCharacters = atob(base64Data);
+          const byteArray = new Uint8Array([...byteCharacters].map(c => c.charCodeAt(0)));
+          const blob = new Blob([byteArray], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${fileName}.xlsx`;
+          link.click();
+          URL.revokeObjectURL(url);
+        }
+      } else {
+        if (response.displayMessage === 'fileNotFound') setFileNotFound(true);
+        else if (response.displayMessage === 'error') setErrorDownload(true);
+      }
+    } catch (err) {
+      alert(`Failed to download ${downloadType}: ${err.message}`);
+    }
+  };
+
+  return (
+    <StyledPaper elevation={2}>
+      <Typography variant="h5" gutterBottom sx={{marginY:2}}>IFRS Archive Download</Typography>
+
+      <Grid container spacing={5} alignItems="center">
+        {/* Category */}
+        <Grid size={{ xs: 2, sm: 4, md: 4 }}>
+          <FormControl fullWidth>
+            
+            {/* <InputLabel>Category</InputLabel> */}
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Category"
+            >
+              <MenuItem value="reportwise">Report Wise</MenuItem>
+              <MenuItem value="consolidation">Consolidation</MenuItem>
+              <MenuItem value="collation">Collation</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* QED */}
+        <Grid size={{ xs: 2, sm: 2, md: 4 }}>
+          <FormControl fullWidth>
+            <InputLabel>Quarter End Date</InputLabel>
+            <Select
+              value={selectedQed}
+              onChange={(e) => setSelectedQed(e.target.value)}
+              label="Quarter End Date"
+            >
+              {generateQedOptions()}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Circle (conditional) */}
+        {selectedCategory === 'reportwise' && (
+          <Grid size={{ xs: 2, sm: 2, md: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel>Circle</InputLabel>
+              <Select
+                value={selectedCircle}
+                onChange={(e) => setSelectedCircle(e.target.value)}
+                label="Circle"
+              >
+                {circleList.map(circle => (
+                  <MenuItem key={circle.CIRCLENAME} value={circle.CIRCLECODE}>
+                    {circle.CIRCLENAME}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
+
+        {/* Radio Buttons */}
+        <Grid item xs={12} md={2}>
+          <RadioGroup row value={downloadType} onChange={(e) => setDownloadType(e.target.value)}>
+            <FormControlLabel value="PDF" control={<Radio />} label="PDF" />
+            <FormControlLabel value="EXCEL" control={<Radio />} label="Excel" />
+          </RadioGroup>
+        </Grid>
+
+        {/* Download Button */}
+        <Grid item xs={12} md={3}>
+          <Button fullWidth variant="contained" color="primary" onClick={handleDownload}>
+            Download {downloadType}
+          </Button>
+        </Grid>
+
+        {/* Alerts */}
+        {fileNotFound && (
+          <Grid item xs={12}>
+            <Alert severity="warning">File not found</Alert>
+          </Grid>
+        )}
+        {errorDownload && (
+          <Grid item xs={12}>
+            <Alert severity="error">Error during download</Alert>
+          </Grid>
+        )}
+      </Grid>
+    </StyledPaper>
+  );
+};
+
+function generateQedOptions() {
+   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
   const currentQuarter = currentMonth < 3 ? 3 : currentMonth < 6 ? 0 : currentMonth < 9 ? 1 : 2;
@@ -35,4 +231,135 @@ const generateQEDOptions = () => {
   }
 
   return options;
-};
+}
+
+export default IFRSDownloadArchives;
+
+
+This is error I am getting at console
+
+Uncaught Error: Objects are not valid as a React child (found: object with keys {value, label}). If you meant to render a collection of children, use an array instead.
+    at mapIntoArray (react.development.js:440:15)
+    at mapIntoArray (react.development.js:401:32)
+    at mapChildren (react.development.js:454:7)
+    at Object.toArray (react.development.js:759:11)
+    at SelectInput2 (SelectInput.js:238:40)
+    at react-stack-bottom-frame (react-dom-client.development.js:23863:20)
+    at renderWithHooks (react-dom-client.development.js:5529:22)
+    at updateForwardRef (react-dom-client.development.js:8645:19)
+    at beginWork (react-dom-client.development.js:10861:18)
+    at runWithFiberInDEV (react-dom-client.development.js:1519:30)
+mapIntoArray @ react.development.js:440
+mapIntoArray @ react.development.js:401
+mapChildren @ react.development.js:454
+toArray @ react.development.js:759
+SelectInput2 @ SelectInput.js:238
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+<ForwardRef(SelectInput2)> (async)
+exports.createElement @ react.development.js:1033
+(anonymous) @ emotion-styled-base.browser.development.esm.js:156
+MuiOutlinedInput-input @ emotion-element-489459f2.browser.development.esm.js:34
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+<MuiOutlinedInputInput> (async)
+exports.jsx @ react-jsx-runtime.development.js:339
+InputBase2 @ InputBase.js:482
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+<ForwardRef(InputBase2)> (async)
+exports.jsx @ react-jsx-runtime.development.js:339
+OutlinedInput2 @ OutlinedInput.js:219
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+<ForwardRef(OutlinedInput2)> (async)
+exports.createElement @ react.development.js:1033
+(anonymous) @ emotion-styled-base.browser.development.esm.js:156
+MuiSelect-root @ emotion-element-489459f2.browser.development.esm.js:34
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+<MuiSelectRoot> (async)
+exports.jsx @ react-jsx-runtime.development.js:339
+Select2 @ Select.js:96
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+<ForwardRef(Select2)> (async)
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+IFRSDownloadArchives @ IFRSArchiveDownloads.jsx:136
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateFunctionComponent @ react-dom-client.development.js:8897
+beginWork @ react-dom-client.development.js:10522
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14462
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16216
+performWorkUntilDeadline @ scheduler.development.js:45
+Show 101 more frames
+Show less
+IFRSArchiveDownloads.jsx:136 An error occurred in the <ForwardRef(SelectInput2)> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
