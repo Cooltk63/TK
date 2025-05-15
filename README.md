@@ -93,9 +93,9 @@ const IFRSDownloadArchives = () => {
       // --- HARDCODED payload for testing ---
 
       payloadData = {
-    "salt": "28efa2e15ecf1a0608ef8a2697a104bf",
-    "iv": "db72a10d21c883bd268807df5e4a15fc",
-    "data": "XuJK5PowScaRCRYmsvLnLlRlO5xsMDVwk9FfpzOqHPpMxo8aFyRu+5AIODcrLM25"
+    "salt": "93d140aa7848bd41a084e5332469ca0f",
+    "iv": "b551a3b2f1abf92b27fcd6afd24f3815",
+    "data": "Dbiyjkd0hH4UezFbYIVtzhliTxWPxbQzGNTKPW0CrX7zz+w69aux7fgltiy1tVd4"
 };
 
       // --- DYNAMIC way for production (commented for now) ---
@@ -146,9 +146,7 @@ const IFRSDownloadArchives = () => {
     console.log("Response Received for "+endpoint +'::: ',response);
 
     // --- ENCRYPTED submission for production (commented) ---
-    // const encryptedPayload = {
-    //   salt: salt,
-    //   iv: iv,
+
     //   data: aesUtil.encrypt(salt, iv, passphrase, JSON.stringify(payloadData)),
     // };
     // const response = await callApi(endpoint, encryptedPayload, 'POST');
@@ -193,9 +191,9 @@ const IFRSDownloadArchives = () => {
     <StyledPaper elevation={2}>
       <Typography variant="h5" gutterBottom sx={{marginY:2}}>IFRS Archive Download</Typography>
 
-      <Grid container spacing={5} alignItems="center">
+      <Grid container spacing={10} alignItems="center">
         {/* Category */}
-        <Grid size={{ xs: 2, sm: 4, md: 4 }}>
+        <Grid item  xs={12} sm={6} md={4} >
           <FormControl fullWidth>
             
             <FormLabel>Category</FormLabel>
@@ -204,7 +202,7 @@ const IFRSDownloadArchives = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
               label="Category"
             >
-              <MenuItem value="Reports">Report Wise</MenuItem>
+              <MenuItem value="Reports">Reports</MenuItem>
               <MenuItem value="consolidation">Consolidation</MenuItem>
               <MenuItem value="collation">Collation</MenuItem>
             </Select>
@@ -321,4 +319,5 @@ function generateQedOptions() {
 
 export default IFRSDownloadArchives;
 
-Now this perfetcly work fine but there is iisue that whenver user select the drop downs box which contains the everthing changing size which looks ugly i need the fixed size box or element and one more issue is that file not found alert wont going after clicking somewhere else or do anything it still remains theier until refresh page completly and i again repeat do not change anything else againa nd again only mine required changes I wanted
+
+Need the UI friedenly error messages of validation if not select or filled all the fields and goof UI for better understanding also whenver Category changes to consolidation or coallation from report it has business logic that only category & QED required that time UI box size shrink which looks ugly and not so smooth at all I need flawless design using MUI 5+ version we are using and proper validation and error message nota typical alerts 
