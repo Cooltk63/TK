@@ -1,88 +1,114 @@
-2025-05-20 15:56:38 INFO  ExceptionHandlerExceptionResolver:271 - Detected @ExceptionHandler methods in globalException
-2025-05-20 15:56:38 WARN  XmlWebApplicationContext:550 - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'multipartResolver': Failed to introspect bean class [org.springframework.web.multipart.commons.CommonsMultipartResolver] for lookup method metadata: could not find class that it depends on; nested exception is java.lang.NoClassDefFoundError: org/apache/commons/fileupload/FileItemFactory
-2025-05-20 15:56:38 ERROR DispatcherServlet:502 - Context initialization failed
-org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'multipartResolver': Failed to introspect bean class [org.springframework.web.multipart.commons.CommonsMultipartResolver] for lookup method metadata: could not find class that it depends on; nested exception is java.lang.NoClassDefFoundError: org/apache/commons/fileupload/FileItemFactory
-	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.determineCandidateConstructors(AutowiredAnnotationBeanPostProcessor.java:269)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineConstructorsFromBeanPostProcessors(AbstractAutowireCapableBeanFactory.java:1073)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1046)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:512)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482)
-	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197)
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:754)
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:866)
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:542)
-	at org.springframework.web.servlet.FrameworkServlet.configureAndRefreshWebApplicationContext(FrameworkServlet.java:668)
-	at org.springframework.web.servlet.FrameworkServlet.createWebApplicationContext(FrameworkServlet.java:634)
-	at org.springframework.web.servlet.FrameworkServlet.createWebApplicationContext(FrameworkServlet.java:682)
-	at org.springframework.web.servlet.FrameworkServlet.initWebApplicationContext(FrameworkServlet.java:553)
-	at org.springframework.web.servlet.FrameworkServlet.initServletBean(FrameworkServlet.java:494)
-	at org.springframework.web.servlet.HttpServletBean.init(HttpServletBean.java:136)
-	at javax.servlet.GenericServlet.init(GenericServlet.java:143)
-	at org.apache.catalina.core.StandardWrapper.initServlet(StandardWrapper.java:989)
-	at org.apache.catalina.core.StandardWrapper.loadServlet(StandardWrapper.java:946)
-	at org.apache.catalina.core.StandardWrapper.load(StandardWrapper.java:843)
-	at org.apache.catalina.core.StandardContext.loadOnStartup(StandardContext.java:4234)
-	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4535)
-	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164)
-	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:599)
-	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:571)
-	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:603)
-	at org.apache.catalina.startup.HostConfig.manageApp(HostConfig.java:1745)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:498)
-	at org.apache.tomcat.util.modeler.BaseModelMBean.invoke(BaseModelMBean.java:263)
-	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:819)
-	at com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:801)
-	at org.apache.catalina.mbeans.MBeanFactory.createStandardContext(MBeanFactory.java:449)
-	at org.apache.catalina.mbeans.MBeanFactory.createStandardContext(MBeanFactory.java:403)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:498)
-	at org.apache.tomcat.util.modeler.BaseModelMBean.invoke(BaseModelMBean.java:263)
-	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:819)
-	at com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:801)
-	at com.sun.jmx.remote.security.MBeanServerAccessController.invoke(MBeanServerAccessController.java:468)
-	at javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1468)
-	at javax.management.remote.rmi.RMIConnectionImpl.access$300(RMIConnectionImpl.java:76)
-	at javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1309)
-	at java.security.AccessController.doPrivileged(Native Method)
-	at javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1408)
-	at javax.management.remote.rmi.RMIConnectionImpl.invoke(RMIConnectionImpl.java:829)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:498)
-	at sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:357)
-	at sun.rmi.transport.Transport$1.run(Transport.java:200)
-	at sun.rmi.transport.Transport$1.run(Transport.java:197)
-	at java.security.AccessController.doPrivileged(Native Method)
-	at sun.rmi.transport.Transport.serviceCall(Transport.java:196)
-	at sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:573)
-	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:834)
-	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:688)
-	at java.security.AccessController.doPrivileged(Native Method)
-	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:687)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
-	at java.lang.Thread.run(Thread.java:750)
-Caused by: java.lang.NoClassDefFoundError: org/apache/commons/fileupload/FileItemFactory
-	at java.lang.Class.getDeclaredMethods0(Native Method)
-	at java.lang.Class.privateGetDeclaredMethods(Class.java:2701)
-	at java.lang.Class.getDeclaredMethods(Class.java:1975)
-	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:613)
-	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:524)
-	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:510)
-	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.determineCandidateConstructors(AutowiredAnnotationBeanPostProcessor.java:247)
-	... 68 more
-Caused by: java.lang.ClassNotFoundException: org.apache.commons.fileupload.FileItemFactory
-	at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1354)
-	at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1163)
-	... 75 more
-[2025-05-20 03:56:38,778] Artifact BS_5.4:war: Artifact is deployed successfully
-[2025-05-20 03:56:38,778] Artifact BS_5.4:war: Deploy took 51,471 milliseconds
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:context="http://www.springframework.org/schema/context"
+xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd  http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+        ">
+        
+<context:component-scan base-package="com.tcs"/>
+<context:annotation-config />
+<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+<property name="basename" value="messages"></property>
+</bean>
+<mvc:resources location="/" mapping="/**"></mvc:resources>
+<mvc:annotation-driven />
+<bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+<bean id="applicationContextUtils" class="com.tcs.utils.ApplicationContextUtils" />
+
+	<!-- <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    <property name="viewClass"><value>org.springframework.web.servlet.view.JstlView</value></property>
+    <property name="prefix"><value>/views/</value></property>
+    <property name="suffix"><value>.jsp</value></property>
+    </bean> -->
+<!-- <bean id="loginController" class="springapp.controllers.LoginController">
+<property name="loginService" ref="loginService"></property>
+</bean>
+
+<bean id="loginService" class="springapp.services.LoginServiceImpl">
+<property name="loginDao" ref="loginDao"></property>
+</bean> -->
+
+<!-- <bean id="loginDao" class="springapp.dao.LoginDaoImpl">
+<property name="dataSource" ref="dataSource"></property>
+</bean>
+
+<bean id="brManagerDao" class="springapp.dao.BrManagerDaoImpl">
+<property name="dataSource" ref="dataSource"></property>
+</bean> -->
+
+<!-- <bean id="sessionListener"
+            class="springapp.utils.SessionListner">
+            <property name="loginDao" ref="loginDao" />
+      </bean> -->
+
+<!-- <tx:annotation-driven proxy-target-class="true"
+		transaction-manager="transactionManager" /> -->
+
+
+<!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+<property name="driverClassName" value="${jdbc.driverClassName}"></property>
+<property name="url" value="${jdbc.url}"></property>
+<property name="username" value="${jdbc.username}"></property>
+<property name="password" value="${jdbc.password}"></property>
+</bean> -->
+
+<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+<!--    <property name="jndiName" value="jndi/bsdb"/>-->
+    <property name="jndiName" value="java:comp/env/jndi/bsdb"/>
+</bean>
+<!-- <bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean> -->
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+<!-- <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+<property name="locations">
+<list><value>classpath:jdbc.properties</value></list>
+</property>
+</bean> -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+<property name="dataSource" ref="dataSource"></property>
+</bean>
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+	<property name="dataSource" ref="dataSource"></property>
+</bean>
+
+<bean id="webAppMetricsInterceptor" class="com.tcs.security.WebAppMetricsInterceptor" />
+<mvc:interceptors>
+        <ref bean="webAppMetricsInterceptor"/>
+    </mvc:interceptors>
+	<bean id="log4jInitializer"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="org.springframework.util.Log4jConfigurer" />
+		<property name="targetMethod" value="initLogging" />
+		<property name="arguments">
+			<list>
+				<value>classpath:resources/log4j.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!--////////////Below code for CR_2300286(branchlist  and ascii files upload/////////////-->
+	<!--<bean id="UploadScheduler" class="com.tcs.scheduler.UploadScheduler" ></bean>-->
+	<!--<bean id="dicgcFileLoadScheduler" class="com.tcs.scheduler.DicgcFileLoadScheduler"/>-->
+	<!--<task:scheduled-tasks>
+		<task:scheduled ref="UploadScheduler" method="checkSchedularRunning" cron="0 */2 * ? * *"></task:scheduled>
+	</task:scheduled-tasks>-->
+
+	<!--<task:scheduled-tasks>
+		<task:scheduled ref="dicgcFileLoadScheduler" method="loadFiles" cron="0 */1 * ? * *"/>
+	</task:scheduled-tasks>-->
+
+	<!--////////end here/////////-->
+	<!-- <import resource="applicationContext-security.xml"/> -->
+</beans>
