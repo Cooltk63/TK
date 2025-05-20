@@ -1,35 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:util="http://www.springframework.org/schema/util"
-             xmlns="http://www.springframework.org/schema/security"
-             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd 
-http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+ public static String getMachineHostAddress() {
 
+        String server = null;
+        try {
+            InetAddress inetAddr = InetAddress.getLocalHost();
+            server = inetAddr.getHostAddress();
+        } catch (Exception e) {
+            //log.info(e);
+        }
 
-      <http auto-config="true" pattern="/**">
+        return server;
+    }
 
-            <custom-filter ref="csrfTokenFilter" after="CSRF_FILTER"/>
-            <csrf/>
+    on this function line   InetAddress inetAddr = InetAddress.getLocalHost(); I had the security issue 'Often Misused: Authentication'  Likely impact :The information returned by the call to getLocalHost() is not trustworthy. Attackers may spoof DNS entries. Do not rely on DNS for security.
+    Recommandation You can increase confidence in a domain name lookup if you check to make sure that the host's forward and backward DNS entries match. Attackers will not be able to spoof both the forward and the reverse DNS entries without controlling the nameservers for the target domain. This is not a foolproof approach however: attackers may be able to convince the domain registrar to turn over the domain to a malicious nameserver. Basing authentication on DNS entries is simply a risky proposition. While no authentication mechanism is foolproof, there are better alternatives than host-based authentication. Password systems offer decent security, but are susceptible to bad password choices, insecure password transmission, and bad password management. A cryptographic scheme like SSL is worth considering, but such schemes are often so complex that they bring with them the risk of significant implementation errors, and key material can always be stolen. In many situations, multi-factor authentication including a physical token offers the most security available at a reasonable price.
 
-            <headers>
-                  <frame-options policy="DENY"/>
-                  <content-security-policy
-                          policy-directives="script-src 'self' https://bsuat.info.sbi; object-src https://bsuat.info.sbi;"/>
-                  <referrer-policy policy="same-origin"/>
-            </headers>
-      </http>
+Line where this above function get called 
+String userServer = CommonFunction.getMachineHostAddress();
 
-
-      <!-- The tag below has no use but Spring Security needs it to autowire the parent property of
-              org.springframework.security.authentication.ProviderManager. Otherwise we get an error
-              A probable bug. This is still under investigation-->
-      <authentication-manager/>
-
-</beans:beans> 
-
-this is my spring-dispatcher-servlet.xml file I am having the security issue need to resolved under vulnarilibilty Spring Security uses an incorrect request matcher to protect a path.
-
-Recmommanded Solution ::
-To protect Spring MVC endpoints, use the MVC request matcher instead of the Ant matcher.
+    Help me to resolve this security issue using great way and understandable
