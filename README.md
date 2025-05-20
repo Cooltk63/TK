@@ -1,214 +1,54 @@
-import React, { useState, useEffect } from 'react'; import { Typography, Button, MenuItem, Select, FormControl, RadioGroup, FormControlLabel, Radio, Alert, Grid, Paper, FormLabel, Box, } from '@mui/material'; import { styled } from '@mui/material/styles'; import useApi from '../../../common/hooks/useApi';
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:context="http://www.springframework.org/schema/context"
+xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd  http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+        ">
+        
+<context:component-scan base-package="com.tcs"/>
+<context:annotation-config />
+<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+<property name="basename" value="messages"></property>
+</bean>
+<mvc:resources location="/" mapping="/**"></mvc:resources>
+<mvc:annotation-driven />
+<bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+<bean id="applicationContextUtils" class="com.tcs.utils.ApplicationContextUtils" />
 
-const StyledPaper = styled(Paper)(({ theme }) => ({ padding: theme.spacing(4), maxWidth: '100%', margin: 'auto', backgroundColor: '#f5f5f5', }));
 
-const IFRSDownloadArchives = () => { const [circleList, setCircleList] = useState([]); const [selectedQed, setSelectedQed] = useState(''); const [selectedCategory, setSelectedCategory] = useState('Reports'); const [selectedCircle, setSelectedCircle] = useState(''); const [downloadType, setDownloadType] = useState('PDF'); const [fileNotFound, setFileNotFound] = useState(false); const [errorDownload, setErrorDownload] = useState(false); const [validationErrors, setValidationErrors] = useState({ qed: false, circle: false });
+<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+    <property name="jndiName" value="jndi/bsdb"/>
+</bean>
 
-const { callApi } = useApi();
-const loginUser = JSON.parse(localStorage.getItem('user'));
-const circleCode = loginUser.circleCode;
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+<property name="dataSource" ref="dataSource"></property>
+</bean>
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+	<property name="dataSource" ref="dataSource"></property>
+</bean>
 
-useEffect(() => {
-    fetchCircleData();
-}, []);
-
-const fetchCircleData = async () => {
-    try {
-        const payload = {
-            salt: '7a47fbbab8c7b37a412441c3427bfad7',
-            iv: 'e54a9f072307cea44c42de6191dd8cad',
-            data: 'uY+KyAu6j6ImOcemBRrujSfKIWVk21DyO6SCmyBoXyuw+LEv91wnUqCmgLgrtvrr',
-        };
-
-        const response = await callApi('/IFRSArchives/GetCircleList', payload, 'POST');
-        setCircleList(response || []);
-    } catch (err) {
-        console.error('Error fetching circle list:', err);
-    }
-};
-
-const handleDownload = async () => {
-    setFileNotFound(false);
-    setErrorDownload(false);
-
-    const errors = {
-        qed: !selectedQed,
-        circle: selectedCategory === 'Reports' && !selectedCircle,
-    };
-    setValidationErrors(errors);
-    if (errors.qed || errors.circle) return;
-
-    try {
-        let endpoint = '';
-        let fileName = '';
-        let payloadData = {};
-
-        if (selectedCategory === 'Reports') {
-            payloadData = {
-                salt: '93d140aa7848bd41a084e5332469ca0f',
-                iv: 'b551a3b2f1abf92b27fcd6afd24f3815',
-                data: 'Dbiyjkd0hH4UezFbYIVtzhliTxWPxbQzGNTKPW0CrX7zz+w69aux7fgltiy1tVd4',
-            };
-            // payloadData = { circleCode: selectedCircle, qed: selectedQed };
-            fileName = `${selectedCircle}_IFRS_Liabilities_${selectedQed}`;
-            endpoint = downloadType === 'PDF' ? '/IFRSArchives/ArchiveReportsDownloadPDF' : '/IFRSArchives/ArchiveReportsDownloadXL';
-        } else if (selectedCategory === 'consolidation' || selectedCategory === 'collation') {
-            payloadData = {
-                salt: '28efa2e15ecf1a0608ef8a2697a104bf',
-                iv: 'db72a10d21c883bd268807df5e4a15fc',
-                data: 'hHwHxu+r0UqCs1J9DNWy5AsUWQ8S/fljNnqQUKbfDXK1ZmOZpsf5yVXJ3aSr+4oTHGXqnnA35S1n6xFN1KhOHQ==',
-            };
-            // payloadData = { circleCode: circleCode, qed: selectedQed, type: selectedCategory };
-            fileName = `IFRS_Liabilities_${selectedCategory}_${selectedQed}`;
-            endpoint = downloadType === 'PDF' ? '/IFRSArchives/ArchiveReportsDownloadPDFUser' : '/IFRSArchives/ArchiveReportsDownloadXLUser';
-        } else {
-            return;
-        }
-
-        const response = await callApi(endpoint, payloadData, 'POST');
-        if (response.flag) {
-            const base64Data = response.pdfContent;
-            if (downloadType === 'PDF') {
-                const link = document.createElement('a');
-                link.href = `data:application/pdf;base64,${base64Data}`;
-                link.download = `${fileName}.pdf`;
-                link.click();
-            } else {
-                const byteCharacters = atob(base64Data);
-                const byteArray = new Uint8Array(Array.from(byteCharacters).map((char) => char.charCodeAt(0)));
-                const blob = new Blob([byteArray], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${fileName}.xlsx`;
-                link.click();
-                URL.revokeObjectURL(url);
-            }
-        } else {
-            if (response.displayMessage === 'fileNotFound') setFileNotFound(true);
-            else if (response.displayMessage === 'error') setErrorDownload(true);
-        }
-    } catch (err) {
-        alert(`Failed to download ${downloadType}: ${err.message}`);
-    }
-};
-
-return (
-    <StyledPaper elevation={2}>
-        <Typography variant="h5" gutterBottom sx={{ marginY: 2 }}>
-            IFRS Archive Download
-        </Typography>
-
-        <Grid container spacing={3} alignItems="flex-start" sx={{ minHeight: '200px' }}>
-            <Grid item xs={12} sm={6} md={4}>
-                <FormControl fullWidth>
-                    <FormLabel>Category</FormLabel>
-                    <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                        <MenuItem value="Reports">Reports</MenuItem>
-                        <MenuItem value="consolidation">Consolidation</MenuItem>
-                        <MenuItem value="collation">Collation</MenuItem>
-                    </Select>
-                </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-                <FormControl fullWidth error={validationErrors.qed}>
-                    <FormLabel>Quarter End Date</FormLabel>
-                    <Select value={selectedQed} onChange={(e) => setSelectedQed(e.target.value)}>
-                        {generateQedOptions().map((qed) => (
-                            <MenuItem key={qed.value} value={qed.value}>
-                                {qed.label}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                    {validationErrors.qed && (
-                        <Typography variant="caption" color="error">
-                            Quarter End Date is required.
-                        </Typography>
-                    )}
-                </FormControl>
-            </Grid>
-
-            {selectedCategory === 'Reports' && (
-                <Grid item xs={12} sm={6} md={4}>
-                    <FormControl fullWidth error={validationErrors.circle}>
-                        <FormLabel>Circle</FormLabel>
-                        <Select value={selectedCircle} onChange={(e) => setSelectedCircle(e.target.value)}>
-                            {circleList.map((circle) => (
-                                <MenuItem key={circle.CIRCLENAME} value={circle.CIRCLECODE}>
-                                    {circle.CIRCLENAME}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        {validationErrors.circle && (
-                            <Typography variant="caption" color="error">
-                                Circle is required for Reports.
-                            </Typography>
-                        )}
-                    </FormControl>
-                </Grid>
-            )}
-
-            <Grid item xs={12} md={2}>
-                <RadioGroup row value={downloadType} onChange={(e) => setDownloadType(e.target.value)}>
-                    <FormControlLabel value="PDF" control={<Radio />} label="PDF" />
-                    <FormControlLabel value="EXCEL" control={<Radio />} label="Excel" />
-                </RadioGroup>
-            </Grid>
-
-            <Grid item xs={12} md={3}>
-                <Button fullWidth variant="contained" color="primary" onClick={handleDownload}>
-                    Download {downloadType}
-                </Button>
-            </Grid>
-
-            {fileNotFound && (
-                <Grid item xs={12}>
-                    <Alert severity="warning">File not found</Alert>
-                </Grid>
-            )}
-            {errorDownload && (
-                <Grid item xs={12}>
-                    <Alert severity="error">Error during download</Alert>
-                </Grid>
-            )}
-        </Grid>
-    </StyledPaper>
-);
-
-};
-
-function generateQedOptions() { const currentDate = new Date(); const currentYear = currentDate.getFullYear(); const currentMonth = currentDate.getMonth(); const currentQuarter = currentMonth < 3 ? 3 : currentMonth < 6 ? 0 : currentMonth < 9 ? 1 : 2; const maxCurrentQuarter = currentQuarter - 1; const isQ1 = currentMonth < 3; const startYear = 2024; const endYear = isQ1 ? currentYear : currentYear + 1;
-
-const quarters = [
-    { label: 'Q1 (April-June)', month: 5, day: 30 },
-    { label: 'Q2 (July-September)', month: 8, day: 30 },
-    { label: 'Q3 (October-December)', month: 11, day: 31 },
-    { label: 'Q4 (January-March)', month: 2, day: 31 },
-];
-
-const options = [];
-
-for (let year = startYear; year < endYear; year++) {
-    quarters.forEach((quarter, index) => {
-        if (year === endYear - 1 && index >= maxCurrentQuarter) return;
-
-        const fyStartYear = year;
-        const fyEndYear = year + 1;
-        const endDate = new Date(quarter.month === 2 ? fyEndYear : fyStartYear, quarter.month, quarter.day);
-
-        const formattedDate = `${endDate.getDate().toString().padStart(2, '0')}/${(endDate.getMonth() + 1)
-            .toString()
-            .padStart(2, '0')}/${endDate.getFullYear()}`;
-        options.push({ value: formattedDate, label: `${formattedDate} ${quarter.label}` });
-    });
-}
-
-return options;
-
-}
-
-export default IFRSDownloadArchives;
-
+<bean id="webAppMetricsInterceptor" class="com.tcs.security.WebAppMetricsInterceptor" />
+<mvc:interceptors>
+        <ref bean="webAppMetricsInterceptor"/>
+    </mvc:interceptors>
+	<bean id="log4jInitializer"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="org.springframework.util.Log4jConfigurer" />
+		<property name="targetMethod" value="initLogging" />
+		<property name="arguments">
+			<list>
+				<value>classpath:resources/log4j.properties</value>
+			</list>
+		</property>
+	</bean>
+</beans>
