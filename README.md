@@ -1,54 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-xmlns:context="http://www.springframework.org/schema/context"
-xmlns:mvc="http://www.springframework.org/schema/mvc"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:tx="http://www.springframework.org/schema/tx"
-	   xmlns:task="http://www.springframework.org/schema/task"
-    xsi:schemaLocation="
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd
-         http://www.springframework.org/schema/mvc
-        http://www.springframework.org/schema/mvc/spring-mvc.xsd
-        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd  http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-        ">
-        
-<context:component-scan base-package="com.tcs"/>
-<context:annotation-config />
-<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-<property name="basename" value="messages"></property>
-</bean>
-<mvc:resources location="/" mapping="/**"></mvc:resources>
-<mvc:annotation-driven />
-<bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
-<bean id="applicationContextUtils" class="com.tcs.utils.ApplicationContextUtils" />
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
 
+      http://www.apache.org/licenses/LICENSE-2.0
 
-<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-    <property name="jndiName" value="jndi/bsdb"/>
-</bean>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- The contents of this file will be loaded for each web application -->
+<Context>
 
-<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-<property name="dataSource" ref="dataSource"></property>
-</bean>
-<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-	<property name="dataSource" ref="dataSource"></property>
-</bean>
+	<Resource name="jndi/bsdb" auth="Container"
+          type="javax.sql.DataSource" driverClassName ="com.mysql.cj.jdbc.Driver"
+          url="jdbc:oracle:thin:@//10.189.200.86:1522/FTWOBSA"
+          username="FTWOBSA" password="Password#1234" maxTotal="20" maxIdle="10"
+		  maxWaitMillis="-1"/>
+    <!-- Default set of monitored resources. If one of these changes, the    -->
+    <!-- web application will be reloaded.                                   -->
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>WEB-INF/tomcat-web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
 
-<bean id="webAppMetricsInterceptor" class="com.tcs.security.WebAppMetricsInterceptor" />
-<mvc:interceptors>
-        <ref bean="webAppMetricsInterceptor"/>
-    </mvc:interceptors>
-	<bean id="log4jInitializer"
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetClass" value="org.springframework.util.Log4jConfigurer" />
-		<property name="targetMethod" value="initLogging" />
-		<property name="arguments">
-			<list>
-				<value>classpath:resources/log4j.properties</value>
-			</list>
-		</property>
-	</bean>
-</beans>
+    <!-- Uncomment this to disable session persistence across Tomcat restarts -->
+    <!--
+    <Manager pathname="" />
+    -->
+</Context>
