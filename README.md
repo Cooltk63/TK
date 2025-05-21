@@ -1,14 +1,26 @@
-// Estimate capacity: each branchCode is roughly 8 characters, plus quotes and commas (~10 chars)
-int estimatedCapacity = listOfBranches.size() * 10;
-StringBuffer buffer = new StringBuffer(estimatedCapacity);
+List<String> lines = new ArrayList<String>();
 
-Map<String, String> listEmptyBranch = new HashMap<>();
-for (int i = 0; i < listOfBranches.size(); i++) {
-    String branchCode = (String) listOfBranches.get(i);
-    listEmptyBranch.put(branchCode, "N");
+            FileReader reader;
+            BufferedReader bufferedReader;
 
-    buffer.append("'").append(branchCode).append("'");
-    if (i < listOfBranches.size() - 1) {
-        buffer.append(",");
-    }
-}
+            reader = new FileReader(path);
+            bufferedReader = new BufferedReader(reader);
+            StringBuffer stringBuffer = new StringBuffer();
+            String line;
+            // CSR-2024-25 Vulnerability : Denial of Service
+            // Line length limit (e.g., 400 characters)
+            int maxLineLength = 400;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (line.length() > maxLineLength) {
+                    log.error("File is too large to read : Possible DoS attack");
+                    //throw new IOException("File is too large to read : Possible DoS attack");
+                    return null;
+                }
+                stringBuffer.append(line);
+                if (!line.equalsIgnoreCase("")) {
+                    lines.add(line);
+                    stringBuffer.append("\n");
+                }
+
+
+            }
