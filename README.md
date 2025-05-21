@@ -15,3 +15,8 @@ public class Utilities {
         }
     }
 }
+
+
+vois.accept("net.sf.jasperreports.engine.base.JRBaseStyle");
+vois.accept("net.sf.jasperreports.engine.base.JRBasePrintPage");
+// Add more based on stack trace
