@@ -1,19 +1,19 @@
-import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+This is the function inside Utilities.java file 
+public static Object deserialize(String path) throws IOException, ClassNotFoundException {
+		ObjectInputStream objInpStream =  new ObjectInputStream(new FileInputStream(new File(path)));
+		return objInpStream.readObject();
+	}
 
-import java.io.*;
 
-public class SafeDeserializer {
+Line of code where it calling from
+String[] RelatedFiles = getReports(printObjFile.get(fileCount).toString(), "jrprint");
+            jPrintList.clear();
+            if (RelatedFiles.length > 0) {
+                for (int idx = 0; idx < RelatedFiles.length; idx++) {
+                    JasperPrint jrprint = (JasperPrint) Utilities.deserialize(RelatedFiles[idx]);
+                    jPrintMap.put(new Integer(idx), jrprint);
+                    jPrintList.add(jPrintMap.get(new Integer(idx)));
+                }
 
-    public static Object deserialize(String path) throws IOException, ClassNotFoundException {
-        try (FileInputStream fis = new FileInputStream(new File(path));
-             ValidatingObjectInputStream vois = new ValidatingObjectInputStream(fis)) {
 
-            // Allow only safe classes (replace/add as needed)
-            vois.accept("java.util.ArrayList");
-            vois.accept("java.lang.String");
-            vois.accept("com.yourcompany.YourSafeClass"); // Replace with actual allowed class
-
-            return vois.readObject();
-        }
-    }
-}
+                
