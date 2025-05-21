@@ -1,39 +1,36 @@
-  String outFilePath = config.getProperty("REPORT_HOME_DIR") + "created" + File.separator + circleCode
-                        + "_" + quarterEndDate.replaceAll("/", "") + "_" + jrxmlName + ".csv";
-                // log.info("output file path : " + outFilePath);
-                ////log.info("Source file path : " + sourceFilePath);
+// List to hold the sanitized lines of the CSV file
+List<String> safeLines = new ArrayList<>();
 
-                JasperReport jasperReport;
-                JasperPrint jasperPrint;
+// Reading the original CSV file line-by-line
+try (BufferedReader reader = new BufferedReader(new FileReader(outFilePath))) {
+    String line;
+    // Loop through each line of the CSV
+    while ((line = reader.readLine()) != null) {
 
-                File check = new File(checkPath);
-                if (!check.exists())
-                    check.mkdirs();
-                String JasperFilePath = config.getProperty("REPORT_HOME_DIR") + "jasper" + File.separator + jrxmlName
-                        + ".jasper";
+        // Split each line into individual cells by comma (CSV format)
+        // The -1 ensures trailing empty cells are included
+        String[] cells = line.split(",", -1);
 
-                // CommonFunction cf = new CommonFunction();
-                // boolean compiledFlag = cf.complieJrxml(jrxmlName);
-                ////log.info("File Compiled");
-                ////log.info("compiled done");
+        // Loop through each cell in the line
+        for (int i = 0; i < cells.length; i++) {
+            String cell = cells[i].trim(); // Remove leading/trailing spaces
 
-                jasperPrint = JasperFillManager.fillReport(JasperFilePath, param, con);
+            // Check if cell starts with a dangerous formula-triggering character
+            if (!cell.isEmpty() && (cell.startsWith("=") || cell.startsWith("+") || cell.startsWith("-") || cell.startsWith("@"))) {
+                // Add a single quote before the cell content to neutralize it
+                cells[i] = "'" + cell;
+            }
+        }
 
-                OutputStream out2 = new FileOutputStream(new File(outFilePath));
-                JRCsvExporter CSV = new JRCsvExporter();
-                // CSV.setParameter(JRTextExporterParameter.PAGE_WIDTH, 150);
-                // CSV.setParameter(JRTextExporterParameter.PAGE_HEIGHT, 40);
-                CSV.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-                CSV.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFilePath);
-                CSV.exportReport();
+        // Join the cells back into a sanitized CSV line
+        safeLines.add(String.join(",", cells));
+    }
+}
 
-                File file2 = new File(outFilePath);
-                pdfContent = FileUtils.readFileToByteArray(file2);
-                response.setContentType("application/text/csv;charset=utf-8");
-                response.setHeader("Content-Disposition", "attachment;filename=" + jrxmlName + ".csv");
-                // response.setHeader("Content-disposition","inline;filename="+fileName);
-                OutputStream out1 = (OutputStream) response.getOutputStream();
-                out1.write(pdfContent);
-                out1.flush();
-                out1.close();
-                file2.delete();
+// Now write the sanitized content back to the same CSV file
+try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFilePath))) {
+    for (String safeLine : safeLines) {
+        writer.write(safeLine);  // Write the cleaned line
+        writer.newLine();        // Move to the next line
+    }
+}
