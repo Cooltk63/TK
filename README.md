@@ -1,26 +1,22 @@
-List<String> lines = new ArrayList<String>();
+int maxLineLength = 400;
+int maxTotalLength = 100000; // total 100,000 characters (~100 KB)
+int currentLength = 0;
 
-            FileReader reader;
-            BufferedReader bufferedReader;
+while ((line = bufferedReader.readLine()) != null) {
+    if (line.length() > maxLineLength) {
+        log.error("File line too long: Possible DoS attack");
+        return null;
+    }
 
-            reader = new FileReader(path);
-            bufferedReader = new BufferedReader(reader);
-            StringBuffer stringBuffer = new StringBuffer();
-            String line;
-            // CSR-2024-25 Vulnerability : Denial of Service
-            // Line length limit (e.g., 400 characters)
-            int maxLineLength = 400;
-            while ((line = bufferedReader.readLine()) != null) {
-                if (line.length() > maxLineLength) {
-                    log.error("File is too large to read : Possible DoS attack");
-                    //throw new IOException("File is too large to read : Possible DoS attack");
-                    return null;
-                }
-                stringBuffer.append(line);
-                if (!line.equalsIgnoreCase("")) {
-                    lines.add(line);
-                    stringBuffer.append("\n");
-                }
+    currentLength += line.length();
+    if (currentLength > maxTotalLength) {
+        log.error("File too large in total: Possible DoS attack");
+        return null;
+    }
 
-
-            }
+    stringBuffer.append(line);
+    if (!line.trim().isEmpty()) {
+        lines.add(line);
+        stringBuffer.append("\n");
+    }
+}
