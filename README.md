@@ -1,19 +1,17 @@
-This is the function inside Utilities.java file 
-public static Object deserialize(String path) throws IOException, ClassNotFoundException {
-		ObjectInputStream objInpStream =  new ObjectInputStream(new FileInputStream(new File(path)));
-		return objInpStream.readObject();
-	}
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+import java.io.*;
+import net.sf.jasperreports.engine.JasperPrint;
 
+public class Utilities {
 
-Line of code where it calling from
-String[] RelatedFiles = getReports(printObjFile.get(fileCount).toString(), "jrprint");
-            jPrintList.clear();
-            if (RelatedFiles.length > 0) {
-                for (int idx = 0; idx < RelatedFiles.length; idx++) {
-                    JasperPrint jrprint = (JasperPrint) Utilities.deserialize(RelatedFiles[idx]);
-                    jPrintMap.put(new Integer(idx), jrprint);
-                    jPrintList.add(jPrintMap.get(new Integer(idx)));
-                }
+    public static Object deserialize(String path) throws IOException, ClassNotFoundException {
+        try (FileInputStream fis = new FileInputStream(new File(path));
+             ValidatingObjectInputStream vois = new ValidatingObjectInputStream(fis)) {
 
+            // Allow only JasperPrint and any other safe classes if needed
+            vois.accept("net.sf.jasperreports.engine.JasperPrint");
 
-                
+            return vois.readObject();
+        }
+    }
+}
