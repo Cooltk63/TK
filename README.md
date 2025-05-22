@@ -1,179 +1,87 @@
-Vulnerability	Vulnerability Description in Detail
-Insecure SSL: Server Identity Verification Disabled	Server identity verification is disabled when making SSL connections.
+Vulnerability :Trust Boundary Violation	
+
+Vulnerability Description in Detail :The method doLogin() in LoginController.java commingles trusted and untrusted data in the same data structure, which encourages programmers to mistakenly trust unvalidated data.
+
+Likely Impact :The method doLogin() in LoginController.java commingles trusted and untrusted data in the same data structure, which encourages programmers to mistakenly trust unvalidated data.
+Recommendation :Define clear trust boundaries in the application. Do not use the same data structure to hold trusted data in some contexts and untrusted data in other contexts. Minimize the number of ways that data can move across a trust boundary. Trust boundary violations sometimes occur when input needs to be built up over a series of user interactions before being processed. It may not be possible to do complete input validation until all of the data has arrived. In these situations, it is still important to maintain a trust boundary. The untrusted data should be built up in a single untrusted data structure, validated, and then moved into a trusted location.
+
+Code impacted ::
+UserLogin doLogin(@RequestBody(required =false)UserLogin userLogin, HttpServletRequest request) {
+//        log.info("LoginController > doLogin  >>>>> " + request.getAttribute("data"));
+
+        UserLogin user = null;
+
+//        Map<String, Object> jsonMap = (Map<String, Object>) request.getAttribute("data");
+//        log.info("jsonMap " + jsonMap);
+//        log.info("jsonMap " + jsonMap.get("userId"));
+//
+//        ////log.info("id " + userLogin.getUserId());
+//        String userId = (String) jsonMap.get("userId");
+        // FOR NEW FE Changes
+//        String userId = userLogin.getUserId();
+        String userId = CommonFunctions.getDcrypted(userLogin.getUserId());
+//        log.info("userrid"+userId);
+        userLogin.setUserId(userId);
+        HttpSession session=request.getSession();
+
+        session.setAttribute(CommonConstant.USER_ID, userId);
+        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId() + "-" + session.getCreationTime());
+        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId());
 
 
-Likely Impact: Server identity verification is disabled when making SSL connections.
-Recommendation :Do not forgo server verification checks when making SSL connections. Make sure to verify server identity before establishing a connection.
 
 
-Code Impact :
+        user = loginService.doLogin(userLogin);
+        String quarterFYearDate = loginService.getQuarterYear();
+        String QFD[] = quarterFYearDate.split("~");
+        String quarter = QFD[0];
+        String financial_year = QFD[1];
+        String quarter_end_date = QFD[2];
+        String previousYearEndDate = QFD[3];
+        String previousQuarterEndDate = QFD[4];
+        user.setQuarterEndDate(quarter_end_date);
+        user.setPreviousQuarterEndDate(previousQuarterEndDate);
+        user.setPreviousYearEndDate(previousYearEndDate);
+        user.setFinancialYear(financial_year);
+        user.setQuarter(quarter);
+//        log.info("user.getCircleCode()::"+user.getCircleCode());
+        // Adding the Parameter to token for checking isCircle Authorized to SFTP Data
 
-public  Object consumeService(Object eisRequest, String urlType,String refNo) throws ConfigurationException {
+        boolean output=ifamsSftpService.getCirclesList(user.getCircleCode());
+        log.info("Is Circle Exits for SFTP ::"+output);
+
+        user.setIsCircleExist(String.valueOf(output));
+        log.info("User getCircleExits :"+user.getIsCircleExist());
 
 
-        Object object=null;
-        EisBglRequest eisBglRequest = null;
-        EisCommonRequest eisCommonRequest= null;
-        String encryptedrsa= "";
-        EncryptedRequest encryptedRequest= null;
-        if(urlType.equalsIgnoreCase("B")){
-            eisBglRequest= (EisBglRequest) eisRequest;
 
-        } else {
-            eisCommonRequest= (EisCommonRequest) eisRequest;
 
+        if (!(("-1").equalsIgnoreCase(user.getIsUserExist()) || ("P").equalsIgnoreCase(user.getStatus()))) {
+            user = loginService.getadditionalDetails(user);
+            String token = CommonFunctions.getToken(user);
+            session.setAttribute("TOKEN", token);
+            int updated = loginService.saveToken(user, token);
+            user.setToken(token);
+            log.info("User save token :"+user.getToken());
         }
-
-        URL url = null;
-        try {
-
-
-            String https_url;
-            // Create a context that doesn't check certificates.
-            SSLContext ssl_ctx = SSLContext.getInstance("TLSV1.2");
-//            TrustManager[ ] trust_mgr = get_trust_mgr();
-            TrustManager[ ] trust_mgr = null;
-            ssl_ctx.init(null,                // key manager
-                    trust_mgr,           // trust manager
-                    new SecureRandom()); // random number generator
-            HttpsURLConnection.setDefaultSSLSocketFactory(ssl_ctx.getSocketFactory());
-
-
-
-
-            if (urlType.equalsIgnoreCase("D"))
-                https_url= CommonConstant.eisProdURL+CommonConstant.eisDeposit;
-            else if (urlType.equalsIgnoreCase("L"))
-                https_url= CommonConstant.eisProdURL+CommonConstant.eisLoan;
-            else if (urlType.equalsIgnoreCase("C"))
-                https_url= CommonConstant.eisProdURL+CommonConstant.eisContingent;
-            else
-                https_url= CommonConstant.eisProdURL+CommonConstant.eisBGL;
-
-            //log.info("EIS url: "+https_url);
-
-            // url = new URL(null,https_url,new sun.net.www.protocol.https.Handler());
-            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
-
-            // Guard against "bad hostname" errors during handshake.
-            con.setHostnameVerifier(new HostnameVerifier() {
-                public boolean verify(String host, SSLSession sess) {
-                    return true;
-                }
-            });
-
-            Configuration config = new PropertiesConfiguration("common.properties");
-            String homeBasePath = (String) config.getProperty("REPORT_HOME_DIR");
-            ObjectMapper mapper = new ObjectMapper();
-            RSA rsa = new RSA(CommonConstant.rsaKeySize, CommonConstant.rsaAlgorithm);
-
-            if(urlType.equalsIgnoreCase("B")){
-
-                String plainRequestValue = mapper.writeValueAsString(eisBglRequest);
-                //log.info("PLain request: " + plainRequestValue);
-                encryptedRequest = new EncryptedRequest(eisBglRequest, CommonConstant.aesKeySize, CommonConstant.aesAlgorithm);
-                encryptedRequest.setRequestReferenceNumber(refNo);
-                encryptedrsa = rsa.encrypt(homeBasePath + CommonConstant.encryptionCertificatePath, encryptedRequest.getKey());
-            }
-            else {
-
-                String plainRequestValue = mapper.writeValueAsString(eisCommonRequest);
-                //log.info("PLain request: " + plainRequestValue);
-                encryptedRequest = new EncryptedRequest(eisCommonRequest, CommonConstant.aesKeySize, CommonConstant.aesAlgorithm);
-                encryptedRequest.setRequestReferenceNumber(refNo);
-                encryptedrsa = rsa.encrypt(homeBasePath + CommonConstant.encryptionCertificatePath, encryptedRequest.getKey());
-            }
-
-
-            con.setDoOutput(true);
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type","application/json");
-            con.setRequestProperty("Accept","application/json");
-            con.setRequestProperty("AccessToken",encryptedrsa);
-            OutputStream os= con.getOutputStream();
-
-            //dumpl all cert info
-
-
-            String requestString = mapper.writeValueAsString(encryptedRequest);
-            os.write(requestString.getBytes());
-            //log.info("Sending request with given parameters : "+requestString);
-
-           /* String k = response.readEntity(String.class);
-            //log.info("Response : "+k);
-            EncryptedResponse encryptedResponse = mapper.readValue(k, EncryptedResponse.class);*/
-
-
-
-            String contentType= con.getContentType();
-
-            BufferedReader br =
-                    new BufferedReader(
-                            new InputStreamReader(con.getInputStream()));
-            String readLine= br.readLine();
-            ArrayList<String> lineList= new ArrayList<String>();
-
-
-
-
-
-            EncryptedResponse encryptedResponse = mapper.readValue(readLine,EncryptedResponse.class);
-            //log.info("war updated....");
-
-            try {
-
-                //log.info("Response from EIS: "+encryptedRequest.decrypt(encryptedResponse.getResponse()));
-                //log.info("Response from EIS: "+encryptedRequest.decrypt(encryptedResponse.getResponse()));
-                if (urlType.equalsIgnoreCase("D")){
-                    DepositResponse depositResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),DepositResponse.class);
-                    depositResponse.setResponseDate(encryptedResponse.getResponseDate());
-
-                    object= depositResponse;
-                } else if (urlType.equalsIgnoreCase("L")){
-                    LoanResponse loanResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),LoanResponse.class);
-                    loanResponse.setResponseDate(encryptedResponse.getResponseDate());
-                    object= loanResponse;
-                } else if (urlType.equalsIgnoreCase("C")){
-                    ContingentResponse contingentResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),ContingentResponse.class);
-                    contingentResponse.setResponseDate(encryptedResponse.getResponseDate());
-                    object= contingentResponse;
-                } else{
-                    BGLResponse bglResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),BGLResponse.class);
-                    bglResponse.setResponseDate(encryptedResponse.getResponseDate());
-                    object= bglResponse;
-                }
-            }catch (Exception e){
-
-              //log.info("Here in exception...");
-
-            }
-
-
-
-            //dump all the content
-
-
-        } catch (MalformedURLException e) {
-            //log.info("Here in exception...");
-        } catch (IOException e) {
-            log.error("Exception Occurred " +e.getMessage());
-            //log.info("Here in exception...");
-        }catch (NoSuchAlgorithmException e) {
-            //log.info("Here in exception...");
-
-        }catch (KeyManagementException e) {
-            //log.info("Here in exception...");
-        } catch (CertificateException e) {
-            //log.info("Here in exception...");
-        } catch (InvalidKeyException e) {
-            //log.info("Here in exception...");
-        } catch (IllegalBlockSizeException e) {
-            //log.info("Here in exception...");
-        } catch (BadPaddingException e) {
-            //log.info("Here in exception...");
-        } catch (NoSuchPaddingException e) {
-            //log.info("Here in exception...");
+        //starting encryption
+        user.setUserId(CommonFunctions.getEncrypted(userId));
+        user.setUserName(CommonFunctions.getEncrypted(user.getUserName()));
+        user.setCircleCode(CommonFunctions.getEncrypted(user.getCircleCode()));
+        user.setCircleName(CommonFunctions.getEncrypted(user.getCircleName()));
+        user.setRole(CommonFunctions.getEncrypted(user.getRole()));
+        user.setCapacity(CommonFunctions.getEncrypted(user.getCapacity()));
+        if(!("P").equalsIgnoreCase(user.getStatus())){
+        user.setStatus(CommonFunctions.getEncrypted(user.getStatus()));
         }
+        user.setIsBranchFinal(CommonFunctions.getEncrypted(user.getIsBranchFinal()));
+        user.setIsCircleFreeze(CommonFunctions.getEncrypted(user.getIsCircleFreeze()));
+        user.setIsAuditorDig(CommonFunctions.getEncrypted(user.getIsAuditorDig()));
+        user.setIsCheckerDig(CommonFunctions.getEncrypted(user.getIsCheckerDig()));
+        user.setFrRMId(CommonFunctions.getEncrypted("444444"));
+        user.setFrReportId(CommonFunctions.getEncrypted("444444"));
+        user.setMocFlag(CommonFunctions.getEncrypted(user.getMocFlag()));
+        user.setIsCircleExist(CommonFunctions.getEncrypted(user.getIsCircleExist()));
 
-        return object;
+        return user;
     }
