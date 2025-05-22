@@ -1,155 +1,179 @@
-
-package com.tcs.csrf;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import java.io.IOException;
-import java.net.*;
-import java.security.SecureRandom;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.lang.String;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.tcs.utils.CommonConstant;
-import org.springframework.web.util.WebUtils;
-import org.apache.log4j.Logger;
-import com.google.common.net.InternetDomainName;
-import java.net.URL;
-import org.apache.commons.lang.RandomStringUtils;
+Vulnerability	Vulnerability Description in Detail
+Insecure SSL: Server Identity Verification Disabled	Server identity verification is disabled when making SSL connections.
 
 
-import static org.bouncycastle.crypto.tls.ContentType.alert;
+Likely Impact: Server identity verification is disabled when making SSL connections.
+Recommendation :Do not forgo server verification checks when making SSL connections. Make sure to verify server identity before establishing a connection.
 
 
-public class LoadSalt implements Filter {
+Code Impact :
+
+public  Object consumeService(Object eisRequest, String urlType,String refNo) throws ConfigurationException {
 
 
-    static Logger log = Logger.getLogger(LoadSalt.class.getName());
-    private Pattern AllowedURL=Pattern.compile("/assets|/resources/|/index.jsp|/login.jsp|/Security");
+        Object object=null;
+        EisBglRequest eisBglRequest = null;
+        EisCommonRequest eisCommonRequest= null;
+        String encryptedrsa= "";
+        EncryptedRequest encryptedRequest= null;
+        if(urlType.equalsIgnoreCase("B")){
+            eisBglRequest= (EisBglRequest) eisRequest;
 
-
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-
-
-        //log.info("for token validation....");
-        HttpServletRequest httpReq = (HttpServletRequest) request;
-        HttpServletResponse  httpRes = (HttpServletResponse) response;
-
-
-        String requestSalt=null;
-
-        requestSalt=(String)httpReq.getHeader("X-CSRF-TOKEN");
-
-        String sessionSalt = null;
-        if(null!=httpReq.getSession().getAttribute("csrfPreventionSalt")) {
-
-            sessionSalt = httpReq.getSession().getAttribute("csrfPreventionSalt").toString();
+        } else {
+            eisCommonRequest= (EisCommonRequest) eisRequest;
 
         }
 
-        String hostname=null;
-
-        hostname=(String)httpReq.getServerName();
-        //log.info("Hostname"+hostname);
-
-        String referer=null;
-
-        referer=(String)httpReq.getHeader("Referer");
-        //log.info("referer"+referer);
+        URL url = null;
+        try {
 
 
-        String Forwaded=null ;
-        Forwaded=(String)httpReq.getHeader("X-Forwarded-Host");
-        if (Forwaded == null) {
-            Forwaded = request.getRemoteAddr();
+            String https_url;
+            // Create a context that doesn't check certificates.
+            SSLContext ssl_ctx = SSLContext.getInstance("TLSV1.2");
+//            TrustManager[ ] trust_mgr = get_trust_mgr();
+            TrustManager[ ] trust_mgr = null;
+            ssl_ctx.init(null,                // key manager
+                    trust_mgr,           // trust manager
+                    new SecureRandom()); // random number generator
+            HttpsURLConnection.setDefaultSSLSocketFactory(ssl_ctx.getSocketFactory());
+
+
+
+
+            if (urlType.equalsIgnoreCase("D"))
+                https_url= CommonConstant.eisProdURL+CommonConstant.eisDeposit;
+            else if (urlType.equalsIgnoreCase("L"))
+                https_url= CommonConstant.eisProdURL+CommonConstant.eisLoan;
+            else if (urlType.equalsIgnoreCase("C"))
+                https_url= CommonConstant.eisProdURL+CommonConstant.eisContingent;
+            else
+                https_url= CommonConstant.eisProdURL+CommonConstant.eisBGL;
+
+            //log.info("EIS url: "+https_url);
+
+            // url = new URL(null,https_url,new sun.net.www.protocol.https.Handler());
+            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+
+            // Guard against "bad hostname" errors during handshake.
+            con.setHostnameVerifier(new HostnameVerifier() {
+                public boolean verify(String host, SSLSession sess) {
+                    return true;
+                }
+            });
+
+            Configuration config = new PropertiesConfiguration("common.properties");
+            String homeBasePath = (String) config.getProperty("REPORT_HOME_DIR");
+            ObjectMapper mapper = new ObjectMapper();
+            RSA rsa = new RSA(CommonConstant.rsaKeySize, CommonConstant.rsaAlgorithm);
+
+            if(urlType.equalsIgnoreCase("B")){
+
+                String plainRequestValue = mapper.writeValueAsString(eisBglRequest);
+                //log.info("PLain request: " + plainRequestValue);
+                encryptedRequest = new EncryptedRequest(eisBglRequest, CommonConstant.aesKeySize, CommonConstant.aesAlgorithm);
+                encryptedRequest.setRequestReferenceNumber(refNo);
+                encryptedrsa = rsa.encrypt(homeBasePath + CommonConstant.encryptionCertificatePath, encryptedRequest.getKey());
+            }
+            else {
+
+                String plainRequestValue = mapper.writeValueAsString(eisCommonRequest);
+                //log.info("PLain request: " + plainRequestValue);
+                encryptedRequest = new EncryptedRequest(eisCommonRequest, CommonConstant.aesKeySize, CommonConstant.aesAlgorithm);
+                encryptedRequest.setRequestReferenceNumber(refNo);
+                encryptedrsa = rsa.encrypt(homeBasePath + CommonConstant.encryptionCertificatePath, encryptedRequest.getKey());
+            }
+
+
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type","application/json");
+            con.setRequestProperty("Accept","application/json");
+            con.setRequestProperty("AccessToken",encryptedrsa);
+            OutputStream os= con.getOutputStream();
+
+            //dumpl all cert info
+
+
+            String requestString = mapper.writeValueAsString(encryptedRequest);
+            os.write(requestString.getBytes());
+            //log.info("Sending request with given parameters : "+requestString);
+
+           /* String k = response.readEntity(String.class);
+            //log.info("Response : "+k);
+            EncryptedResponse encryptedResponse = mapper.readValue(k, EncryptedResponse.class);*/
+
+
+
+            String contentType= con.getContentType();
+
+            BufferedReader br =
+                    new BufferedReader(
+                            new InputStreamReader(con.getInputStream()));
+            String readLine= br.readLine();
+            ArrayList<String> lineList= new ArrayList<String>();
+
+
+
+
+
+            EncryptedResponse encryptedResponse = mapper.readValue(readLine,EncryptedResponse.class);
+            //log.info("war updated....");
+
+            try {
+
+                //log.info("Response from EIS: "+encryptedRequest.decrypt(encryptedResponse.getResponse()));
+                //log.info("Response from EIS: "+encryptedRequest.decrypt(encryptedResponse.getResponse()));
+                if (urlType.equalsIgnoreCase("D")){
+                    DepositResponse depositResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),DepositResponse.class);
+                    depositResponse.setResponseDate(encryptedResponse.getResponseDate());
+
+                    object= depositResponse;
+                } else if (urlType.equalsIgnoreCase("L")){
+                    LoanResponse loanResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),LoanResponse.class);
+                    loanResponse.setResponseDate(encryptedResponse.getResponseDate());
+                    object= loanResponse;
+                } else if (urlType.equalsIgnoreCase("C")){
+                    ContingentResponse contingentResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),ContingentResponse.class);
+                    contingentResponse.setResponseDate(encryptedResponse.getResponseDate());
+                    object= contingentResponse;
+                } else{
+                    BGLResponse bglResponse= mapper.readValue(encryptedRequest.dcrrypt(encryptedResponse.getResponse()),BGLResponse.class);
+                    bglResponse.setResponseDate(encryptedResponse.getResponseDate());
+                    object= bglResponse;
+                }
+            }catch (Exception e){
+
+              //log.info("Here in exception...");
+
+            }
+
+
+
+            //dump all the content
+
+
+        } catch (MalformedURLException e) {
+            //log.info("Here in exception...");
+        } catch (IOException e) {
+            log.error("Exception Occurred " +e.getMessage());
+            //log.info("Here in exception...");
+        }catch (NoSuchAlgorithmException e) {
+            //log.info("Here in exception...");
+
+        }catch (KeyManagementException e) {
+            //log.info("Here in exception...");
+        } catch (CertificateException e) {
+            //log.info("Here in exception...");
+        } catch (InvalidKeyException e) {
+            //log.info("Here in exception...");
+        } catch (IllegalBlockSizeException e) {
+            //log.info("Here in exception...");
+        } catch (BadPaddingException e) {
+            //log.info("Here in exception...");
+        } catch (NoSuchPaddingException e) {
+            //log.info("Here in exception...");
         }
-        //log.info("X-Forwarded-For"+Forwaded);
-        if(!(Forwaded.equalsIgnoreCase("bsuat.info.sbi")||Forwaded.equalsIgnoreCase("10.0.26.158")||Forwaded.equalsIgnoreCase("bs.info.sbi") || CommonConstant.isIpAddress(Forwaded))){
-            //log.info("user not matched");
-            throw new ServletException("Duplicate host detected!! Inform a scary sysadmin ASAP.");
-        }
 
-        String UrlPath=((HttpServletRequest) request).getServletPath();
-        //log.info(UrlPath);
-
-        // Check the user session for the salt cache, if none is present we create one
-
-        Cache<String, Boolean> csrfPreventionSaltCache  = (Cache<String, Boolean>)
-                httpReq.getSession().getAttribute("csrfPreventionSaltCache");
-
-
-
-        if(null != requestSalt && null!= sessionSalt &&  requestSalt.equals(sessionSalt)){
-            //log.info("CSRF token matched ");
-        }
-        else if(null != requestSalt && null!= sessionSalt &&  !requestSalt.equals(sessionSalt)){
-            //log.info("CSRF does not match get out user");
-            throw new ServletException("Potential CSRF detected!! Inform a scary sysadmin ASAP.");
-
-        }
-
-        if (csrfPreventionSaltCache == null){
-            //log.info("csrfPreventionSaltCache++++");
-            csrfPreventionSaltCache = CacheBuilder.newBuilder()
-                    .maximumSize(5000)
-                    .expireAfterWrite(5, TimeUnit.MINUTES)
-                    .build();
-
-            httpReq.getSession().setAttribute("csrfPreventionSaltCache", csrfPreventionSaltCache);
-        }
-
-        // Generate the salt and store it in the users cache
-        String salt = RandomStringUtils.random(20, 0, 0, true, true, null, new SecureRandom());
-        csrfPreventionSaltCache.put(salt, Boolean.TRUE);
-
-        // Add the salt to the current request so it can be used
-        // by the page rendered in this request
-        httpRes.setHeader("csrfPreventionSalt",salt);
-
-        httpReq.getSession().setAttribute("csrfPreventionSalt", salt);
-
-
-        Matcher m = AllowedURL.matcher(UrlPath);
-
-        if(m.find())
-        {
-            //log.info("URL_matchfind");
-            chain.doFilter(request, response);
-        } else if(null != requestSalt && null!= sessionSalt &&  requestSalt.equals(sessionSalt)){
-            //log.info("CSRF token mathced ");
-            chain.doFilter(request, response);
-        } else if(null == sessionSalt || null != requestSalt && null!= sessionSalt &&  !requestSalt.equals(sessionSalt)){
-            //log.info("CSRF does not match get out user");
-            throw new ServletException("Potential CSRF detected!! Inform a scary sysadmin ASAP.");
-
-        }else if(sessionSalt!=null&&requestSalt==null){
-            //log.info("CSRF does not match get out user");
-            throw new ServletException("Potential CSRF detected!! Inform a scary sysadmin ASAP.");
-
-        }
-
-        //  chain.doFilter(request, response);
-
+        return object;
     }
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-    }
-
-    @Override
-    public void destroy() {
-    }
-}
-
-
