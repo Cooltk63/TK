@@ -1,37 +1,18 @@
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.IOException;
-
-public class SessionCookieFilter implements Filter {
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // You can leave this empty if no initialization is required
-    }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-            HttpServletRequest req = (HttpServletRequest) request;
-            HttpServletResponse res = (HttpServletResponse) response;
-            HttpSession session = req.getSession(false);
-            if (session != null) {
-                Cookie sessionCookie = new Cookie("JSESSIONID", session.getId());
-                sessionCookie.setHttpOnly(true);
-                sessionCookie.setSecure(true);
-                sessionCookie.setPath(req.getContextPath());
-                sessionCookie.setMaxAge(-1); // Make cookie non-persistent
-                res.addCookie(sessionCookie);
-            }
-        }
-
-        chain.doFilter(request, response);
-    }
-
-    @Override
-    public void destroy() {
-        // You can leave this empty if no cleanup is required
-    }
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<wls:weblogic-web-app xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-web-app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.9/weblogic-web-app.xsd">
+      <wls:context-root>BS</wls:context-root>
+      <wls:session-descriptor>
+            <wls:cookie-name>BSCookie</wls:cookie-name>
+            <wls:cookie-path>/BS</wls:cookie-path>
+            <wls:cookie-secure>true</wls:cookie-secure>
+            <wls:cookie-http-only>true</wls:cookie-http-only>
+            <wls:persistent-store-type>replicated_if_clustered</wls:persistent-store-type>
+            <wls:persistent-store-cookie-name>BSCookies</wls:persistent-store-cookie-name>
+            <wls:url-rewriting-enabled>false</wls:url-rewriting-enabled>
+            <wls:http-proxy-caching-of-cookies>true</wls:http-proxy-caching-of-cookies>
+            <wls:sharing-enabled>true</wls:sharing-enabled>
+      </wls:session-descriptor>
+      <wls:container-descriptor>
+            <wls:prefer-web-inf-classes>true</wls:prefer-web-inf-classes>
+      </wls:container-descriptor>
+</wls:weblogic-web-app>
