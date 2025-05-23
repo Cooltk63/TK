@@ -1,87 +1,64 @@
-Vulnerability :Trust Boundary Violation	
 
-Vulnerability Description in Detail :The method doLogin() in LoginController.java commingles trusted and untrusted data in the same data structure, which encourages programmers to mistakenly trust unvalidated data.
+Vulnerability Description in Detail :Attackers can control the file system path argument to File() at PnlVarController.java line 308, which allows them to access or modify otherwise protected files.
 
-Likely Impact :The method doLogin() in LoginController.java commingles trusted and untrusted data in the same data structure, which encourages programmers to mistakenly trust unvalidated data.
-Recommendation :Define clear trust boundaries in the application. Do not use the same data structure to hold trusted data in some contexts and untrusted data in other contexts. Minimize the number of ways that data can move across a trust boundary. Trust boundary violations sometimes occur when input needs to be built up over a series of user interactions before being processed. It may not be possible to do complete input validation until all of the data has arrived. In these situations, it is still important to maintain a trust boundary. The untrusted data should be built up in a single untrusted data structure, validated, and then moved into a trusted location.
+
+Likely Impact :Attackers can control the file system path argument to File() at BCPGPDecryptor.java line 74, which allows them to access or modify otherwise protected files.
+Recommendation :The best way to prevent path manipulation is with a level of indirection: create a list of legitimate values from which the user must select. With this approach, the user-provided input is never used directly to specify the resource name. In some situations this approach is impractical because the set of legitimate resource names is too large or too hard to maintain. Programmers often resort to implementing a deny list in these situations. A deny list is used to selectively reject or escape potentially dangerous characters before using the input. However, any such list of unsafe characters is likely to be incomplete and will almost certainly become out of date. A better approach is to create a list of characters that are permitted to appear in the resource name and accept input composed exclusively of characters in the approved set.
 
 Code impacted ::
-UserLogin doLogin(@RequestBody(required =false)UserLogin userLogin, HttpServletRequest request) {
-//        log.info("LoginController > doLogin  >>>>> " + request.getAttribute("data"));
 
-        UserLogin user = null;
+     
+    try {
+                //log.info("check");
+                con = dataSource.getConnection();
+                //log.info("datachecckkk");
+                config = new PropertiesConfiguration("common.properties");
+                param.put("req_id", String.valueOf(id));
+                param.put("isExcel",true);
+                param.put("IS_DETECT_CELL_TYPE",true);
+                String checkPath = config.getProperty("REPORT_HOME_DIR") + "reports";
 
-//        Map<String, Object> jsonMap = (Map<String, Object>) request.getAttribute("data");
-//        log.info("jsonMap " + jsonMap);
-//        log.info("jsonMap " + jsonMap.get("userId"));
-//
-//        ////log.info("id " + userLogin.getUserId());
-//        String userId = (String) jsonMap.get("userId");
-        // FOR NEW FE Changes
-//        String userId = userLogin.getUserId();
-        String userId = CommonFunctions.getDcrypted(userLogin.getUserId());
-//        log.info("userrid"+userId);
-        userLogin.setUserId(userId);
-        HttpSession session=request.getSession();
-
-        session.setAttribute(CommonConstant.USER_ID, userId);
-        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId() + "-" + session.getCreationTime());
-        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId());
+                outFilePath = config.getProperty("REPORT_HOME_DIR") + "reports" + File.separator + filename + ".xlsx";
+                JasperPrint jasperPrint;
+                File check = new File(checkPath);
+                if (!check.exists()) {
+                    check.mkdirs();
+                    //log.info("foldercreated");
+                }
 
 
+                String JasperFilePath="/media/BS/Oracle3/Oracle_Home/user_projects/domains/base_domain/servers/node_15/tmp/_WL_user/BS/9g1ohn/war/WEB-INF/BS"+File.separator+"BsJasper"+File.separator+ "PNL_VARIANCE_REPORT" + ".jasper";
+                //log.info("jasperfileeepath"+JasperFilePath);
+                /*try {
+
+                    ServletContext context = request.getServletContext();
+                    String realContextPath = context.getRealPath(request.getContextPath("/WEB-INF/BS"));
+                    //log.info("testtttt" + realContextPath);
+                }finally {
+                    //log.info("nullllllll");
+                }*/
 
 
-        user = loginService.doLogin(userLogin);
-        String quarterFYearDate = loginService.getQuarterYear();
-        String QFD[] = quarterFYearDate.split("~");
-        String quarter = QFD[0];
-        String financial_year = QFD[1];
-        String quarter_end_date = QFD[2];
-        String previousYearEndDate = QFD[3];
-        String previousQuarterEndDate = QFD[4];
-        user.setQuarterEndDate(quarter_end_date);
-        user.setPreviousQuarterEndDate(previousQuarterEndDate);
-        user.setPreviousYearEndDate(previousYearEndDate);
-        user.setFinancialYear(financial_year);
-        user.setQuarter(quarter);
-//        log.info("user.getCircleCode()::"+user.getCircleCode());
-        // Adding the Parameter to token for checking isCircle Authorized to SFTP Data
-
-        boolean output=ifamsSftpService.getCirclesList(user.getCircleCode());
-        log.info("Is Circle Exits for SFTP ::"+output);
-
-        user.setIsCircleExist(String.valueOf(output));
-        log.info("User getCircleExits :"+user.getIsCircleExist());
+                jasperPrint = JasperFillManager.fillReport(JasperFilePath, param, con);
+                //log.info("jasperrrrprint"+jasperPrint);
 
 
 
-
-        if (!(("-1").equalsIgnoreCase(user.getIsUserExist()) || ("P").equalsIgnoreCase(user.getStatus()))) {
-            user = loginService.getadditionalDetails(user);
-            String token = CommonFunctions.getToken(user);
-            session.setAttribute("TOKEN", token);
-            int updated = loginService.saveToken(user, token);
-            user.setToken(token);
-            log.info("User save token :"+user.getToken());
-        }
-        //starting encryption
-        user.setUserId(CommonFunctions.getEncrypted(userId));
-        user.setUserName(CommonFunctions.getEncrypted(user.getUserName()));
-        user.setCircleCode(CommonFunctions.getEncrypted(user.getCircleCode()));
-        user.setCircleName(CommonFunctions.getEncrypted(user.getCircleName()));
-        user.setRole(CommonFunctions.getEncrypted(user.getRole()));
-        user.setCapacity(CommonFunctions.getEncrypted(user.getCapacity()));
-        if(!("P").equalsIgnoreCase(user.getStatus())){
-        user.setStatus(CommonFunctions.getEncrypted(user.getStatus()));
-        }
-        user.setIsBranchFinal(CommonFunctions.getEncrypted(user.getIsBranchFinal()));
-        user.setIsCircleFreeze(CommonFunctions.getEncrypted(user.getIsCircleFreeze()));
-        user.setIsAuditorDig(CommonFunctions.getEncrypted(user.getIsAuditorDig()));
-        user.setIsCheckerDig(CommonFunctions.getEncrypted(user.getIsCheckerDig()));
-        user.setFrRMId(CommonFunctions.getEncrypted("444444"));
-        user.setFrReportId(CommonFunctions.getEncrypted("444444"));
-        user.setMocFlag(CommonFunctions.getEncrypted(user.getMocFlag()));
-        user.setIsCircleExist(CommonFunctions.getEncrypted(user.getIsCircleExist()));
-
-        return user;
-    }
+                OutputStream out2= new FileOutputStream(new File(outFilePath));
+                //log.info("outputstreammmmm");
+                JRXlsxExporter excelExporter = new JRXlsxExporter();
+                excelExporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+                excelExporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out2));
+                SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
+                configuration.setDetectCellType(true);
+                configuration.setWhitePageBackground(false);
+                configuration.setRemoveEmptySpaceBetweenRows(true);
+                configuration.setIgnoreCellBorder(true);
+                excelExporter.setConfiguration(configuration);
+                excelExporter.exportReport();
+                //log.info("exportdoneeee");
+                String serverPostKeyString = CommonFunction.POST_SERVER_IP_0;
+                String SFTPHOST = CommonFunction.getServerIp(serverPostKeyString);
+                String SFTPUSER = CommonFunction.getServerUserName(serverPostKeyString);
+                String SFTPPASS = CommonFunction.getServerPass(serverPostKeyString);
+                int SFTPPORT = CommonFunction.getServerPort(serverPostKeyString);
