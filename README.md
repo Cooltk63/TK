@@ -1,13 +1,25 @@
-angular.js:15697 TypeError: Cannot read properties of undefined (reading 'split')
-    at self.parseJwt (mainCtrl.js:116:66)
-    at mainCtrl.js:120:51
-    at processQueue (angular.js:18075:37)
-    at angular.js:18123:27
-    at Scope.$digest (angular.js:19242:15)
-    at Scope.$apply (angular.js:19630:24)
-    at done (angular.js:13473:47)
-    at completeRequest (angular.js:13730:7)
-    at XMLHttpRequest.requestLoaded (angular.js:13635:9) 
+int maxAttempts = 3;
+int attempt = 0;
+boolean success = false;
 
-
-    This is my mainctrl.js file 
+while (attempt < maxAttempts && !success) {
+    try {
+        channelSftp = (ChannelSftp) channel;
+        channelSftp.cd("/");
+        channelSftp.cd(folderPath);
+        success = true; // If we reach here, cd was successful
+    } catch (SftpException e) {
+        attempt++;
+        log.warn("Attempt " + attempt + " to change directory failed. Retrying...", e);
+        if (attempt >= maxAttempts) {
+            log.error("Failed to change directory after " + maxAttempts + " attempts");
+            return 0;
+        }
+        try {
+            TimeUnit.SECONDS.sleep(1); // Use TimeUnit for readability
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt(); // Restore interrupt status
+            return 0;
+        }
+    }
+}
