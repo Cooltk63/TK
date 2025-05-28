@@ -1,25 +1,25 @@
-int maxAttempts = 3;
-int attempt = 0;
+int maxRetries = 3;
+int retryDelay = 1000; // 1 second
 boolean success = false;
 
-while (attempt < maxAttempts && !success) {
+for (int i = 0; i < maxRetries; i++) {
     try {
-        channelSftp = (ChannelSftp) channel;
         channelSftp.cd("/");
         channelSftp.cd(folderPath);
-        success = true; // If we reach here, cd was successful
+        success = true;
+        break;
     } catch (SftpException e) {
-        attempt++;
-        log.warn("Attempt " + attempt + " to change directory failed. Retrying...", e);
-        if (attempt >= maxAttempts) {
-            log.error("Failed to change directory after " + maxAttempts + " attempts");
-            return 0;
-        }
+        log.warn("Attempt {} failed to change directory. Retrying in {} ms...", (i + 1), retryDelay);
         try {
-            TimeUnit.SECONDS.sleep(1); // Use TimeUnit for readability
+            Thread.sleep(retryDelay); // still uses sleep but in a controlled retry block
         } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt(); // Restore interrupt status
+            Thread.currentThread().interrupt(); // good practice
             return 0;
         }
     }
+}
+
+if (!success) {
+    log.error("Failed to access folder after retries.");
+    return 0;
 }
