@@ -1,20 +1,21 @@
-// Restrict file upload to CSV only
-String originalFilename = file.getOriginalFilename();
-String contentType = file.getContentType();
+Vulnerability
+Key Management: Hardcoded Encryption Key
 
-if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".csv")) {
-    return "Invalid file type. Only .csv files are allowed.";
-}
+Vulnerability Description in Detail
+Hardcoded encryption keys can compromise security in a way that is not easy to remedy.
 
-if (contentType == null || 
-    !(contentType.equals("text/csv") || contentType.equals("application/vnd.ms-excel") || contentType.equals("application/csv"))) {
-    return "Invalid content type. Only CSV files are allowed.";
-}
+Likely Impact
+Hardcoded encryption keys can compromise security in a way that is not easy to remedy.
 
+Recommendation
+Encryption keys should never be hardcoded and should be obfuscated and managed in an external source. Storing encryption keys in plain text anywhere on the system allows anyone with sufficient permissions to read and potentially misuse the encryption key.
 
-if (file.getSize() > 5 * 1024 * 1024) { // 5 MB limit
-    return "File too large. Maximum allowed size is 5MB.";
-}
+Code Impacted ::
+ public static final String secretKey = "XTY@784";
 
-
-String sanitizedFilename = FilenameUtils.getName(originalFilename); // From Apache Commons IO
+    private String generateSignature(String uri, String secretKey) throws Exception {
+        Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secret_key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+        sha256_HMAC.init(secret_key);
+        return Base64.getEncoder().encodeToString(sha256_HMAC.doFinal(uri.getBytes()));
+    }
