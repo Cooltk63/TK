@@ -1,10 +1,10 @@
-// Put this at the class level or as a static final field
-private static final Set<String> ALLOWED_COLUMNS = Set.of(
-    "T40_COL1", "T40_COL2", "T40_COL3", "T40_COL4",
-    "T40_COL5", "T40_COL6", "T40_COL7", "T40_COL8",
-    "T40_COL9", "T40_COL10", "T40_COL11"
+private static final Set<String> ALLOWED_COLUMNS = Collections.unmodifiableSet(
+    new HashSet<>(Arrays.asList(
+        "T40_COL1", "T40_COL2", "T40_COL3", "T40_COL4",
+        "T40_COL5", "T40_COL6", "T40_COL7", "T40_COL8",
+        "T40_COL9", "T40_COL10", "T40_COL11"
+    ))
 );
-
 
 public int save(Map<String, Object> map) {
     log.info("in save function in AssetQualityDaoImpl");
@@ -17,7 +17,7 @@ public int save(Map<String, Object> map) {
         throw new IllegalArgumentException("Invalid column name: " + columnName);
     }
 
-    // Construct query safely with validated column name
+    // Safe SQL query construction
     String query = "UPDATE FR_T40 SET " + columnName + " = ? WHERE T40_ID = ? AND T40_RPTID_FK = ? AND T40_QED = TO_DATE(?,'dd/mm/yyyy')";
 
     return jdbcTemplate.update(
