@@ -1,30 +1,40 @@
-private static final Set<String> ALLOWED_COLUMNS = Collections.unmodifiableSet(
-    new HashSet<>(Arrays.asList(
-        "T40_COL1", "T40_COL2", "T40_COL3", "T40_COL4",
-        "T40_COL5", "T40_COL6", "T40_COL7", "T40_COL8",
-        "T40_COL9", "T40_COL10", "T40_COL11"
-    ))
-);
+@Override
+    public int getPYData(Map<String, Object> map) {
 
-public int save(Map<String, Object> map) {
-    log.info("in save function in AssetQualityDaoImpl");
+        String qed = (String) map.get("qed");
+        String reportId = (String) map.get("reportId");
 
-    String columnName = (String) map.get("columnName");
+        String year = qed.substring(6, 10);
+        int prevYr = parseInt(year) - 1;
+        String prevQed = "31/03/" + prevYr;
+        AtomicInteger result = new AtomicInteger();
+        String getData = "select ID, DESCE ,CY from ${tableName} where QED= TO_DATE(?,'dd/mm/yyyy') order by ID";
 
-    // Validate the column name
-    if (!ALLOWED_COLUMNS.contains(columnName)) {
-        log.error("Attempt to use invalid column name: {}", columnName);
-        throw new IllegalArgumentException("Invalid column name: " + columnName);
+        Map<Object, Object> valuesMap = new HashMap<>();
+        valuesMap.put("tableName", map.get("tableName"));
+        StrSubstitutor sub = new StrSubstitutor(valuesMap);
+        getData = sub.replace(getData);
+
+        try {
+            ArrayList<String> prevYData = jdbcTemplate.query(getData, new Object[]{prevQed}, rs -> {
+                ArrayList<String> t_Data = new ArrayList<>();
+                while (rs.next()) {
+                    t_Data.add(rs.getString(1));
+                    t_Data.add(rs.getString(2));
+                    t_Data.add(rs.getString(3));
+
+                    String updatePYData = "insert into ${tableName} (ID,DESCE,VAL_PY,QED,RPTID_FK)values(?,?,?,TO_DATE(?,'dd/mm/yyyy'),?)";
+                    updatePYData = sub.replace(updatePYData);
+
+                    int update = jdbcTemplate.update(updatePYData, rs.getString(1), rs.getString(2), rs.getString(3),
+                            qed, reportId);
+                    result.set(update);
+                }
+                return t_Data;
+            });
+        } catch (DataAccessException e) {
+            log.error("DataAccessException Occurred :" + e.getMessage());
+
+        }
+        return result.get();
     }
-
-    // Safe SQL query construction
-    String query = "UPDATE FR_T40 SET " + columnName + " = ? WHERE T40_ID = ? AND T40_RPTID_FK = ? AND T40_QED = TO_DATE(?,'dd/mm/yyyy')";
-
-    return jdbcTemplate.update(
-        query,
-        map.get(FIELD_VALUE),
-        map.get(ROW_ID),
-        map.get(REPORT_ID),
-        map.get(QUARTER_END_DATE)
-    );
-}
