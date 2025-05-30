@@ -1,10 +1,15 @@
-Dear [Senior's Name],
+hope you're doing well.
 
-We are currently facing an issue while installing packages using npm on all developer machines.
-The installation fails with a 403 Forbidden error, even with proxy settings configured.
+I wanted to bring to your attention a recurring performance issue with my system, which is frequently hanging due to 100% CPU and RAM usage. Please find the attached screenshot for your reference.
 
-Please find the attached screenshot for reference.
+This issue is affecting my daily working and needs immediate attention.
 
-It seems like access to the NPM registry is blocked or restricted on the network.
+Request for Action: To resolve this, I kindly request:
 
-Requesting your support to escalate this to the concerned team for resolution.
+Additional RAM allocation for my system
+or
+
+Any alternative solution to address this performance bottleneck
+
+
+Your support in resolving this at the earliest would be greatly appreciated.
