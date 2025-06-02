@@ -1,19 +1,44 @@
-    public int updatePrevYrCol(String qed) {
-        int update = 0;
+public int updatePrevYrValue(Map<String,Object >map){
+      int update = 0;
+      String qed = map.get("qed").toString();
+      int prevYear = Integer.parseInt(qed.substring(6,10))-1;
+      String preScheme = String.valueOf(prevYear - 1);
+
+      String prevQed = "31/03/"+prevYear;
+      String tableName = map.get(TABLE).toString();
+      String columnName = tableName.split("_")[1];
+
+      JdbcTemplate jdbcTemplateObject = new JdbcTemplate(dataSource);
+
+      String prevYearValue = "SELECT ${COLUMN_NAME}_PARAMID_FK,${COLUMN_NAME}_VAL_CY FROM ${prevyear}.${TABLE_NAME} " +
+                "WHERE ${COLUMN_NAME}_QED = to_date(?,'dd/mm/yyyy') ORDER BY ${COLUMN_NAME}_PARAMID_FK";
+
+      String updatePrevYearValue = "UPDATE ${TABLE_NAME} SET ${COLUMN_NAME}_VAL_PY = ? " +
+                "WHERE ${COLUMN_NAME}_QED = to_date(?,'dd/mm/yyyy') AND ${COLUMN_NAME}_PARAMID_FK = ?";
+
+      Map<Object, Object> valuesMap = new HashMap<>();
+      valuesMap.put(COLUMN_NAME, columnName);
+      valuesMap.put(TABLE_NAME, tableName);
+      valuesMap.put("prevyear", "Q4" + preScheme);
+      StrSubstitutor sub = new StrSubstitutor(valuesMap);
+
+      prevYearValue = sub.replace(prevYearValue);
+      updatePrevYearValue = sub.replace(updatePrevYearValue);
+
+        List<Map<String,Object>> prevYearValues = null;
         try {
-            int previousYear = INTEGER_VALUE(qed.substring(6, 10)) - 1;
-            log.info("prevYear: " + previousYear);
-            String previousQed = "31/03/" + previousYear;
-            String preScheme = String.valueOf(previousYear - 1);
+            prevYearValues = jdbcTemplateObject.queryForList(prevYearValue,prevQed);
+        } catch (DataAccessException e) {
+            log.error("DataException Occurred: "+e.getMessage());
+        }
 
-            String getT3Data = "SELECT T03_ID,T03_AMT_CAP_CY,T03_AMT_SHCAP_CY,T03_NOSHARE_CY from ${prevyear}.FR_T03 " +
-                    "where T03_QED = to_date(?,'dd/mm/yyyy') ORDER BY T03_ID";
-
-            Map<Object, Object> valuesMap = new HashMap<>();
-            valuesMap.put("prevyear", "Q4" + preScheme);
-            StrSubstitutor sub = new StrSubstitutor(valuesMap);
-            getT3Data = sub.replace(getT3Data);
-
-            JdbcTemplate jdbcTemplateObject = new JdbcTemplate(dataSource);
-
-            List<Map<String, Object>> prevYrValues = jdbcTemplateObject.queryForList(getT3Data, previousQed);
+        try {
+          for (Map<String, Object> mapRow : prevYearValues) {
+              update+= jdbcTemplate.update(updatePrevYearValue,mapRow.get(columnName+"_VAL_CY"),qed,
+                        mapRow.get(columnName+"_PARAMID_FK"));
+          }
+      } catch (DataAccessException e) {
+          log.error("DataException Occurred: "+e.getMessage());
+      }
+        return update;
+    }
