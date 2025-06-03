@@ -1,26 +1,25 @@
-String insertQuery = "Insert into ifrs_group_change_request(NEW_TITLE, NEW_CATEGORY, NEW_SUBCATEGORY,ACTION,PFID,FK_SRNO) VALUES (?, ?, ?, ?, ?, ?)";
+Vulnerability
+Unauthorized Download
 
-                GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-                log.info("a");
-                jdbcTemplate.update(conn -> {
-                    String[] generatedColumns = {"ID"};
-                    PreparedStatement prepareStatement = conn.prepareStatement(insertQuery, generatedColumns);
-                    prepareStatement.setString(1, (String) jsonObjData.get("TITLE"));
-                    prepareStatement.setString(2, (String) jsonObjData.get("CATEGORY"));
-                    prepareStatement.setString(3, (String) jsonObjData.get("SUB_CATEGORY"));
-                    prepareStatement.setString(4, "modify");
-                    prepareStatement.setString(5, (String) jsonObjData.get("userId"));
-                    prepareStatement.setString(6, (String) jsonObjData.get("SRNO"));
-                    return prepareStatement;
-                }, generatedKeyHolder);
+Description
+During the assessment  it was observed that the application file is accessible directly without authentication.
 
-                log.info("b");
+Impact
+Able to access file directly without authentication can lead to information disclosure.
 
-                log.info("key generated" + generatedKeyHolder.getKey());
+Recommendation
+It is recommended to implement proper session management and authorization controls for downloaded files to ensure that access is restricted to authenticated and authorized users only.
 
-                return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-            } catch (DataAccessException e) {
-                log.info("inside catch block");
-                log.info("Data access Exception occurred" + e.getMessage());
-                return 0;
-            }
+
+Test steps done for finding vulnaribility
+  Step 1: Log in using the User ID 1111111, navigate to the MOC tab, and download the sample file.
+
+   Step 2: After downloading, copy the download link and open it in a new browser or incognito window. You will be able to download the file without authentication.
+
+   Line of code written for download
+   <a href="./document/moc.csv" class="btn btn-warning"
+											target="_blank" download="moc.csv"><i
+											class="fa fa-download"></i> download sample file </a>
+									</div>
+
+         Using the Spring MVC 4.3.4 & Jsp with Java -8
