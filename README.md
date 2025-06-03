@@ -63,3 +63,13 @@ function downloadGranularFile() {
             log.error("General exception occurred", e);
         }
     }
+
+Console error I am getting
+<4 Jun, 2025 12:57:56,424 AM IST> <Error> <HTTP> <BEA-101005> <[ServletContext@66701581[app:BS_5_4_war_exploded module:BS_5_4_war_exploded path:null spec-version:4.0]] getRealPath() called with unsafe path: "/../WebContent/resources/document/granular.csv".
+weblogic.utils.io.FilenameEncoder$UnsafeFilenameException: F:\Projects\BSA Projects\BS_5.4\out\artifacts\WebContent\resources\document\granular.csv not under: F:\Projects\BSA Projects\BS_5.4\out\artifacts\BS_5_4_war_exploded
+	at weblogic.utils.io.FilenameEncoder.getSafeFile0(FilenameEncoder.java:246)
+	at weblogic.utils.io.FilenameEncoder.getSafeFile(FilenameEncoder.java:165)
+	at weblogic.servlet.internal.WebAppServletContext.getRealPath(WebAppServletContext.java:799)
+	at com.tcs.utils.DownloadFiles.downloadGranularCsv(DownloadFiles.java:41)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	Truncated. see log file for complete stacktrace
