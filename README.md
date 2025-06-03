@@ -1,68 +1,46 @@
-This is my ANgular controller code ::
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-dicgcReport.downloadGranularFile = function () {
-        console.log("Inside the download gran controller function")
-        dicgcReportFactory.downloadGranularFile().then(function (response) {
-            let file = new Blob([data], {
-                type: 'text/csv'
-            });
-            saveAs(file, "Granular" + ".csv");
-        }, function (errResponse) {
-            alert("Failed to Download Excel " + errResponse);
-        });
-    };
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 
-    This is my angular ajax call for Backend ::
-     function downloadGranularFile() {
-        let deferred = $q.defer();
-        $http.post(REST_SERVICE_URI_25, {
-            responseType: 'text/csv'
-        }).then(function (response) {
-            deferred.resolve(response.data);
-        }, function (errResponse) {
-            console.error('Error while downloading csv');
-            deferred.reject(errResponse);
-        });
-        return deferred.promise;
-    }
+@Controller
+@Slf4j
+public class DicgcReportController {
 
-    This is backened java controller code
-      @RequestMapping("/downloadGranular") 
-    public void downloadMocFile(HttpServletResponse response) throws IOException {
-        log.info("inside download granular");
-        Path path = Paths.get(("/resources/document/moc.csv")).toAbsolutePath();
-        log.info("Path is" + path );
-        Resource resource = new UrlResource(path.toUri());
+    @RequestMapping("/dicgcreport/downloadGranular")
+    public void downloadGranularCsv(HttpServletResponse response) {
+        log.info("Inside downloadGranularCsv method");
 
-        if (!resource.exists()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
-            return;
-        }
+        try {
+            // 🔽 This should point to your WebContent/resources/document/granular.csv
+            File file = new File("WebContent/resources/document/granular.csv");
 
-        response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=\"moc.csv\"");
-        StreamUtils.copy(resource.getInputStream(), response.getOutputStream());
-    }
+            if (!file.exists()) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
+                return;
+            }
 
-    for mapping I have already added dicgcreport to controller help to resolve issue what is actual issue with my thois code as of now I cannot download the file from path is there any simple way other than this as previolsy I am using thsi angular code for download any files
+            byte[] csvContent = FileUtils.readFileToByteArray(file);
 
-    Provided below code for using download pdf files just for reference 
+            response.setContentType("text/csv");
+            response.setHeader("Content-Disposition", "attachment;filename=Granular.csv");
 
-     try {
-            File file2 = new File(CleanPath.cleanString(outFilePath));
-            byte[] pdfContent = FileUtils.readFileToByteArray(file2);
-            String contentType = "application/pdf";
-            String extention = ".pdf";
-            response.setContentType(contentType);
-            response.setHeader("Content-Disposition", "attachment;filename=" + filename + extention);
-            OutputStream out1 = null;
-            out1 = response.getOutputStream();
-            out1.write(pdfContent);
-            out1.close();
+            OutputStream out = response.getOutputStream();
+            out.write(csvContent);
+            out.close();
             response.flushBuffer();
 
+            log.info("Granular CSV downloaded successfully");
+
         } catch (FileNotFoundException e) {
-            log.error("Filenot found exception occured " + e);
+            log.error("File not found exception occurred", e);
+        } catch (IOException e) {
+            log.error("IOException occurred", e);
         } catch (Exception e) {
-            log.error("Exception occured " + e);
+            log.error("General exception occurred", e);
         }
+    }
+}
