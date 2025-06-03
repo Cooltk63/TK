@@ -1,42 +1,48 @@
-package com.example.controller;
+$scope.downloadMocFile = function () {
+    $http({
+        method: 'POST',
+        url: '/yourApp/download/moc', // Update with correct context path
+        responseType: 'arraybuffer'
+    }).then(function (response) {
+        var blob = new Blob([response.data], { type: 'text/csv' });
+        var downloadUrl = window.URL.createObjectURL(blob);
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+        var a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'moc.csv';
+        document.body.appendChild(a);
+        a.click();
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+        // Clean up
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+    }, function (error) {
+        console.error("Download failed", error);
+        alert("Failed to download the file.");
+    });
+};
 
-@Controller
-@Slf4j
-public class DownloadController {
+xxxx
 
-    @GetMapping("/download/moc")
-    public ResponseEntity<Resource> downloadMocFile() {
-        try {
-            // Path to moc.csv inside WebContent/resources/document
-            Path path = Paths.get("WebContent/resources/document/moc.csv").toAbsolutePath().normalize();
-            Resource resource = new UrlResource(path.toUri());
+<button ng-click="downloadMocFile()" class="btn btn-warning">
+    <i class="fa fa-download"></i> Download Sample File
+</button>
 
-            if (!resource.exists()) {
-                log.error("File not found at: {}", path);
-                return ResponseEntity.notFound().build();
-            }
+xxxx
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType("text/csv"))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"moc.csv\"")
-                    .body(resource);
 
-        } catch (MalformedURLException e) {
-            log.error("Error accessing file", e);
-            return ResponseEntity.internalServerError().build();
-        }
+@PostMapping("/download/moc")
+public void downloadMocFile(HttpServletResponse response) throws IOException {
+    Path path = Paths.get(servletContext.getRealPath("/resources/document/moc.csv")).toAbsolutePath();
+    Resource resource = new UrlResource(path.toUri());
+
+    if (!resource.exists()) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
+        return;
     }
+
+    response.setContentType("text/csv");
+    response.setHeader("Content-Disposition", "attachment; filename=\"moc.csv\"");
+    StreamUtils.copy(resource.getInputStream(), response.getOutputStream());
 }
+
