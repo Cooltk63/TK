@@ -1,0 +1,1246 @@
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { TextField } from '@mui/material';
+import { TYPE_VALIDATION } from '../../constants/ValidationConstants';
+import useCustomSnackbar from '../../hooks/useCustomSnackbar';
+import { useTheme } from '@mui/material/styles';
+import _ from 'lodash';
+
+const FormInput = React.memo(
+  ({
+    name = '',
+    label = '',
+    value = '',
+    onChange = () => {},
+    onBlur = () => {},
+    readOnly = false,
+    error = false,
+    helperText = '',
+    inputType = 'amountDecimal', //Input type should be from TYPE_VALIDATION -> /constants/ValidationConstants
+    focus = false,
+    maxLength = 18,
+    validateOnlyOnBlur = false,
+    customStyles = {},
+    debounceDuration = 850,
+    ...props
+  }) => {
+    const inputRef = useRef(null);
+    const snackbar = useCustomSnackbar();
+    const theme = useTheme();
+    const [tempValue, setTempValue] = useState(value);
+    const leftAlignedInputTypes = useMemo(
+      () =>
+        new Set([
+          'text',
+          'inputValue',
+          'alphaInput',
+          'alphaNumeric',
+          'splAlphaNumeric',
+          'emailId',
+          'alphaNumWithSpaceTrim',
+          'alphaNumericWithSpace',
+          'certainSpecialChars',
+          'address',
+          'time',
+          'date-DD-MM-YYYY',
+          'date-YYYY-MM-DD',
+          'noSpecialChar',
+          'panNumber',
+          'tanNumber',
+          'branchCode',
+        ]),
+      []
+    );
+
+    useEffect(() => {
+      if (focus && inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        inputRef.current.style.outline = '2px solid red';
+        inputRef.current.style.borderRadius = theme.shape.borderRadius.toString() + 'px';
+        const timer = setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.style.outline = '';
+            inputRef.current.style.borderRadius = '';
+          }
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    }, [focus, theme.shape.borderRadius]);
+
+    useEffect(() => {
+      setTempValue(value);
+    }, [value]);
+
+    // Memoize the styles
+    const inputStyles = useMemo(
+      () => ({
+        '& .MuiOutlinedInput-root': {
+          '&.Mui-focused fieldset': {
+            borderColor: error ? 'red' : 'inherit',
+          },
+        },
+        ...(error && {
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'red',
+          },
+        }),
+      }),
+      [error]
+    );
+
+    // Memoize the debounced function
+    const debouncedHandleChange = useMemo(() => {
+      return _.debounce((event) => {
+        onChange(event);
+      }, debounceDuration);
+    }, [onChange, debounceDuration]);
+
+    const handleChange = (event) => {
+      const { value } = event.target;
+
+      if (!validateOnlyOnBlur) {
+        const result = TYPE_VALIDATION(inputType, value, '');
+        if (result === '') {
+          setTempValue(value);
+          debouncedHandleChange(event);
+        } else {
+          snackbar(result, 'error');
+          return;
+        }
+      } else {
+        setTempValue(value);
+        debouncedHandleChange(event);
+      }
+    };
+
+    const onBlurHandler = useCallback((event) => {
+      const { value } = event.target;
+
+      if (!validateOnlyOnBlur) {
+        return onBlur(event);
+      }
+
+      const result = TYPE_VALIDATION(inputType, value, '');
+      if (result === '') {
+        return onBlur(event);
+      }
+      snackbar(result, 'error');
+      return;
+      // Clear the input value if validation fails
+      //event.target.value = ''; // Clear the input field
+      // handleChange(event);
+    }, []);
+
+    const getTextAlignment = useMemo(() => {
+      return (inputType) => {
+        return leftAlignedInputTypes.has(inputType) ? 'left' : 'right';
+      };
+    }, [leftAlignedInputTypes]);
+
+    return (
+      <TextField
+        inputRef={inputRef}
+        fullWidth
+        type="text"
+        inputMode={inputType === 'amountDecimal' ? 'decimal' : 'text'}
+        name={name}
+        label={label}
+        value={readOnly ? value : tempValue ?? ''}
+        onChange={handleChange}
+        onBlur={onBlurHandler}
+        slotProps={{
+          htmlInput: {
+            maxLength: maxLength,
+            readOnly: readOnly,
+            sx: { textAlign: getTextAlignment(inputType) },
+          },
+        }}
+        disabled={readOnly}
+        error={error}
+        helperText={error ? helperText : ''}
+        size="small"
+        sx={{ ...inputStyles, ...customStyles }}
+        {...props}
+      />
+    );
+  }
+);
+
+export default FormInput;
+
+
+
+
+
+///////////////////////
+
+
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Alert,
+  Box,
+  Snackbar,
+  Stack,
+  CircularProgress,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from '@mui/material';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import { styled } from '@mui/material/styles';
+import lodashDebounce from 'lodash/debounce'; // We'll use this for API calls if needed, or potentially for handleChange if performance dictates
+import FormInput from '../../../../common/components/ui/FormInput';
+import useApi from '../../../../common/hooks/useApi';
+
+// Assuming these are available in your project, like in Schedule9C
+// import useApi from '../../../../common/hooks/useApi'; // Example path
+// import useCustomSnackbar from '../../../../common/hooks/useCustomSnackbar'; // Example path
+
+// --- Styled Components (similar to Schedule9C and previous Schedule10) ---
+const StyledTableCell = styled(TableCell, {
+  shouldForwardProp: (prop) => prop !== 'isFixedColumn' && prop !== 'isHeaderSticky' && prop !== 'headerBgColor',
+})(({ theme, isFixedColumn, isHeaderSticky, headerBgColor }) => ({
+  fontSize: '0.875rem',
+  padding: '8px',
+  border: '1px solidrgba(224, 224, 224, 0.13)',
+  whiteSpace: 'nowrap',
+  backgroundColor: theme.palette.background.paper, // Default for body cells
+
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: headerBgColor || theme.palette.grey[200],
+    fontWeight: 'bold',
+    textAlign: 'center',
+    position: 'sticky',
+    top: 0,
+    zIndex: isFixedColumn ? 4 : 3, // Higher zIndex for corner fixed headers
+  },
+  [`&.${tableCellClasses.body}`]: {
+    textAlign: 'left',
+    ...(isFixedColumn && {
+      position: 'sticky',
+      zIndex: 1,
+      backgroundColor: theme.palette.background.paper, // Ensure opaque for body sticky
+    }),
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme, $istotalrow, $issectionheader, $issubsectionheader }) => ({
+  '&:nth-of-type(odd)': {
+    // backgroundColor: theme.palette.action.hover, // Optional striping
+  },
+  ...($issectionheader && {
+    backgroundColor: theme.palette.grey[100],
+    '& > td, & > th': { fontWeight: 'bold', textAlign: 'left' },
+  }),
+  ...($issubsectionheader && {
+    backgroundColor: theme.palette.grey[50],
+    '& > td, & > th': { fontWeight: 'bold', fontStyle: 'italic', textAlign: 'left' },
+  }),
+  ...($istotalrow && {
+    backgroundColor: theme.palette.grey[200],
+    '& > td, & > th': { fontWeight: 'bold' },
+  }),
+}));
+
+// --- Schedule 10 Specific Configurations ---
+
+// These are the "columns" of data for each row suffix in Schedule 10
+// E.g., stcNstaff, offResidenceA, totalA, computers, totalB, grandTotal etc.
+// This list needs to be comprehensive for all data points in a row.
+const schedule10DataFields = [
+  'stcNstaff',
+  'offResidenceA',
+  'otherPremisesA',
+  'electricFitting',
+  'totalA',
+  'computers',
+  'compSoftwareInt',
+  'compSoftwareNonint',
+  'compSoftwareTotal',
+  'motor',
+  'offResidenceB',
+  'stcLho',
+  'otherPremisesB',
+  'otherMachineryPlant',
+  'totalB',
+  'totalFurnFix',
+  'landNotRev',
+  'landRev',
+  'landRevEnh',
+  'offBuildNotRev',
+  'offBuildRev',
+  'offBuildRevEnh',
+  'residQuartNotRev',
+  'residQuartRev',
+  'residQuartRevEnh',
+  'premisTotal',
+  'revtotal',
+  'totalC',
+  'premisesUnderCons',
+  'grandTotal',
+];
+
+// Fields within a row that are calculated based on other fields in THE SAME ROW
+const intraRowCalculatedFields = [
+  'totalA',
+  'compSoftwareTotal',
+  'otherMachineryPlant',
+  'totalB',
+  'totalFurnFix',
+  'premisTotal',
+  'revtotal',
+  'totalC',
+  'grandTotal',
+];
+
+// Row definitions for Schedule 10 - THIS IS THE MOST CRITICAL PART TO GET RIGHT
+// Based on common Schedule 10 structure. Adapt from your Schedule10.txt
+// - id: Unique ID for this row definition (used as key in formData)
+// - modelSuffix: The numeric suffix from your JSP field IDs (e.g., '1', '3', 'A1_i' had '2')
+// - label: Display text for the row's "Particulars" column
+// - type: 'entry' (user input), 'total' (calculated sum/difference), 'sectionHeader', 'subSectionHeader'
+// - subItemIds: For 'total' rows, array of 'id's of rows it depends on
+// - operation: For 'total' rows, 'sum' or 'subtract' or custom logic key
+// - isReadOnlyGroup: Array of schedule10DataFields that are read-only for this specific 'entry' row (if any)
+const rowDefinitionsConfig = [
+  // --- Section: Original Cost / Revalued Value ---
+  {
+    id: 'row1',
+    modelSuffix: '1',
+    srNo: 'A',
+    label: (formData) =>
+      `Total Original Cost / Revalued Value upto the end of previous year i.e. 31st March ${formData.finyearOne || ''}`,
+    type: 'entry',
+    isSectionHeaderStyle: true,
+  },
+
+  // --- Section: Addition ---
+  { id: 'header_addition', label: 'Addition', type: 'subSectionHeader' },
+  {
+    id: 'header_addition_a',
+    srNo: '(a)',
+    label: 'Original cost of items put to use during the year:',
+    type: 'subSectionHeader',
+    isMinorHeader: true,
+  },
+  { id: 'row3', modelSuffix: '3', srNo: '(i)', label: (formData) => formData.particulars3 || '', type: 'entry' },
+  { id: 'row4', modelSuffix: '4', srNo: '(ii)', label: (formData) => formData.particulars4 || '', type: 'entry' },
+  {
+    id: 'row36',
+    modelSuffix: '36',
+    srNo: '(b)',
+    label: 'Increase in value of Fixed Assets due to Current Revaluation',
+    type: 'entry',
+  },
+  {
+    id: 'row5',
+    modelSuffix: '5',
+    srNo: '(c)',
+    label: 'Original cost of items transferred from other Circles/Groups/CC Departments',
+    type: 'entry',
+  },
+  {
+    id: 'row6',
+    modelSuffix: '6',
+    srNo: '(d)',
+    label: 'Original cost of items transferred from other branches of the same Circle',
+    type: 'entry',
+  },
+  {
+    id: 'row7',
+    modelSuffix: '7',
+    srNo: 'I',
+    label: 'Total [a(i)+a(ii)+b+c+d]',
+    type: 'total',
+    subItemIds: ['row3', 'row4', 'row36', 'row5', 'row6'],
+    operation: 'sum',
+    isTotalRowStyle: true,
+  },
+
+  // --- Section: Deduction ---
+  { id: 'header_deduction', label: 'Deduction', type: 'subSectionHeader' },
+  {
+    id: 'row37',
+    modelSuffix: '37',
+    srNo: '(i)',
+    label: 'Short Valuation charged to Revaluation Reserve due to Current Downward Revaluation',
+    type: 'entry',
+  },
+  {
+    id: 'row9',
+    modelSuffix: '9',
+    srNo: '(ii)',
+    label: 'Original cost of items sold/ discarded during the year',
+    type: 'entry',
+  },
+  {
+    id: 'row33',
+    modelSuffix: '33',
+    srNo: '(iii)',
+    label: 'Projects under construction capitalised during the year',
+    type: 'entry',
+  },
+  {
+    id: 'row10',
+    modelSuffix: '10',
+    srNo: '(iv)',
+    label: 'Original cost of items transferred to other Circles/Groups/CC Departments',
+    type: 'entry',
+  },
+  {
+    id: 'row11',
+    modelSuffix: '11',
+    srNo: '(v)',
+    label: 'Original cost of items transferred to other branches in the same circle',
+    type: 'entry',
+  },
+  {
+    id: 'row12',
+    modelSuffix: '12',
+    srNo: 'II',
+    label: 'Total (i+ii+iii+iv+v)',
+    type: 'total',
+    subItemIds: ['row37', 'row9', 'row33', 'row10', 'row11'],
+    operation: 'sum',
+    isTotalRowStyle: true,
+  },
+
+  // --- Section: Net Totals ---
+  {
+    id: 'row13',
+    modelSuffix: '13',
+    srNo: 'B',
+    label: 'Net Addition (I-II)',
+    type: 'total',
+    subItemIds: ['row7', 'row12'],
+    operation: 'subtract',
+    isSectionHeaderStyle: true,
+    isTotalRowStyle: true,
+  },
+  {
+    id: 'row14',
+    modelSuffix: '14',
+    srNo: 'C',
+    label: (formData) => `Total Original Cost/ Revalued Value as at 31st March ${formData.finyearTwo || ''} (A+B)`,
+    type: 'total',
+    subItemIds: ['row1', 'row13'],
+    operation: 'sum',
+    isSectionHeaderStyle: true,
+    isTotalRowStyle: true,
+  },
+
+  // --- Section: Depreciation ---
+  { id: 'header_depreciation', label: 'Depreciation', type: 'subSectionHeader' },
+  {
+    id: 'row18',
+    modelSuffix: '18',
+    srNo: '(i)',
+    label: (formData) => `Depreciation upto the end of previous year i.e. 31st March ${formData.finyearOne || ''}`,
+    type: 'entry',
+  },
+  {
+    id: 'row34',
+    modelSuffix: '34',
+    srNo: '(ii)',
+    label: (formData) =>
+      `Short Valuation charged to depreciation upto end of previous year i.e.31st March ${formData.finyearOne || ''}`,
+    type: 'entry',
+  },
+  {
+    id: 'row38',
+    modelSuffix: '38',
+    srNo: '(iii)',
+    label: 'Depreciation on repatriation of Officials from Subsidiaries/ Associates',
+    type: 'entry',
+  },
+  {
+    id: 'row19',
+    modelSuffix: '19',
+    srNo: '(iv)',
+    label: 'Depreciation transferred from other Circles/Groups/CC Departments',
+    type: 'entry',
+  },
+  {
+    id: 'row20',
+    modelSuffix: '20',
+    srNo: '(v)',
+    label: 'Depreciation transferred from other branches of the same circle.',
+    type: 'entry',
+  },
+  {
+    id: 'row21',
+    modelSuffix: '21',
+    srNo: '(vi)',
+    label: 'Depreciation charged during the current year',
+    type: 'entry',
+  },
+  {
+    id: 'row39',
+    modelSuffix: '39',
+    srNo: '(vii)',
+    label: 'Short Valuation charged to Depreciation during the current year due to Current Revaluation',
+    type: 'entry',
+  },
+  {
+    id: 'row22',
+    modelSuffix: '22',
+    srNo: 'D',
+    label: 'Total (i+ii+iii+iv+v+vi+vii)',
+    type: 'total',
+    subItemIds: ['row18', 'row34', 'row38', 'row19', 'row20', 'row21', 'row39'],
+    operation: 'sum',
+    isTotalRowStyle: true,
+  },
+
+  // --- Section: Less Depreciation ---
+  { id: 'header_less_depreciation', label: 'Less :', type: 'subSectionHeader' },
+  {
+    id: 'row40',
+    modelSuffix: '40',
+    srNo: '(i)',
+    label: 'Past Short Valuation credited to Depreciation during the current year due to Current Upward Revaluation',
+    type: 'entry',
+  },
+  {
+    id: 'row24',
+    modelSuffix: '24',
+    srNo: '(ii)',
+    label: 'Depreciation previously provided on fixed assets sold/ discarded',
+    type: 'entry',
+  },
+  {
+    id: 'row25',
+    modelSuffix: '25',
+    srNo: '(iii)',
+    label: 'Depreciation transferred to other Circles/Groups/CC Departments',
+    type: 'entry',
+  },
+  {
+    id: 'row26',
+    modelSuffix: '26',
+    srNo: '(iv)',
+    label: 'Depreciation transferred to other branches of the same Circle.',
+    type: 'entry',
+  },
+  {
+    id: 'row27',
+    modelSuffix: '27',
+    srNo: 'E',
+    label: 'Total (i+ii+iii+iv)',
+    type: 'total',
+    subItemIds: ['row40', 'row24', 'row25', 'row26'],
+    operation: 'sum',
+    isTotalRowStyle: true,
+  },
+
+  // --- Section: Net Depreciation & Book Value ---
+  {
+    id: 'row28',
+    modelSuffix: '28',
+    srNo: 'F',
+    label: 'Net Depreciation (D-E)',
+    type: 'total',
+    subItemIds: ['row22', 'row27'],
+    operation: 'subtract',
+    isTotalRowStyle: true,
+  },
+  {
+    id: 'row29',
+    modelSuffix: '29',
+    srNo: 'G',
+    label: (formData) => `Net Book Value as at 31st March ${formData.finyearTwo || ''} (C-F)`,
+    type: 'total',
+    subItemIds: ['row14', 'row28'],
+    operation: 'subtract',
+    isSectionHeaderStyle: true,
+    isTotalRowStyle: true,
+  },
+
+  // --- Section: Sale of Assets ---
+  { id: 'row30', modelSuffix: '30', srNo: 'H', label: 'Sale Price of fixed assets', type: 'entry' },
+  {
+    id: 'row31',
+    modelSuffix: '31',
+    srNo: 'I',
+    label: 'Book Value of fixed assets sold [II (ii)-E(ii)]',
+    type: 'total',
+    subItemIds: ['row9', 'row24'],
+    operation: 'subtract_special_IIii_Eii',
+    isTotalRowStyle: true,
+  }, // Special operation needed
+  { id: 'row35', modelSuffix: '35', srNo: 'J', label: 'GST on Sale of fixed assets', type: 'entry' },
+  {
+    id: 'row32',
+    modelSuffix: '32',
+    srNo: 'K',
+    label: 'Profit/ (Loss) on sale of fixed assets [H-(I+J)]',
+    type: 'total',
+    subItemIds: ['row30', 'row31', 'row35'],
+    operation: 'custom_H_minus_IplusJ',
+    isTotalRowStyle: true,
+  }, // Special operation needed
+];
+
+// Column headers for Schedule 10 - MUST MATCH YOUR JSP
+const columnDisplayHeaders = [
+  // Group (A) Furniture & Fittings
+  { labelHtml: 'i) At STCs & Staff Colleges <br /> (For Local Head Office only)', dataField: 'stcNstaff' },
+  { labelHtml: "ii) At Officers' Residences", dataField: 'offResidenceA' },
+  { labelHtml: 'iii) At Other Premises', dataField: 'otherPremisesA' },
+  {
+    labelHtml:
+      'iv) Electric Fittings <br /> (include electric wiring, <br /> switches, sockets, other <br /> fittings & fans etc.)',
+    dataField: 'electricFitting',
+  },
+  { labelHtml: 'TOTAL (A) <br /> (i+ii+iii+iv)', dataField: 'totalA', isCalculated: true },
+  // Group (B) Machinery & Plant
+  { labelHtml: 'i) Computer Hardware', dataField: 'computers' },
+  { labelHtml: 'a. Computer Software <br /> (forming integral part of <br /> Hardware)', dataField: 'compSoftwareInt' },
+  {
+    labelHtml: 'b. Computer Software <br /> (not forming integral <br /> of Hardware)',
+    dataField: 'compSoftwareNonint',
+  },
+  { labelHtml: 'ii) Computer Software <br /> Total (a+b)', dataField: 'compSoftwareTotal', isCalculated: true },
+  { labelHtml: 'iii) Motor Vehicles', dataField: 'motor' },
+  { labelHtml: "a) At Officers' Residences", dataField: 'offResidenceB' },
+  { labelHtml: 'b) At STCs <br /> (For Local Head Office)', dataField: 'stcLho' },
+  { labelHtml: 'c) At other Premises', dataField: 'otherPremisesB' },
+  { labelHtml: 'iv) Other Machinery & Plant <br />(a+b+c)', dataField: 'otherMachineryPlant', isCalculated: true },
+  { labelHtml: 'TOTAL (B) <br /> (i+ii+iii+iv)', dataField: 'totalB', isCalculated: true },
+  // Total Furniture & Fixtures (A+B)
+  { labelHtml: 'Total Furniture & Fixtures <br /> (A+B)', dataField: 'totalFurnFix', isCalculated: true },
+  // Group (C) Premises
+  { labelHtml: '(a) Land (Not Revalued): <br /> Cost', dataField: 'landNotRev' },
+  { labelHtml: '(b) Land (Revalued): <br /> Cost', dataField: 'landRev' },
+  { labelHtml: '(c) Land (Revalued): <br /> Enhancement due to <br /> Revaluation', dataField: 'landRevEnh' },
+  { labelHtml: '(d) Office Building <br /> (Not revalued): Cost', dataField: 'offBuildNotRev' },
+  { labelHtml: '(e) Office Building <br /> (Revalued): Cost', dataField: 'offBuildRev' },
+  {
+    labelHtml: '(f) Office Building <br /> (Revalued): Enhancement <br /> due to Revaluation',
+    dataField: 'offBuildRevEnh',
+  },
+  { labelHtml: '(g) Residential Building <br /> (Not revalued): Cost', dataField: 'residQuartNotRev' },
+  { labelHtml: '(h) Residential Building <br /> (Revalued): Cost', dataField: 'residQuartRev' },
+  {
+    labelHtml: '(i) Residential Building <br /> (Revalued): Enhancement <br /> due to Revaluation',
+    dataField: 'residQuartRevEnh',
+  },
+  { labelHtml: '(j) Premises Total <br /> (a+b+d+e+g+h)', dataField: 'premisTotal', isCalculated: true },
+  { labelHtml: '(k) Revaluation Total <br /> (c+f+i)', dataField: 'revtotal', isCalculated: true },
+  { labelHtml: 'TOTAL (C) <br /> (j+k)', dataField: 'totalC', isCalculated: true },
+  { labelHtml: '(D) Projects under <br /> construction', dataField: 'premisesUnderCons' },
+  { labelHtml: 'Grand Total <br /> (A + B + C + D)', dataField: 'grandTotal', isCalculated: true },
+];
+
+// Function to generate the initial structure of formData
+const generateInitialSchedule10Data = () => {
+  const initialData = {
+    particulars3: 'Cost of new items put to use upto 3rd October 2024',
+    particulars4: 'Cost of new items put to use during 4th October 2024 to 31st March 2025',
+    finyearOne: new Date().getFullYear().toString(),
+    finyearTwo: (new Date().getFullYear() + 1).toString(),
+  };
+  rowDefinitionsConfig.forEach((rowDef) => {
+    if (rowDef.type === 'entry' || rowDef.type === 'total') {
+      // Initialize totals as well
+      initialData[rowDef.id] = {};
+      schedule10DataFields.forEach((fieldKey) => {
+        initialData[rowDef.id][fieldKey] = '0.00';
+      });
+    }
+  });
+  return initialData;
+};
+
+const Schedule10 = () => {
+  const [formData, setFormData] = useState(generateInitialSchedule10Data);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCalculating, setIsCalculating] = useState(false); // For visual feedback during calculation
+  const user = JSON.parse(localStorage.getItem('user'));
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const { callApi } = useApi(); // Mocked for now
+  const [fieldsDisabled, setFieldsDisabled] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogContent, setDialogContent] = useState({ title: '', message: '', onConfirm: () => {} });
+  const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Initial data load and calculation (if any from API)
+  useEffect(() => {
+    const checkSC10SftpData = async () => {
+      const payload = {
+        circleCode: user.circleCode,
+        qed: user.quarterEndDate,
+        reportID: '310010',
+        reportName: 'SC10',
+        reportStatus: 'A',
+      };
+
+      try {
+        const data = await callApi('/IFAMSS/SC10SFTP', payload, 'POST');
+
+        console.log('SFTP response:', data);
+
+        if (data.fileAndDataStatus === 1) {
+          // SFTP Success
+          setFormData(data?.data || {}); // Assuming `data.data` contains the schedule form values
+          setFieldsDisabled(true); // disables all inputs
+          showSnackbar('Data successfully fetched from IFAMS via SFTP.', 'success');
+          setSnackbar({
+            open: true,
+            message: 'Data successfully fetched from IFAMS via SFTP.',
+            severity: 'success',
+          });
+        } else if (data.fileAndDataStatus === 2) {
+          // File error or mismatch
+          setFieldsDisabled(true);
+          showDialog({
+            title: 'File Error',
+            message: data.message || 'Error receiving file from IFAMS.',
+            onConfirm: () => navigate(-1), // go back
+          });
+        } else if (data.fileAndDataStatus === 3) {
+          // Data already exists in DB but file was missing
+          setFieldsDisabled(true);
+          showDialog({
+            title: 'Info',
+            message: data.message || 'Data already inserted earlier from IFAMS.',
+            onConfirm: () => navigate(-1),
+          });
+        }
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: error.message || 'Error while checking SC10 SFTP data.',
+          severity: 'error',
+        });
+      }
+    };
+
+    checkSC10SftpData();
+  }, []);
+
+  useEffect(() => {
+    // In a real app, you might fetch initial data. Here, we just calculate.
+    // Simulate initial calculation being done after first render for smoothness
+    setIsLoading(true);
+    const timerId = setTimeout(() => {
+      // For Schedule 10, initial state is mostly 0.00, calculations will confirm this.
+      // If there were API data, we'd merge it here before calculating.
+      // The `calculatedData` useMemo will run automatically when formData is set.
+      // We just need to ensure the initial `formData` is processed by `calculatedData`
+      // by the time isLoading is false.
+      // The first calculation will happen in the useMemo when formData initializes.
+      // So, we might just need to set isLoading to false after a brief moment.
+      setFormData((prev) => ({ ...prev })); // Trigger useMemo with initial data
+      setIsLoading(false);
+    }, 50);
+    return () => clearTimeout(timerId);
+  }, []);
+
+  const getNum = (value) => parseFloat(value) || 0;
+
+  // Perform calculations using useMemo, similar to Schedule9C
+  const calculatedData = useMemo(() => {
+    console.time('Schedule10 Calculations');
+    // Deep clone formData to avoid mutating state directly during calculations
+    const newCalculatedData = JSON.parse(JSON.stringify(formData));
+
+    // Helper to calculate all derived totals for a given row object (mutates the passed rowObj)
+    const calculateInternalRowTotals = (rowObj) => {
+      if (!rowObj) return;
+      const p = (fieldKey) => getNum(rowObj[fieldKey]);
+
+      rowObj.totalA = (p('stcNstaff') + p('offResidenceA') + p('otherPremisesA') + p('electricFitting')).toFixed(2);
+      rowObj.compSoftwareTotal = (p('compSoftwareInt') + p('compSoftwareNonint')).toFixed(2);
+      const otherMachineryPlantVal = p('offResidenceB') + p('stcLho') + p('otherPremisesB');
+      rowObj.otherMachineryPlant = otherMachineryPlantVal.toFixed(2);
+      rowObj.totalB = (p('computers') + getNum(rowObj.compSoftwareTotal) + p('motor') + otherMachineryPlantVal).toFixed(
+        2
+      );
+      rowObj.totalFurnFix = (getNum(rowObj.totalA) + getNum(rowObj.totalB)).toFixed(2);
+      const premisTotalVal =
+        p('landNotRev') +
+        p('landRev') +
+        p('offBuildNotRev') +
+        p('offBuildRev') +
+        p('residQuartNotRev') +
+        p('residQuartRev');
+      rowObj.premisTotal = premisTotalVal.toFixed(2);
+      const revTotalVal = p('landRevEnh') + p('offBuildRevEnh') + p('residQuartRevEnh');
+      rowObj.revtotal = revTotalVal.toFixed(2);
+      rowObj.totalC = (premisTotalVal + revTotalVal).toFixed(2);
+      rowObj.grandTotal = (
+        getNum(rowObj.totalA) +
+        getNum(rowObj.totalB) +
+        getNum(rowObj.totalC) +
+        p('premisesUnderCons')
+      ).toFixed(2);
+    };
+
+    // 1. Ensure all row objects exist in newCalculatedData
+    rowDefinitionsConfig.forEach((rowDef) => {
+      if (!newCalculatedData[rowDef.id]) {
+        newCalculatedData[rowDef.id] = {};
+        schedule10DataFields.forEach((fieldKey) => {
+          newCalculatedData[rowDef.id][fieldKey] = '0.00';
+        });
+      }
+      // Copy initial input values from formData for 'entry' rows
+      if (rowDef.type === 'entry' && formData[rowDef.id]) {
+        Object.keys(formData[rowDef.id]).forEach((fieldKey) => {
+          if (schedule10DataFields.includes(fieldKey) && !intraRowCalculatedFields.includes(fieldKey)) {
+            newCalculatedData[rowDef.id][fieldKey] = formData[rowDef.id][fieldKey];
+          }
+        });
+      }
+    });
+
+    // 2. Calculate internal totals for all 'entry' rows
+    rowDefinitionsConfig.forEach((rowDef) => {
+      if (rowDef.type === 'entry') {
+        calculateInternalRowTotals(newCalculatedData[rowDef.id]);
+      }
+    });
+
+    // 3. Calculate 'total' rows based on their definitions.
+    //    This needs careful ordering or multiple passes if totals depend on other totals.
+    //    For this example, we'll iterate and assume dependencies are resolvable in one pass
+    //    by ensuring `rowDefinitionsConfig` is somewhat ordered or totals only depend on 'entry' rows or prior totals.
+    rowDefinitionsConfig.forEach((rowDef) => {
+      if (rowDef.type === 'total') {
+        const targetRow = newCalculatedData[rowDef.id];
+        schedule10DataFields.forEach((fieldKey) => {
+          let value = 0;
+          if (rowDef.operation === 'sum') {
+            rowDef.subItemIds.forEach((subId) => {
+              value += getNum(newCalculatedData[subId]?.[fieldKey]);
+            });
+          } else if (rowDef.operation === 'subtract' && rowDef.subItemIds?.length === 2) {
+            const val1 = getNum(newCalculatedData[rowDef.subItemIds[0]]?.[fieldKey]);
+            const val2 = getNum(newCalculatedData[rowDef.subItemIds[1]]?.[fieldKey]);
+            value = val1 - val2;
+          } else if (rowDef.operation === 'subtract_special_IIii_Eii') {
+            // For row I (Book Value) suffix '31'
+            // II(ii) is row9, E(ii) is row24. So I = row9 - row24 for each field.
+            const valRow9 = getNum(newCalculatedData['row9']?.[fieldKey]);
+            const valRow24 = getNum(newCalculatedData['row24']?.[fieldKey]);
+            value = valRow9 - valRow24;
+          } else if (rowDef.operation === 'custom_H_minus_IplusJ') {
+            // For row K (Profit/Loss) suffix '32'
+            // K = H - (I+J) for each field. H=row30, I=row31, J=row35
+            const valH = getNum(newCalculatedData['row30']?.[fieldKey]);
+            const valI = getNum(newCalculatedData['row31']?.[fieldKey]); // This is the result of 'subtract_special_IIii_Eii'
+            const valJ = getNum(newCalculatedData['row35']?.[fieldKey]);
+            value = valH - (valI + valJ);
+          }
+          targetRow[fieldKey] = value.toFixed(2);
+        });
+        // After summing/subtracting components, calculate internal totals for THIS total row
+        calculateInternalRowTotals(targetRow);
+      }
+    });
+    console.timeEnd('Schedule10 Calculations');
+    return newCalculatedData;
+  }, [formData]); // Dependency: recalculate whenever formData changes
+
+  const handleSubmit = async (isSaveOnly = true) => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...formData,
+        save: isSaveOnly,
+      };
+
+      const response = await saveSchedule10.request({ data: payload });
+
+      if (response.status === 200 && response.data?.status === true) {
+        setSnackbar({
+          open: true,
+          message: isSaveOnly ? 'Saved successfully!' : 'Submitted successfully!',
+          severity: 'success',
+        });
+      } else {
+        throw new Error(response.data?.message || 'Unexpected response');
+      }
+    } catch (err) {
+      setSnackbar({ open: true, message: err.message || 'Error occurred during save/submit.', severity: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleValidation = useCallback((name, value, rowId) => {
+    // Extract field key from combined name if necessary, or pass fieldKey directly
+    // For Schedule 10, validations are simpler: usually numeric.
+    const fieldKey = name; // Assuming name is the direct fieldKey like 'stcNstaff'
+    let error = '';
+    const numericRegex = /^-?\d*\.?\d{0,2}$/;
+
+    if (value !== '' && value !== '-' && !numericRegex.test(value)) {
+      error = 'Invalid number (e.g. 123.45)';
+    }
+    setErrors((prev) => ({ ...prev, [`${rowId}-${fieldKey}`]: error }));
+    return !error;
+  }, []);
+
+  // Debounced handleChange to avoid excessive re-calculations if typing fast
+  const debouncedSetFormData = useCallback(
+    lodashDebounce((rowId, fieldKey, val) => {
+      setIsCalculating(true); // Visual feedback that calculations will run
+      setFormData((prev) => {
+        const newRowData = { ...(prev[rowId] || {}), [fieldKey]: val };
+        const newFormData = { ...prev, [rowId]: newRowData };
+
+        return newFormData;
+      });
+    }, 300), // 300ms debounce
+    []
+  );
+
+  useEffect(() => {
+    if (isCalculating) {
+      // This effect runs after 'calculatedData' has been updated due to formData change.
+      setIsCalculating(false);
+    }
+  }, [calculatedData, isCalculating]);
+
+  const handleChange = useCallback(
+    (rowId, fieldKey, value) => {
+      // Optimistic UI update for the input field itself for better responsiveness
+      setFormData((prev) => ({
+        ...prev,
+        [rowId]: { ...(prev[rowId] || {}), [fieldKey]: value },
+      }));
+      // Then trigger the debounced update which will cause full recalculation via useMemo
+      debouncedSetFormData(rowId, fieldKey, value);
+    },
+    [debouncedSetFormData]
+  );
+
+  const handleBlur = useCallback(
+    (rowId, fieldKey, value) => {
+      handleValidation(fieldKey, value, rowId);
+    },
+    [handleValidation]
+  );
+
+  const showDialog = ({ title, message, onConfirm }) => {
+    setDialogOpen(true);
+    setDialogContent({ title, message, onConfirm });
+  };
+
+  // --- Rendering Logic ---
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100vh - 150px)' }}>
+        <CircularProgress /> <Typography sx={{ ml: 2 }}>Loading Schedule 10...</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 1, width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>{dialogContent.title}</DialogTitle>
+        <DialogContent>{dialogContent.message}</DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDialogOpen(false);
+              dialogContent.onConfirm();
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openSubmitDialog} onClose={() => setOpenSubmitDialog(false)}>
+        <DialogTitle>Confirm Submission</DialogTitle>
+        <DialogContent>Are you sure you want to submit Schedule 10 data?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenSubmitDialog(false)} color="inherit">
+            Close
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenSubmitDialog(false);
+              handleSaveOrSubmit(false);
+            }}
+            color="success"
+            variant="contained"
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {isCalculating && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top, 0px) + 100px)',
+            right: '10px',
+            zIndex: 1301,
+            p: 1,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            color: 'white',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '0.8rem',
+          }}
+        >
+          <CircularProgress size={14} color="inherit" sx={{ mr: 2 }} /> Calculating...
+        </Box>
+      )}
+      {Object.values(errors).some((e) => e) && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Please correct the highlighted errors.
+        </Alert>
+      )}
+      <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <Table sx={{ minWidth: 3000 }} aria-label="schedule 10 table" stickyHeader>
+          <TableHead sx={{ border: '3px solid' }}>
+            <TableRow
+              sx={{
+                position: 'sticky',
+                left: 0,
+                top: 0,
+                zIndex: 1101,
+                //backgroundColor: '#f5f5f5' /* theme.palette.background.default or similar */,
+              }}
+            >
+              <StyledTableCell
+                rowSpan={2}
+                sx={{
+                  minWidth: '50px',
+                  position: 'sticky',
+                  left: 0,
+                  top: 0,
+                  zIndex: 1101,
+                  border: '2px solid #fff',
+                  backgroundColor: (theme) => theme.palette.grey[200],
+                }}
+              >
+                <b>Sr.No</b>
+              </StyledTableCell>
+              <StyledTableCell
+                rowSpan={2}
+                sx={{
+                  minWidth: '350px',
+                  position: 'sticky',
+                  left: '50px',
+                  border: '2px solid #fff',
+                  /* Adjust based on Sr.No width */ top: 0,
+                  zIndex: 1100,
+                  backgroundColor: (theme) => theme.palette.grey[200],
+                }}
+              >
+                <b>Particulars</b>
+              </StyledTableCell>
+              <StyledTableCell
+                colSpan={5}
+                sx={{
+                  border: '2px solid #fff',
+                }}
+              >
+                <b>(A) FURNITURE & FITTINGS</b>
+              </StyledTableCell>
+              <StyledTableCell
+                colSpan={10}
+                sx={{
+                  border: '2px solid #fff',
+                }}
+              >
+                <b>(B) MACHINERY & PLANT</b>
+              </StyledTableCell>
+              {/* <StyledTableCell rowSpan={2} sx={{ minWidth: '120px' }}>
+                <b>
+                  Total Furniture & Fixtures <br /> (A+B)
+                </b>
+              </StyledTableCell> */}
+              <StyledTableCell
+                colSpan={13}
+                sx={{
+                  border: '2px solid #fff',
+                }}
+              >
+                <b>(C) PREMISES</b>
+              </StyledTableCell>
+              <StyledTableCell colSpan={2}></StyledTableCell>
+              {/* <StyledTableCell rowSpan={2} sx={{ minWidth: '120px' }}>
+                <b>
+                  (D) Projects under <br /> construction
+                </b>
+              </StyledTableCell>
+              <StyledTableCell rowSpan={2} sx={{ minWidth: '120px' }}>
+                <b>
+                  Grand Total <br /> (A + B + C + D)
+                </b>
+              </StyledTableCell> */}
+            </TableRow>
+            <TableRow>
+              {columnDisplayHeaders.map((colDef) => (
+                <StyledTableCell
+                  key={colDef.dataField}
+                  sx={{
+                    position: 'sticky',
+                    top: 10, // adjust if row height differs
+                    zIndex: 1100,
+
+                    border: '2px solid #fff',
+
+                    //backgroundColor: '#000',
+                    //color: '#fff',
+                    /* Adjust based on actual height of first header row */
+                  }}
+                  dangerouslySetInnerHTML={{ __html: colDef.labelHtml }}
+                />
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rowDefinitionsConfig.map((rowDef) => {
+              const rowKey = rowDef.id;
+              const displayDataForRow = calculatedData[rowDef.id] || {};
+              const currentFormDataForRow = formData[rowDef.id] || {};
+
+              if (rowDef.type === 'sectionHeader' || rowDef.type === 'subSectionHeader') {
+                return (
+                  <StyledTableRow
+                    key={rowKey}
+                    $issectionheader={rowDef.type === 'sectionHeader'}
+                    $issubsectionheader={rowDef.type === 'subSectionHeader'}
+                  >
+                    <StyledTableCell
+                      sx={{
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 1,
+                        backgroundColor: (theme) =>
+                          rowDef.type === 'sectionHeader' ? theme.palette.grey[100] : theme.palette.grey[50],
+                      }}
+                    >
+                      {rowDef.srNo || ''}
+                    </StyledTableCell>
+                    <StyledTableCell
+                      //colSpan={columnDisplayHeaders.length + 1}
+                      sx={{
+                        position: 'sticky',
+                        left: '50px',
+                        zIndex: 1,
+                        backgroundColor: (theme) =>
+                          rowDef.type === 'sectionHeader' ? theme.palette.grey[100] : theme.palette.grey[50],
+                      }}
+                    >
+                      <b>{typeof rowDef.label === 'function' ? rowDef.label(formData) : rowDef.label}</b>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                );
+              }
+
+              return (
+                <StyledTableRow
+                  key={rowKey}
+                  $istotalrow={rowDef.isTotalRowStyle}
+                  $issectionheader={rowDef.isSectionHeaderStyle}
+                >
+                  <StyledTableCell
+                    sx={{
+                      position: 'sticky',
+                      left: 0,
+                      zIndex: 1,
+                      backgroundColor: (theme) =>
+                        rowDef.isSectionHeaderStyle
+                          ? theme.palette.grey[100]
+                          : rowDef.isTotalRowStyle
+                          ? theme.palette.grey[100]
+                          : theme.palette.background.paper,
+                    }}
+                  >
+                    <b>{rowDef.srNo || ''}</b>
+                  </StyledTableCell>
+                  <StyledTableCell
+                    sx={{
+                      position: 'sticky',
+                      left: '50px',
+                      zIndex: 1,
+                      backgroundColor: (theme) =>
+                        rowDef.isSectionHeaderStyle
+                          ? theme.palette.grey[100]
+                          : rowDef.isTotalRowStyle
+                          ? theme.palette.grey[100]
+                          : theme.palette.background.paper,
+                    }}
+                  >
+                    <b>{typeof rowDef.label === 'function' ? rowDef.label(formData) : rowDef.label}</b>
+                  </StyledTableCell>
+                  {columnDisplayHeaders.map((colDef) => {
+                    const fieldKey = colDef.dataField;
+                    const cellKey = `${rowKey}-${fieldKey}`;
+                    const isReadOnly =
+                      rowDef.type === 'total' ||
+                      colDef.isCalculated ||
+                      (rowDef.isReadOnlyGroup && rowDef.isReadOnlyGroup.includes(fieldKey));
+                    const value = displayDataForRow[fieldKey] !== undefined ? displayDataForRow[fieldKey] : '0.00';
+                    const errorForField = errors[`${rowKey}-${fieldKey}`];
+
+                    return (
+                      <StyledTableCell key={cellKey}>
+                        <FormInput
+                          // variant="outlined"
+                          // size="small"
+                          name={`${rowKey}-${fieldKey}`} // Unique name for form handling if needed
+                          value={value}
+                          onChange={isReadOnly ? undefined : (e) => handleChange(rowDef.id, fieldKey, e.target.value)}
+                          onBlur={isReadOnly ? undefined : (e) => handleBlur(rowDef.id, fieldKey, e.target.value)}
+                          readOnly={isReadOnly || fieldsDisabled}
+                          // InputProps={{
+                          //   readOnly: isReadOnly,
+                          //   sx: { backgroundColor: isReadOnly ? '#f0f0f0' : 'white' },
+                          // }}
+                          // inputProps={{ style: { textAlign: 'right', padding: '6px 8px', width: '84px' } }}
+                          // sx={{ width: '100px' }}
+                          error={!!errorForField}
+                          helperText={errorForField}
+                        />
+                      </StyledTableCell>
+                    );
+                  })}
+                </StyledTableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {/* Add Save/Submit buttons similar to Schedule9C if needed */}
+      <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: 'center' }}>
+        <Button variant="contained" color="primary" onClick={() => handleSubmit(true)} disabled={isSubmitting}>
+          Save
+        </Button>
+        <Button variant="contained" color="secondary" onClick={() => setOpenSubmitDialog(true)} disabled={isSubmitting}>
+          Submit
+        </Button>
+      </Stack>
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+export default Schedule10;
+
+
+
