@@ -1,141 +1,46 @@
-// --- User.java (Entity) --- package com.example.auditapp.entity;
 
-import jakarta.persistence.; import java.util.;
+									Date: 
+                                    Ref. No.: 
 
-@Entity public class User { @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+Name of the Firm
+FRN No.
+GSTIN No.
+Address of the Firm
 
-private String username;
-private String email;
 
-@ElementCollection(fetch = FetchType.EAGER)
-@Enumerated(EnumType.STRING)
-private Set<Permission> permissions = new HashSet<>();
+Madam/ Dear Sir,
 
-// Getters and Setters
-public Long getId() { return id; }
-public void setId(Long id) { this.id = id; }
+EMPANELMENT OF THE FIRM
+INTIMATION
 
-public String getUsername() { return username; }
-public void setUsername(String username) { this.username = username; }
+// This is Editable
+We are glad to inform you that your firm has been empanelled as (type of assignment) in our Bank.
 
-public String getEmail() { return email; }
-public void setEmail(String email) { this.email = email; }
+2. This empanelment as (type of assignment) does not mean assignment of mandate in respect of any specific work. Assignment of specific mandate will be done and documented by the branch (es) by way of issuing separate letter of allotment of work.
 
-public Set<Permission> getPermissions() { return permissions; }
-public void setPermissions(Set<Permission> permissions) { this.permissions = permissions; }
+3. You are advised to mention the reference no. of this letter in future correspondence with the branch/ bank. Please also mention this reference no. while presenting any bill to the branch/ bank in respect of the assignment entrusted to your firm.
+// This is Editable
 
-}
 
-// --- Permission.java (Enum) --- package com.example.auditapp.entity;
+Yours faithfully, 
 
-public enum Permission { INTERNAL_AUDIT, EXTERNAL_AUDIT, PERSONAL_AUDIT }
 
-// --- UserRepository.java --- package com.example.auditapp.repository;
+(Authorised Signatory)
 
-import com.example.auditapp.entity.User; import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> { }
+I had this template inside this template editable area we need to allow user to edit and restrict other template area for editing we wanted to make this template dyanamic using the varible  or data dyanmic like
+1.Name of the Firm
+2.FRN No.
+3.GSTIN No.
+4.Address of the Firm
+5.Date
+6.Ref. No.
+7.type of assignment - Multiple assigments
 
-// --- UserService.java (Interface) --- package com.example.auditapp.service;
+this fields are dynamic that measn user providing this data for completion of template
 
-import com.example.auditapp.entity.Permission; import com.example.auditapp.entity.User;
+Now I waned the functionality using the react js & express js with MUI theme 7+ using the drag and drog like feature of tag or something i dont know what they called they feature
+this dyanic fields we able to drag and drop at Frontend & then sent data along with that field at backend then backend identify that tag and set the values received from FE & make the .pdf file or base64 data to sent to FE for display dyanmically generated pdf preview
 
-import java.util.*;
-
-public interface UserService { List<User> getAllUsers(); List<Permission> getAllPermissions(); User assignPermissions(Long userId, Set<Permission> permissions); User getUserById(Long userId); User removePermissions(Long userId, Set<Permission> permissions); User createUser(String username, String email); }
-
-// --- UserServiceImpl.java --- package com.example.auditapp.service.impl;
-
-import com.example.auditapp.entity.Permission; import com.example.auditapp.entity.User; import com.example.auditapp.repository.UserRepository; import com.example.auditapp.service.UserService; import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Service;
-
-import java.util.*;
-
-@Service public class UserServiceImpl implements UserService {
-
-@Autowired
-private UserRepository userRepository;
-
-@Override
-public List<User> getAllUsers() {
-    return userRepository.findAll();
-}
-
-@Override
-public List<Permission> getAllPermissions() {
-    return Arrays.asList(Permission.values());
-}
-
-@Override
-public User assignPermissions(Long userId, Set<Permission> permissions) {
-    User user = userRepository.findById(userId).orElseThrow();
-    user.setPermissions(permissions);
-    return userRepository.save(user);
-}
-
-@Override
-public User removePermissions(Long userId, Set<Permission> permissions) {
-    User user = userRepository.findById(userId).orElseThrow();
-    user.getPermissions().removeAll(permissions);
-    return userRepository.save(user);
-}
-
-@Override
-public User getUserById(Long userId) {
-    return userRepository.findById(userId).orElseThrow();
-}
-
-@Override
-public User createUser(String username, String email) {
-    User user = new User();
-    user.setUsername(username);
-    user.setEmail(email);
-    return userRepository.save(user);
-}
-
-}
-
-// --- UserController.java --- package com.example.auditapp.controller;
-
-import com.example.auditapp.entity.Permission; import com.example.auditapp.entity.User; import com.example.auditapp.service.UserService; import org.springframework.beans.factory.annotation.Autowired; import org.springframework.http.; import org.springframework.web.bind.annotation.;
-
-import java.util.*;
-
-@RestController @RequestMapping("/api") public class UserController {
-
-@Autowired
-private UserService userService;
-
-@GetMapping("/users")
-public ResponseEntity<List<User>> getAllUsers() {
-    return ResponseEntity.ok(userService.getAllUsers());
-}
-
-@GetMapping("/permissions")
-public ResponseEntity<List<Permission>> getAllPermissions() {
-    return ResponseEntity.ok(userService.getAllPermissions());
-}
-
-@PostMapping("/users")
-public ResponseEntity<User> createUser(@RequestBody Map<String, String> req) {
-    return ResponseEntity.ok(userService.createUser(req.get("username"), req.get("email")));
-}
-
-@PostMapping("/users/{userId}/permissions")
-public ResponseEntity<User> assignPermissions(@PathVariable Long userId, @RequestBody Map<String, List<Permission>> body) {
-    return ResponseEntity.ok(userService.assignPermissions(userId, new HashSet<>(body.get("permissions"))));
-}
-
-@GetMapping("/users/{userId}")
-public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-    return ResponseEntity.ok(userService.getUserById(userId));
-}
-
-@DeleteMapping("/users/{userId}/permissions")
-public ResponseEntity<User> removePermissions(@PathVariable Long userId, @RequestBody Map<String, List<Permission>> body) {
-    return ResponseEntity.ok(userService.removePermissions(userId, new HashSet<>(body.get("permissions"))));
-}
-
-}
-
-// --- application.properties --- spring.datasource.url=jdbc:mysql://localhost:3306/auditdb spring.datasource.username=root spring.datasource.password=root spring.jpa.hibernate.ddl-auto=update spring.jpa.show-sql=true
+correct me if I am wrong anywhere or suggest me easy and efficient and simle or less complex functionality to devlop this feature.
 
