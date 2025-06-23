@@ -1,32 +1,76 @@
+@Service
+public class PdfTemplateServiceImpl implements PdfTemplateService {
 
-									Date: {{DATE}}
-Ref. No.: {{REF}}
+    /**
+     * Generates PDF from plain text template and returns Base64.
+     *
+     * @param plainTemplate FE sent plain text with {{KEY}} placeholders
+     * @param data          Key-value pairs to replace placeholders
+     * @return Base64 string of the generated PDF
+     * @throws Exception if PDF generation fails
+     */
+    @Override
+    public String generatePdfBase64(String plainTemplate, Map<String, String> data) throws Exception {
+        // Step 1: Replace placeholders with actual values
+        String filledText = replacePlaceholders(plainTemplate, data);
 
-Name of the Firm {{FIRM_NAME}}
-FRN No.{{FIRM_NO}}
-GSTIN No.{{GSTN}}
-{{FIRM_ADDRESS}}
+        // Step 2: Convert plain text to basic HTML (replace line breaks with <br/>)
+        String htmlContent = wrapAsHtml(filledText);
+
+        // Step 3: Generate PDF from HTML
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4);
+        PdfWriter writer = PdfWriter.getInstance(document, out);
+        document.open();
+
+        InputStream htmlStream = new ByteArrayInputStream(htmlContent.getBytes(StandardCharsets.UTF_8));
+        XMLWorkerHelper.getInstance().parseXHtml(writer, document, htmlStream, StandardCharsets.UTF_8);
+
+        document.close();
+
+        // Step 4: Encode PDF as Base64
+        return Base64.getEncoder().encodeToString(out.toByteArray());
+    }
+
+    /**
+     * Replaces {{KEY}} placeholders with actual values from map
+     */
+    private String replacePlaceholders(String template, Map<String, String> data) {
+        String result = template;
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Wraps plain text as minimal HTML and replaces \n with <br/> for formatting
+     */
+    private String wrapAsHtml(String text) {
+        String htmlBody = text.replaceAll("\n", "<br/>");
+        return "<html><body style='font-family:Helvetica; font-size:12px;'>" + htmlBody + "</body></html>";
+    }
+}
 
 
-Madam/ Dear Sir,
-
-EMPANELMENT OF THE FIRM
-INTIMATION
-
-We are glad to inform you that your firm has been empanelled as {{type of assignment}} in our Bank.
-
-2. This empanelment as {{type of assignment}} does not mean assignment of mandate in respect of any specific work. Assignment of specific mandate will be done and documented by the branch (es) by way of issuing separate letter of allotment of work.
-
-3. You are advised to mention the reference no. of this letter in future correspondence with the branch/ bank. Please also mention this reference no. while presenting any bill to the branch/ bank in respect of the assignment entrusted to your firm.
+xxx
 
 
+@RestController
+@RequestMapping("/api/pdf")
+public class PdfTemplateController {
 
-Yours faithfully, 
+    @Autowired
+    private PdfTemplateService pdfTemplateService;
 
-
-(Authorised Signatory)
-
-
-above document we are getting at backend for dynamic template create or pdf generation we can say I need the functionality of backend api code
-
-FE sent the template in string like this as per above also sent me the data of this fields with same KEy sanmes as per enclosed inside each {{ }} I need to assign the FE recieved data in data name map and assign to this varible and generate the base64 string for pdf generation so I can sent to FE for previewing the dynamic generated template with proper formatting without affecting anything
+    @PostMapping("/generate")
+    public ResponseEntity<Map<String, String>> generatePdf(@RequestBody PdfTemplateRequest request) {
+        try {
+            String base64 = pdfTemplateService.generatePdfBase64(request.getTemplate(), request.getData());
+            return ResponseEntity.ok(Collections.singletonMap("base64", base64));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+}
