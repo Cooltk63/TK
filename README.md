@@ -2,38 +2,54 @@
 public class PdfTemplateServiceImpl implements PdfTemplateService {
 
     /**
-     * Generates PDF from plain text template and returns Base64.
+     * Generates PDF from plain-text template and data maps received from frontend,
+     * and returns it as Base64-encoded string.
      *
-     * @param plainTemplate FE sent plain text with {{KEY}} placeholders
-     * @param data          Key-value pairs to replace placeholders
-     * @return Base64 string of the generated PDF
-     * @throws Exception if PDF generation fails
+     * @param userData Contains the template string (with key like "template")
+     * @param dataMap Contains key-value pairs for placeholders
+     * @return Base64-encoded PDF string
+     * @throws Exception if any step fails
      */
     @Override
-    public String generatePdfBase64(String plainTemplate, Map<String, String> data) throws Exception {
-        // Step 1: Replace placeholders with actual values
-        String filledText = replacePlaceholders(plainTemplate, data);
+    public String generatePdfBase64(Map<String, Object> userData, Map<String, Object> dataMap) throws Exception {
+        // Step 1: Extract template string from userData map
+        String template = (String) userData.get("template"); // key must be "template"
 
-        // Step 2: Convert plain text to basic HTML (replace line breaks with <br/>)
+        if (template == null || template.trim().isEmpty()) {
+            throw new IllegalArgumentException("Template string is missing in userData map");
+        }
+
+        // Step 2: Convert dataMap <String, Object> to <String, String> safely
+        Map<String, String> stringDataMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : dataMap.entrySet()) {
+            if (entry.getValue() != null) {
+                stringDataMap.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
+
+        // Step 3: Replace placeholders like {{KEY}} with actual values
+        String filledText = replacePlaceholders(template, stringDataMap);
+
+        // Step 4: Convert plain text to minimal HTML (for formatting)
         String htmlContent = wrapAsHtml(filledText);
 
-        // Step 3: Generate PDF from HTML
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        // Step 5: Generate PDF using iText + XMLWorker
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         Document document = new Document(PageSize.A4);
-        PdfWriter writer = PdfWriter.getInstance(document, out);
+        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
         document.open();
 
         InputStream htmlStream = new ByteArrayInputStream(htmlContent.getBytes(StandardCharsets.UTF_8));
         XMLWorkerHelper.getInstance().parseXHtml(writer, document, htmlStream, StandardCharsets.UTF_8);
-
         document.close();
 
-        // Step 4: Encode PDF as Base64
-        return Base64.getEncoder().encodeToString(out.toByteArray());
+        // Step 6: Encode PDF bytes to Base64 and return
+        return Base64.getEncoder().encodeToString(outputStream.toByteArray());
     }
 
     /**
-     * Replaces {{KEY}} placeholders with actual values from map
+     * Replaces all placeholders in format {{KEY}} in the template string
+     * with corresponding values from the data map.
      */
     private String replacePlaceholders(String template, Map<String, String> data) {
         String result = template;
@@ -44,33 +60,11 @@ public class PdfTemplateServiceImpl implements PdfTemplateService {
     }
 
     /**
-     * Wraps plain text as minimal HTML and replaces \n with <br/> for formatting
+     * Wraps plain text as basic HTML and replaces line breaks with <br/>
+     * to preserve formatting in the final PDF.
      */
     private String wrapAsHtml(String text) {
-        String htmlBody = text.replaceAll("\n", "<br/>");
-        return "<html><body style='font-family:Helvetica; font-size:12px;'>" + htmlBody + "</body></html>";
-    }
-}
-
-
-xxx
-
-
-@RestController
-@RequestMapping("/api/pdf")
-public class PdfTemplateController {
-
-    @Autowired
-    private PdfTemplateService pdfTemplateService;
-
-    @PostMapping("/generate")
-    public ResponseEntity<Map<String, String>> generatePdf(@RequestBody PdfTemplateRequest request) {
-        try {
-            String base64 = pdfTemplateService.generatePdfBase64(request.getTemplate(), request.getData());
-            return ResponseEntity.ok(Collections.singletonMap("base64", base64));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonMap("error", e.getMessage()));
-        }
+        String htmlFormatted = text.replaceAll("\n", "<br/>");
+        return "<html><body style='font-family:Helvetica; font-size:12px;'>" + htmlFormatted + "</body></html>";
     }
 }
