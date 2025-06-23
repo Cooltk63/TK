@@ -1,26 +1,28 @@
- private boolean updateMasterList(Map<String, Object> payload)
-    {
-        log.info("inside updateMasterList");
-        Map<String, Object> data = (Map<String, Object>) payload.get("data");
-        Map<String, Object> loginuserData = (Map<String, Object>) payload.get("user");
 
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        int userId=Integer.parseInt(loginuserData.get("userId").toString());
-        MasterTemplate entity = new MasterTemplate();
+									Date: {{DATE}}
+Ref. No.: {{REF}}
 
-        try {
-            entity.setMastertemplatedata(data.get("MASTER_TEMPLATE").toString());
-            entity.setUpdatedby(userId);
-            entity.setUpdatedtime(formatter.format(currentDateTime).toString());
-            entity.setTemplateflag("F");
+Name of the Firm {{FIRM_NAME}}
+FRN No.{{FIRM_NO}}
+GSTIN No.{{GSTN}}
+{{FIRM_ADDRESS}}
 
-            MasterTemplate saved=masterTemplateRepository.save(entity);
 
-//            log.info("Returned Saved Result ::"+saved.getMastertemplateid());
-        } catch (Exception e) {
-            log.error("Exception occured while saving MasterTemplate");
-        }
+Madam/ Dear Sir,
 
-        return false;
-    }
+EMPANELMENT OF THE FIRM
+INTIMATION
+
+We are glad to inform you that your firm has been empanelled as {{type of assignment}} in our Bank.
+
+2. This empanelment as {{type of assignment}} does not mean assignment of mandate in respect of any specific work. Assignment of specific mandate will be done and documented by the branch (es) by way of issuing separate letter of allotment of work.
+
+3. You are advised to mention the reference no. of this letter in future correspondence with the branch/ bank. Please also mention this reference no. while presenting any bill to the branch/ bank in respect of the assignment entrusted to your firm.
+
+
+
+Yours faithfully, 
+
+
+(Authorised Signatory)
+
