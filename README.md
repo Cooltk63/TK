@@ -26,3 +26,7 @@ Yours faithfully,
 
 (Authorised Signatory)
 
+
+above document we are getting at backend for dynamic template create or pdf generation we can say I need the functionality of backend api code
+
+FE sent the template in string like this as per above also sent me the data of this fields with same KEy sanmes as per enclosed inside each {{ }} I need to assign the FE recieved data in data name map and assign to this varible and generate the base64 string for pdf generation so I can sent to FE for previewing the dynamic generated template with proper formatting without affecting anything
