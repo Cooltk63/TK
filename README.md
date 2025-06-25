@@ -1,20 +1,20 @@
-@GetMapping("/download.zip")
-public ResponseEntity<Resource> downloadZip(@RequestParam("path") String path) {
-    File file = new File(path);
-    if (!file.exists() || !file.getName().endsWith(".zip")) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+@GetMapping("/download")
+public ResponseEntity<byte[]> downloadZipFile(@RequestParam String year) throws IOException {
+    Path filePath = Paths.get("/media", "IAM", year, "Combined.zip");
+    File file = filePath.toFile();
+
+    System.out.println("Looking for file at: " + file.getAbsolutePath());
+
+    if (!file.exists()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
-    try {
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+    byte[] fileContent = Files.readAllBytes(filePath);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .contentLength(file.length())
-                .body(resource);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    headers.setContentLength(fileContent.length);
+    headers.setContentDisposition(ContentDisposition.attachment().filename(file.getName()).build());
 
-    } catch (IOException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
 }
