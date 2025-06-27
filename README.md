@@ -6,12 +6,12 @@ set "folder=C:\Your\Target\Folder\Path"
 
 set /a totalLines=0
 
-echo Scanning folder and subfolders: %folder%
+echo Scanning folder and subfolders for .js and .jsx files: %folder%
 echo.
 
-for /r "%folder%" %%f in (*.*) do (
+for /r "%folder%" %%f in (*.js *.jsx) do (
     if exist "%%f" (
-        for /f "tokens=1 delims=:" %%c in ('find /v /c "" "%%f"') do (
+        for /f %%c in ('find /v /c "" ^< "%%f" 2^>nul') do (
             echo File: %%f - Lines: %%c
             set /a totalLines+=%%c
         )
@@ -20,6 +20,6 @@ for /r "%folder%" %%f in (*.*) do (
 
 echo.
 echo ========================================
-echo Total number of lines in ALL files: !totalLines!
+echo Total number of lines in .js and .jsx files: !totalLines!
 echo ========================================
 pause
