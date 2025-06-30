@@ -1,29 +1,5 @@
-@echo off
-setlocal EnableDelayedExpansion
+dism /Online /Add-Package /PackagePath:"June2025_Win11_24H2_kb5060842-x64.msu"
 
-REM 🔧 Set your target folder path
-set "folder=C:\Your\Target\Folder\Path"
+dism /Online /Remove-Package /PackageName:"Package_for_RollupFix~31bf3856ad364e35~amd64~~26100.4351.1.0"
 
-set /a totalLines=0
 
-echo Scanning folder and subfolders for .js, .jsx, .ts files
-echo.
-
-REM Loop through each extension separately
-for %%x in (js jsx ts) do (
-    for /r "%folder%" %%f in (*.%%x) do (
-        if exist "%%f" (
-            for /f %%c in ('find /v /c "" ^< "%%f" 2^>nul') do (
-                REM Check that count is a number (skip if unreadable)
-                echo File: %%f - Lines: %%c
-                set /a totalLines+=%%c
-            )
-        )
-    )
-)
-
-echo.
-echo ========================================
-echo Total number of lines in .js, .jsx, .ts files: !totalLines!
-echo ========================================
-pause
