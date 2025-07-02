@@ -1,3 +1,222 @@
+package com.crs.iamservice.Service;
+
+import com.crs.iamservice.Model.CRSSettings;
+import com.crs.iamservice.Model.IAM_Email;
+import com.crs.iamservice.Repository.CRSSettingsRepository;
+import com.crs.iamservice.Repository.IAMEmailRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.Map;
+
+@Slf4j
+@Service
+public class EmailServiceImpl implements EmailService {
+
+    @Autowired
+    CRSSettingsRepository crsSettingsRepository;
+
+    @Autowired
+    IAMEmailRepository iAMEmailRepository;
+
+    @Value("${app.preIpString}")
+    private String preIpString;
+
+    @Override
+    public boolean sendEmailWithAttachment(Map<String, Object> emailParams) {
+
+        log.info("Email Params Received :{}", emailParams);
+
+        int FRN = Integer.parseInt(emailParams.get("FRN_NO").toString());
+        String toEmail = emailParams.get("FIRM_EMAIL").toString();
+        String FirmName = emailParams.get("FIRM_NAME").toString();
+        String subject = emailParams.get("SUBJECT").toString();
+        byte[] pdfBytes = (byte[]) emailParams.get("PDFDATA");
+        String fileName = emailParams.get("PDFNAME").toString();
+
+        String htmlBody = generateHtmlBody(emailParams.get("FIRM_NAME").toString(), FRN);
+        int userid = Integer.parseInt(emailParams.get("UserId").toString());
+        try {
+
+            CRSSettings crsSetting = crsSettingsRepository.getUrl("EMAIL", preIpString);
+            // Getting the Email API Key & URL from DB
+            String apiKey = crsSetting.getApiKey();
+            String apiUrl = crsSetting.getUrl();
+
+            log.info("Fetched API Key & URl from DB :APIKEY ::"+apiKey +"APIURL ::"+ apiUrl);
+
+            // Create request object with headers
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            log.info("Setting-up the connection & Parameters");
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("api_key", apiKey);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            log.info("Connection & Parameters set Successfully");
+            // Create JSON body with all fields
+            JSONObject emailRequest = buildEmailRequest(crsSetting, toEmail, FirmName, subject, htmlBody, pdfBytes, fileName);
+
+            // Write JSON to output stream
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = emailRequest.toString().getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            // Read response
+            int responseCode = connection.getResponseCode();
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder responseBuilder = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                responseBuilder.append(inputLine);
+            }
+            in.close();
+            connection.disconnect();
+
+            if (responseCode == HttpURLConnection.HTTP_ACCEPTED || responseCode == HttpURLConnection.HTTP_OK) {
+                log.info("Email sent successfully to {} with file {}", toEmail, fileName);
+                // Log success
+                logEmailStatus(FRN, userid, toEmail, emailRequest.toString(), "SUCCESS", "Delivered");
+
+                return true;
+            } else {
+                log.error("Failed to send email. Response code: {}, message: {}", responseCode, connection.getResponseMessage());
+
+                // Log failure
+                logEmailStatus(FRN, userid, toEmail, emailRequest.toString(), "FAIL", connection.getResponseMessage());
+
+                return false;
+            }
+
+        } catch (Exception e) {
+            logEmailStatus(FRN, userid, toEmail, htmlBody, "FAIL", e.getMessage());
+            log.error("Exception while sending email with attachment", e);
+            return false;
+        }
+    }
+
+    // Helper method to build the JSON payload
+    private JSONObject buildEmailRequest(CRSSettings crsSetting, String toEmail, String FirmName, String subject, String htmlContent, byte[] pdfBytes, String pdfFilename) {
+        log.info("Building Email Request");
+
+        log.info("CRSSetting : {}"+ crsSetting.getUrl());
+        log.info("CRSSetting : {}"+ crsSetting.getEmailSenderId());
+
+        JSONObject from = new JSONObject();
+        from.put("email", crsSetting.getEmailSenderId());
+        from.put("name", "CRS");
+        log.info("><><><><><>< FROM Success ><><><><><><");
+
+        JSONObject content = new JSONObject();
+        content.put("type", "HTML");
+        // need to add the content here for Email Body
+        content.put("value", htmlContent);
+        JSONArray contentArray = new JSONArray().put(content);
+        log.info("><><><><><>< CONTENT Success ><><><><><><");
+
+        JSONObject to = new JSONObject();
+        to.put("email", toEmail);
+        to.put("name", FirmName);
+        JSONArray toArray = new JSONArray().put(to);
+        log.info("><><><><><>< TO Success ><><><><><><");
+
+        JSONObject personalization = new JSONObject();
+        log.info("><><><><><>< Personalization Initialized ><><><><><><");
+        personalization.put("to", toArray);
+        personalization.put("attributes", new JSONObject(Map.of("FIRM", FirmName)));
+        personalization.put("token_to", "8693839845");
+        personalization.put("token_cc", "MSGID657243");
+        personalization.put("token_bcc", "MSGID657244");
+        JSONArray personalizations = new JSONArray().put(personalization);
+        log.info("><><><><><>< Personalization Success ><><><><><><");
+
+        JSONObject attachment = new JSONObject();
+        // Added the pdf byte[] here for Email Attachment
+        attachment.put("content", pdfBytes);
+        attachment.put("filename", pdfFilename);
+        attachment.put("type", "application/pdf");
+        attachment.put("disposition", "attachment");
+        JSONArray attachments = new JSONArray().put(attachment);
+
+        JSONObject settings = new JSONObject();
+        settings.put("open_track", true);
+        settings.put("click_track", true);
+        settings.put("unsubscribe_track", true);
+
+        JSONObject emailRequest = new JSONObject();
+        emailRequest.put("from", from);
+        emailRequest.put("subject", subject);
+        emailRequest.put("content", contentArray);
+        emailRequest.put("personalizations", personalizations);
+        emailRequest.put("attachments", attachments);
+        emailRequest.put("settings", settings);
+
+        return emailRequest;
+    }
+
+    private void logEmailStatus(int frnNo, int userId, String toEmail, String payload, String status, String remark) {
+        try {
+            IAM_Email entity = new IAM_Email();
+            entity.setFrnno(frnNo);
+            entity.setUserid(userId);
+            entity.setFrnemailid(toEmail);
+            entity.setEmaildata(payload);
+            entity.setEmaildate(new Date());
+            entity.setEmailstatus(status); // "SUCCESS" or "FAIL"
+            entity.setEmailremark(remark);
+            log.info("logging status set: {}", entity);
+            IAM_Email saveEntity=iAMEmailRepository.save(entity);
+            log.info("Email Logged ::"+saveEntity.getRmlid());
+        } catch (Exception e) {
+            log.error("Failed to log email status to DB", e);
+        }
+    }
+
+    //Generate Email Body for Sending mail
+    private String generateHtmlBody(String FIRM_NAME, int FRN_NO) {
+
+        return "<html>" +
+                "<body style='font-family:Arial,sans-serif; line-height:1.6;'>" +
+                "<h3>भारतीय स्टेट बैंक की ओर से शुभकामनाएं !</h3>" +
+                "<h4>Greetings from SBI !</h4>" +
+                "<div style='font-family: Arial, sans-serif; font-size: 14px; color: #222; line-height: 1.6;'>" +
+                "<p>Dear " + FIRM_NAME + ",</p>" +
+                "<p>We are pleased to inform you that your firm has been successfully <strong>empanelled</strong> with our bank for the role of <strong>{{ASSIGNMENT_TYPE}}</strong>.</p>" +
+                "<p>Your empanelment reference details are as follows:</p>" +
+                "<ul>" +
+                "<li><strong>FRN No.:</strong> " + FRN_NO + "</li>" +
+                "</ul>" +
+                "<p>Please keep this information for your records. Further communication regarding specific assignments or mandates will be sent by the respective branches.</p>" +
+                "<p style='color:gray;font-size:12px;'>" +
+                "कृपया इस स्वतः उत्पन्न ईमेल का उत्तर न दें।<br/>" +
+                "Please do not reply to this auto generated email." +
+                "<p>Thank you,<br/>" +
+                "<strong>Team CRS</strong></p>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+    }
+
+}
+
+
+Model:: 
+
 package com.crs.iamservice.Model;
 
 import jakarta.persistence.*;
@@ -14,7 +233,7 @@ public class IAM_Email {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "IAM_EMAIL_SEQ")
-    @SequenceGenerator(name = "IAM_EMAIL_SEQ", sequenceName = "IAM_EMAIL_SEQ", allocationSize = 1)
+    @SequenceGenerator(name = "IAM_EMAIL_SEQ" ,sequenceName ="IAM_EMAIL_SEQ",  allocationSize = 1 )
     @Column(name = "RML_ID")
     private int rmlid;
 
@@ -41,8 +260,8 @@ public class IAM_Email {
 
 }
 
-Console Output::
 
+Console Output:: 
 org.springframework.dao.DataIntegrityViolationException: could not execute statement [ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
 ] [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]; SQL [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]; constraint [FNSONLI.IAM_EMAIL_LOGS_PK]
 	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:290)
@@ -122,101 +341,3 @@ Caused by: oracle.jdbc.OracleDatabaseException: ORA-00001: unique constraint (FN
 
 	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:636)
 	... 59 common frames omitted
-
-
-Code::
-
-@Override
-    public boolean sendEmailWithAttachment(Map<String, Object> emailParams) {
-
-        log.info("Email Params Received :{}", emailParams);
-
-        int FRN = Integer.parseInt(emailParams.get("FRN_NO").toString());
-        String toEmail = emailParams.get("FIRM_EMAIL").toString();
-        String FirmName = emailParams.get("FIRM_NAME").toString();
-        String subject = emailParams.get("SUBJECT").toString();
-        byte[] pdfBytes = (byte[]) emailParams.get("PDFDATA");
-        String fileName = emailParams.get("PDFNAME").toString();
-
-        String htmlBody = generateHtmlBody(emailParams.get("FIRM_NAME").toString(), FRN);
-        int userid = Integer.parseInt(emailParams.get("UserId").toString());
-        try {
-
-            CRSSettings crsSetting = crsSettingsRepository.getUrl("EMAIL", preIpString);
-            // Getting the Email API Key & URL from DB
-            String apiKey = crsSetting.getApiKey();
-            String apiUrl = crsSetting.getUrl();
-
-            log.info("Fetched API Key & URl from DB :APIKEY ::"+apiKey +"APIURL ::"+ apiUrl);
-
-            // Create request object with headers
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            log.info("Setting-up the connection & Parameters");
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("api_key", apiKey);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-
-            log.info("Connection & Parameters set Successfully");
-            // Create JSON body with all fields
-            JSONObject emailRequest = buildEmailRequest(crsSetting, toEmail, FirmName, subject, htmlBody, pdfBytes, fileName);
-
-            // Write JSON to output stream
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = emailRequest.toString().getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            // Read response
-            int responseCode = connection.getResponseCode();
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder responseBuilder = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                responseBuilder.append(inputLine);
-            }
-            in.close();
-            connection.disconnect();
-
-            if (responseCode == HttpURLConnection.HTTP_ACCEPTED || responseCode == HttpURLConnection.HTTP_OK) {
-                log.info("Email sent successfully to {} with file {}", toEmail, fileName);
-                // Log success
-                logEmailStatus(FRN, userid, toEmail, emailRequest.toString(), "SUCCESS", "Delivered");
-
-                return true;
-            } else {
-                log.error("Failed to send email. Response code: {}, message: {}", responseCode, connection.getResponseMessage());
-
-                // Log failure
-                logEmailStatus(FRN, userid, toEmail, emailRequest.toString(), "FAIL", connection.getResponseMessage());
-
-                return false;
-            }
-
-        } catch (Exception e) {
-            logEmailStatus(FRN, userid, toEmail, htmlBody, "FAIL", e.getMessage());
-            log.error("Exception while sending email with attachment", e);
-            return false;
-        }
-    }
-
-     private void logEmailStatus(int frnNo, int userId, String toEmail, String payload, String status, String remark) {
-        try {
-            IAM_Email entity = new IAM_Email();
-            entity.setFrnno(frnNo);
-            entity.setUserid(userId);
-            entity.setFrnemailid(toEmail);
-            entity.setEmaildata(payload);
-            entity.setEmaildate(new Date());
-            entity.setEmailstatus(status); // "SUCCESS" or "FAIL"
-            entity.setEmailremark(remark);
-            log.info("logging status set: {}", entity);
-            IAM_Email saveEntity=iAMEmailRepository.save(entity);
-            log.info("Email Logged ::"+saveEntity.getRmlid());
-        } catch (Exception e) {
-            log.error("Failed to log email status to DB", e);
-        }
-    }
