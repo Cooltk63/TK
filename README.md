@@ -1,25 +1,3 @@
-package com.crs.iamservice.Service;
-
-import com.crs.iamservice.Model.CRSSettings;
-import com.crs.iamservice.Model.IAM_Email;
-import com.crs.iamservice.Repository.CRSSettingsRepository;
-import com.crs.iamservice.Repository.IAMEmailRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Map;
-
 @Slf4j
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -110,65 +88,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    // Helper method to build the JSON payload
-    private JSONObject buildEmailRequest(CRSSettings crsSetting, String toEmail, String FirmName, String subject, String htmlContent, byte[] pdfBytes, String pdfFilename) {
-        log.info("Building Email Request");
-
-        log.info("CRSSetting : {}"+ crsSetting.getUrl());
-        log.info("CRSSetting : {}"+ crsSetting.getEmailSenderId());
-
-        JSONObject from = new JSONObject();
-        from.put("email", crsSetting.getEmailSenderId());
-        from.put("name", "CRS");
-        log.info("><><><><><>< FROM Success ><><><><><><");
-
-        JSONObject content = new JSONObject();
-        content.put("type", "HTML");
-        // need to add the content here for Email Body
-        content.put("value", htmlContent);
-        JSONArray contentArray = new JSONArray().put(content);
-        log.info("><><><><><>< CONTENT Success ><><><><><><");
-
-        JSONObject to = new JSONObject();
-        to.put("email", toEmail);
-        to.put("name", FirmName);
-        JSONArray toArray = new JSONArray().put(to);
-        log.info("><><><><><>< TO Success ><><><><><><");
-
-        JSONObject personalization = new JSONObject();
-        log.info("><><><><><>< Personalization Initialized ><><><><><><");
-        personalization.put("to", toArray);
-        personalization.put("attributes", new JSONObject(Map.of("FIRM", FirmName)));
-        personalization.put("token_to", "8693839845");
-        personalization.put("token_cc", "MSGID657243");
-        personalization.put("token_bcc", "MSGID657244");
-        JSONArray personalizations = new JSONArray().put(personalization);
-        log.info("><><><><><>< Personalization Success ><><><><><><");
-
-        JSONObject attachment = new JSONObject();
-        // Added the pdf byte[] here for Email Attachment
-        attachment.put("content", pdfBytes);
-        attachment.put("filename", pdfFilename);
-        attachment.put("type", "application/pdf");
-        attachment.put("disposition", "attachment");
-        JSONArray attachments = new JSONArray().put(attachment);
-
-        JSONObject settings = new JSONObject();
-        settings.put("open_track", true);
-        settings.put("click_track", true);
-        settings.put("unsubscribe_track", true);
-
-        JSONObject emailRequest = new JSONObject();
-        emailRequest.put("from", from);
-        emailRequest.put("subject", subject);
-        emailRequest.put("content", contentArray);
-        emailRequest.put("personalizations", personalizations);
-        emailRequest.put("attachments", attachments);
-        emailRequest.put("settings", settings);
-
-        return emailRequest;
-    }
-
+   
     private void logEmailStatus(int frnNo, int userId, String toEmail, String payload, String status, String remark) {
         try {
             IAM_Email entity = new IAM_Email();
@@ -187,32 +107,6 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    //Generate Email Body for Sending mail
-    private String generateHtmlBody(String FIRM_NAME, int FRN_NO) {
-
-        return "<html>" +
-                "<body style='font-family:Arial,sans-serif; line-height:1.6;'>" +
-                "<h3>भारतीय स्टेट बैंक की ओर से शुभकामनाएं !</h3>" +
-                "<h4>Greetings from SBI !</h4>" +
-                "<div style='font-family: Arial, sans-serif; font-size: 14px; color: #222; line-height: 1.6;'>" +
-                "<p>Dear " + FIRM_NAME + ",</p>" +
-                "<p>We are pleased to inform you that your firm has been successfully <strong>empanelled</strong> with our bank for the role of <strong>{{ASSIGNMENT_TYPE}}</strong>.</p>" +
-                "<p>Your empanelment reference details are as follows:</p>" +
-                "<ul>" +
-                "<li><strong>FRN No.:</strong> " + FRN_NO + "</li>" +
-                "</ul>" +
-                "<p>Please keep this information for your records. Further communication regarding specific assignments or mandates will be sent by the respective branches.</p>" +
-                "<p style='color:gray;font-size:12px;'>" +
-                "कृपया इस स्वतः उत्पन्न ईमेल का उत्तर न दें।<br/>" +
-                "Please do not reply to this auto generated email." +
-                "<p>Thank you,<br/>" +
-                "<strong>Team CRS</strong></p>" +
-                "</div>" +
-                "</body>" +
-                "</html>";
-    }
-
-}
 
 
 Model:: 
