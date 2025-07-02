@@ -43,11 +43,6 @@ public class IAM_Email {
 
 Console Output::
 
-2025-07-02 :: 10:53:31.585 || INFO :: EmailServiceImpl.java: | 182 | ::  logging status set: com.crs.iamservice.Model.IAM_Email@1baa64ae
-2025-07-02 :: 10:53:31.644 || WARN :: SqlExceptionHelper.java: | 145 | ::  SQL Error: 1, SQLState: 23000
-2025-07-02 :: 10:53:31.644 || ERROR:: SqlExceptionHelper.java: | 150 | ::  ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
-
-2025-07-02 :: 10:53:31.654 || ERROR:: EmailServiceImpl.java: | 186 | ::  Failed to log email status to DB
 org.springframework.dao.DataIntegrityViolationException: could not execute statement [ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
 ] [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]; SQL [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]; constraint [FNSONLI.IAM_EMAIL_LOGS_PK]
 	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:290)
@@ -127,8 +122,6 @@ Caused by: oracle.jdbc.OracleDatabaseException: ORA-00001: unique constraint (FN
 
 	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:636)
 	... 59 common frames omitted
-2025-07-02 :: 10:53:31.660 || ERROR:: EmailServiceImpl.java: | 108 | ::  Exception while sending email with attachment
-
 
 
 Code::
