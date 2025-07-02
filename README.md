@@ -13,7 +13,7 @@ import java.util.Date;
 public class IAM_Email {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "IAM_EMAIL_SEQ")
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "IAM_EMAIL_SEQ")
     @SequenceGenerator(name = "IAM_EMAIL_SEQ", sequenceName = "IAM_EMAIL_SEQ", allocationSize = 1)
     @Column(name = "RML_ID")
     private int rmlid;
