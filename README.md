@@ -1,19 +1,139 @@
+package com.crs.iamservice.Model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Date;
+
+@Entity
+@Table(name="IAM_EMAIL_LOGS")
+@Getter
+@Setter
+public class IAM_Email {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "IAM_EMAIL_SEQ")
+    @SequenceGenerator(name = "IAM_EMAIL_SEQ", sequenceName = "IAM_EMAIL_SEQ", allocationSize = 1)
+    @Column(name = "RML_ID")
+    private int rmlid;
+
+    @Column(name = "FRN_NO")
+    private int frnno;
+
+    @Column(name = "USER_ID")
+    private int userid;
+
+    @Column(name = "FRN_EMAIL")
+    private String frnemailid;
+
+    @Column(name = "FRN_EMAIL_DATA")
+    private String emaildata;
+
+    @Column(name = "EMAIL_DATE")
+    private Date emaildate;
+
+    @Column(name="EMAIL_STATUS")
+    private String emailstatus;
+
+    @Column(name="EMAIL_REMARK")
+    private String emailremark;
+
+}
+
 Console Output::
-2025-07-02 :: 10:40:54.098 || ERROR:: EmailServiceImpl.java: | 189 | ::  Failed to log email status to DB
+
+2025-07-02 :: 10:53:31.585 || INFO :: EmailServiceImpl.java: | 182 | ::  logging status set: com.crs.iamservice.Model.IAM_Email@1baa64ae
+2025-07-02 :: 10:53:31.644 || WARN :: SqlExceptionHelper.java: | 145 | ::  SQL Error: 1, SQLState: 23000
+2025-07-02 :: 10:53:31.644 || ERROR:: SqlExceptionHelper.java: | 150 | ::  ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
+
+2025-07-02 :: 10:53:31.654 || ERROR:: EmailServiceImpl.java: | 186 | ::  Failed to log email status to DB
 org.springframework.dao.DataIntegrityViolationException: could not execute statement [ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
 ] [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]; SQL [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]; constraint [FNSONLI.IAM_EMAIL_LOGS_PK]
-	
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:290)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:566)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:676)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:426)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at jdk.proxy4/jdk.proxy4.$Proxy128.save(Unknown Source)
+	at com.crs.iamservice.Service.EmailServiceImpl.logEmailStatus(EmailServiceImpl.java:183)
+	at com.crs.iamservice.Service.EmailServiceImpl.sendEmailWithAttachment(EmailServiceImpl.java:107)
+	at com.crs.iamservice.Service.PdfTemplateServiceImpl.lambda$generateAllPdf$0(PdfTemplateServiceImpl.java:195)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
 Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement [ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
 ] [insert into iam_email_logs (frn_email_data,email_date,email_remark,email_status,frn_email,frn_no,user_id,rml_id) values (?,?,?,?,?,?,?,?)]
-	
+	at org.hibernate.dialect.OracleDialect.lambda$buildSQLExceptionConversionDelegate$1(OracleDialect.java:1104)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:58)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:108)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:197)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.performNonBatchedMutation(AbstractMutationExecutor.java:134)
+	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:55)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:55)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:194)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:132)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:104)
+	at org.hibernate.action.internal.EntityInsertAction.execute(EntityInsertAction.java:110)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:632)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:499)
+	at org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:371)
+	at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:41)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127)
+	at org.hibernate.internal.SessionImpl.doFlush(SessionImpl.java:1425)
+	at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:487)
+	at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2324)
+	at org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:1981)
+	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:439)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:169)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:267)
+	at org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:562)
 	... 22 common frames omitted
 Caused by: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
 
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:629)
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:563)
+	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1230)
+	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:771)
+	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:298)
+	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:511)
+	at oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:162)
+	at oracle.jdbc.driver.T4CPreparedStatement.executeForRows(T4CPreparedStatement.java:1240)
+	at oracle.jdbc.driver.OracleStatement.executeSQLStatement(OracleStatement.java:1819)
+	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1471)
+	at oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3760)
+	at oracle.jdbc.driver.OraclePreparedStatement.executeLargeUpdate(OraclePreparedStatement.java:4061)
+	at oracle.jdbc.driver.OraclePreparedStatement.executeUpdate(OraclePreparedStatement.java:4036)
+	at oracle.jdbc.driver.OraclePreparedStatementWrapper.executeUpdate(OraclePreparedStatementWrapper.java:995)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:194)
+	... 43 common frames omitted
 Caused by: oracle.jdbc.OracleDatabaseException: ORA-00001: unique constraint (FNSONLI.IAM_EMAIL_LOGS_PK) violated
+
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:636)
+	... 59 common frames omitted
+2025-07-02 :: 10:53:31.660 || ERROR:: EmailServiceImpl.java: | 108 | ::  Exception while sending email with attachment
+
+
 
 Code::
 
- @Override
+@Override
     public boolean sendEmailWithAttachment(Map<String, Object> emailParams) {
 
         log.info("Email Params Received :{}", emailParams);
@@ -90,12 +210,9 @@ Code::
         }
     }
 
-private void logEmailStatus(int frnNo, int userId, String toEmail, String payload, String status, String remark) {
+     private void logEmailStatus(int frnNo, int userId, String toEmail, String payload, String status, String remark) {
         try {
-            int Sequence= iAMEmailRepository.getsequence();
             IAM_Email entity = new IAM_Email();
-
-            entity.setRmlid(Sequence);
             entity.setFrnno(frnNo);
             entity.setUserid(userId);
             entity.setFrnemailid(toEmail);
@@ -110,48 +227,3 @@ private void logEmailStatus(int frnNo, int userId, String toEmail, String payloa
             log.error("Failed to log email status to DB", e);
         }
     }
-
-    Model Class::
-    package com.crs.iamservice.Model;
-
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Date;
-
-@Entity
-@Table(name="IAM_EMAIL_LOGS")
-@Getter
-@Setter
-public class IAM_Email {
-
-    @Id
-    @Column(name = "RML_ID")
-    private int rmlid;
-
-    @Column(name = "FRN_NO")
-    private int frnno;
-
-    @Column(name = "USER_ID")
-    private int userid;
-
-    @Column(name = "FRN_EMAIL")
-    private String frnemailid;
-
-    @Column(name = "FRN_EMAIL_DATA")
-    private String emaildata;
-
-    @Column(name = "EMAIL_DATE")
-    private Date emaildate;
-
-    @Column(name="EMAIL_STATUS")
-    private String emailstatus;
-
-    @Column(name="EMAIL_REMARK")
-    private String emailremark;
-
-}
-
-
-    I wanted to log the entry even if its fail to send email or success every time need to insert new entry not any update why i am getting the above console output error tell and how to resolve
