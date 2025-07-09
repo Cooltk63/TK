@@ -1,39 +1,61 @@
- List<Map<String, Object>> firmList = (List<Map<String, Object>>) payload.get("firms");
 
- Received values inside here as List of Map's as per below
+@Entity
+@Table(name = "IAM_FIRM_MASTER_DETAILS")
+@Getter
+@Setter
+public class Firm_Master {
 
-  "firms": [
-        {
-            "FIRM_NAME": "TRINITY ENT",
-            "FRN_NO": "45687",
-            "GSTN": "27AAHCK850D1ZK",
-            "FIRM_ADDR": "NAVI MUMBAI, BELPAUR",
-            "DATE": "31/03/2025",
-            "REF_NO": "1001",
-            "ASSIGNMENT_TYPE": "Statutory Audit",
-            "EMAIL": "tushar.khade.cbstcs@sbi.co.in.com"
-        }
-        ,
-        {
-            "FIRM_NAME": "OMEGA & CO",
-            "FRN_NO": "89456",
-            "GSTN": "29AABCU9603R1ZR",
-            "FIRM_ADDR": "BANGALORE, KARNATAKA",
-            "DATE": "31/03/2025",
-            "REF_NO": "1002",
-            "ASSIGNMENT_TYPE": "Internal Audit",
-            "EMAIL": "omega@example.com"
-        },
-        {
-            "FIRM_NAME": "ALPHA CONSULTING",
-            "FRN_NO": "10324",
-            "GSTN": "07ABCDE1234F2Z5",
-            "FIRM_ADDR": "DELHI NCR",
-            "DATE": "31/03/2025",
-            "REF_NO": "1003",
-            "ASSIGNMENT_TYPE": "Branch Audit",
-            "EMAIL": "alpha@example.com"
-        }
-    ]
+    @Column(name = "BRANCH_CODE")
+    private int branchcode;
 
-    I alredy had the model entity class for this above data tell me how will i iterate this List of map data and save insdie db using the spring data jpa and java 17
+    @Column(name = "BRNACH_NAME")
+    private String branchname;
+
+    @Column(name = "UCN_NO")
+    private int ucnno;
+
+    @Id
+    @Column(name = "FRN_NO")
+    private String frnno;
+
+    @Column(name = "FIRM_NAME")
+    private String firmname;
+
+    @Column(name = "PAN_NO")
+    private String panno;
+
+    @Column(name = "GSTN_NO")
+    private String gstnno;
+
+    @Column(name = "ADDRESS")
+    private String address;
+
+    @Column(name = "CITY")
+    private String city;
+
+    @Column(name = "STATE")
+    private String state;
+
+    @Column(name = "DISTRICT")
+    private String district;
+
+    @Column(name = "PIN_CODE")
+    private int pincode;
+
+    @Column(name = "MOB_NO")
+    private int mobno;
+
+    @Column(name = "CONTACT_PERSON")
+    private String contactperson;
+
+    @Column(name = "POC_EMAIL")
+    private String pocEmail;
+
+    @Column(name = "FIRM_TYPE")
+    private String firmtype;
+
+    @Column(name = "POC_DESIGNATION")
+    private String pocDesignation;
+
+
+}
