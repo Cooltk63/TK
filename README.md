@@ -1,7 +1,7 @@
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FirmMasterService {
@@ -10,52 +10,72 @@ public class FirmMasterService {
     private FirmMasterRepository firmMasterRepository;
 
     /**
-     * Saves firm details to the database after validating the input.
-     * Returns true if successful, false otherwise.
+     * This method takes the payload containing firm details in List<Map<String, Object>> form,
+     * maps each map to the Firm_Master entity, and saves them to the database.
+     *
+     * If a firm with the same FRN_NO (primary key) exists → it will be updated.
+     * If it doesn't exist → it will be inserted as new.
+     *
+     * @param payload The incoming data containing "firms" key with List<Map<String, Object>>.
+     * @return true if data is saved (inserted/updated), false if invalid or error.
      */
-    public boolean saveFirmMasterDetails(Map<String, Object> payload) {
+    public boolean saveOrUpdateFirmMasterDetails(Map<String, Object> payload) {
         try {
-            // 1️⃣ Validate: Check if "firms" key exists and is a non-empty list
+            // 1️⃣ Extract the "firms" list safely from the incoming payload
             Object firmsObject = payload.get("firms");
 
+            // 2️⃣ Validate that the object is indeed a List and not null/empty
             if (!(firmsObject instanceof List<?> firmsList) || firmsList.isEmpty()) {
-                // Invalid or empty list — no data to save
-                return false;
+                return false;  // No valid data → return false immediately
             }
 
-            // 2️⃣ Convert each Map to Firm_Master, skip invalid maps safely
-            List<Firm_Master> firmEntities = firmsList.stream()
-                .filter(item -> item instanceof Map)  // Ensure it's a Map
-                .map(item -> mapToFirmEntity((Map<String, Object>) item))
-                .filter(Objects::nonNull)  // Skip invalid maps that failed validation
-                .collect(Collectors.toList());
+            List<Firm_Master> firmsToSave = new ArrayList<>();
 
-            if (firmEntities.isEmpty()) {
-                // No valid entities to save
-                return false;
+            // 3️⃣ Iterate over each Map<String, Object> from the list
+            for (Object item : firmsList) {
+                if (item instanceof Map) {
+                    Map<String, Object> firmMap = (Map<String, Object>) item;
+
+                    // 4️⃣ Map the incoming map to a Firm_Master entity object
+                    Firm_Master firmEntity = mapToFirmEntity(firmMap);
+
+                    if (firmEntity != null) {
+                        // 5️⃣ Add to the list of entities to save
+                        firmsToSave.add(firmEntity);
+                    }
+                }
             }
 
-            // 3️⃣ Save all valid entities in bulk
-            firmMasterRepository.saveAll(firmEntities);
+            // 6️⃣ Check if there is any valid entity to save
+            if (!firmsToSave.isEmpty()) {
+                // 👉 This saveAll() automatically handles:
+                //    ➔ Insert if FRN_NO doesn't exist
+                //    ➔ Update if FRN_NO already exists
+                firmMasterRepository.saveAll(firmsToSave);
+                return true;  // Successfully saved/updated
+            }
 
-            return true; // ✅ Successfully saved
+            return false;  // Nothing valid to save
         } catch (Exception e) {
             e.printStackTrace();
-            return false; // ❌ Any unexpected error caught here
+            return false;  // Unexpected error during processing
         }
     }
 
     /**
-     * Maps input map to Firm_Master entity. Returns null if required fields are missing.
+     * Converts a single Map<String, Object> to a Firm_Master entity.
+     * Performs minimal validation by ensuring FRN_NO and FIRM_NAME are present.
+     *
+     * @param firmMap The incoming map with firm data.
+     * @return Firm_Master entity or null if required fields missing.
      */
     private Firm_Master mapToFirmEntity(Map<String, Object> firmMap) {
-        // Basic validation: FRN_NO and FIRM_NAME are required (you can add more if needed)
         String frnNo = getString(firmMap.get("FRN_NO"));
         String firmName = getString(firmMap.get("FIRM_NAME"));
 
+        // ❗ Basic validation: Both FRN_NO and FIRM_NAME must be present
         if (frnNo.isEmpty() || firmName.isEmpty()) {
-            // Required fields missing — skip this entry
-            return null;
+            return null;  // Skip this map — cannot save/update without key fields
         }
 
         Firm_Master firm = new Firm_Master();
@@ -80,6 +100,9 @@ public class FirmMasterService {
         return firm;
     }
 
+    /**
+     * Safely converts an Object to an int, returns 0 if conversion fails or is null.
+     */
     private int parseInt(Object obj) {
         if (obj == null) return 0;
         try {
@@ -89,6 +112,9 @@ public class FirmMasterService {
         }
     }
 
+    /**
+     * Safely converts an Object to a trimmed String, returns empty string if null.
+     */
     private String getString(Object obj) {
         return obj != null ? obj.toString().trim() : "";
     }
