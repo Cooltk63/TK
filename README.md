@@ -1,121 +1,61 @@
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-
-@Service
-public class FirmMasterService {
-
-    @Autowired
-    private FirmMasterRepository firmMasterRepository;
-
-    /**
-     * This method takes the payload containing firm details in List<Map<String, Object>> form,
-     * maps each map to the Firm_Master entity, and saves them to the database.
-     *
-     * If a firm with the same FRN_NO (primary key) exists → it will be updated.
-     * If it doesn't exist → it will be inserted as new.
-     *
-     * @param payload The incoming data containing "firms" key with List<Map<String, Object>>.
-     * @return true if data is saved (inserted/updated), false if invalid or error.
-     */
-    public boolean saveOrUpdateFirmMasterDetails(Map<String, Object> payload) {
-        try {
-            // 1️⃣ Extract the "firms" list safely from the incoming payload
-            Object firmsObject = payload.get("firms");
-
-            // 2️⃣ Validate that the object is indeed a List and not null/empty
-            if (!(firmsObject instanceof List<?> firmsList) || firmsList.isEmpty()) {
-                return false;  // No valid data → return false immediately
-            }
-
-            List<Firm_Master> firmsToSave = new ArrayList<>();
-
-            // 3️⃣ Iterate over each Map<String, Object> from the list
-            for (Object item : firmsList) {
-                if (item instanceof Map) {
-                    Map<String, Object> firmMap = (Map<String, Object>) item;
-
-                    // 4️⃣ Map the incoming map to a Firm_Master entity object
-                    Firm_Master firmEntity = mapToFirmEntity(firmMap);
-
-                    if (firmEntity != null) {
-                        // 5️⃣ Add to the list of entities to save
-                        firmsToSave.add(firmEntity);
-                    }
-                }
-            }
-
-            // 6️⃣ Check if there is any valid entity to save
-            if (!firmsToSave.isEmpty()) {
-                // 👉 This saveAll() automatically handles:
-                //    ➔ Insert if FRN_NO doesn't exist
-                //    ➔ Update if FRN_NO already exists
-                firmMasterRepository.saveAll(firmsToSave);
-                return true;  // Successfully saved/updated
-            }
-
-            return false;  // Nothing valid to save
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;  // Unexpected error during processing
-        }
+{
+  "firms": [
+    {
+      "BRANCH_CODE": 101,
+      "BRANCH_NAME": "Navi Mumbai",
+      "UCN_NO": 555,
+      "FRN_NO": "45687",
+      "FIRM_NAME": "TRINITY ENT",
+      "PAN_NO": "ABCDE1234F",
+      "GSTN": "27AAHCK850D1ZK",
+      "FIRM_ADDR": "Navi Mumbai, Belapur",
+      "CITY": "Mumbai",
+      "STATE": "Maharashtra",
+      "DISTRICT": "Thane",
+      "PIN_CODE": 400614,
+      "MOB_NO": 9988776655,
+      "CONTACT_PERSON": "John Doe",
+      "EMAIL": "tushar.khade.cbstcs@sbi.co.in.com",
+      "ASSIGNMENT_TYPE": "Statutory Audit",
+      "POC_DESIGNATION": "Partner"
+    },
+    {
+      "BRANCH_CODE": 202,
+      "BRANCH_NAME": "Bangalore Central",
+      "UCN_NO": 888,
+      "FRN_NO": "89456",
+      "FIRM_NAME": "OMEGA & CO",
+      "PAN_NO": "AABCU9603R",
+      "GSTN": "29AABCU9603R1ZR",
+      "FIRM_ADDR": "Bangalore, Karnataka",
+      "CITY": "Bangalore",
+      "STATE": "Karnataka",
+      "DISTRICT": "Bangalore Urban",
+      "PIN_CODE": 560001,
+      "MOB_NO": 9876543210,
+      "CONTACT_PERSON": "Jane Smith",
+      "EMAIL": "omega@example.com",
+      "ASSIGNMENT_TYPE": "Internal Audit",
+      "POC_DESIGNATION": "Manager"
+    },
+    {
+      "BRANCH_CODE": 303,
+      "BRANCH_NAME": "Delhi NCR",
+      "UCN_NO": 999,
+      "FRN_NO": "10324",
+      "FIRM_NAME": "ALPHA CONSULTING",
+      "PAN_NO": "ABCDE1234F",
+      "GSTN": "07ABCDE1234F2Z5",
+      "FIRM_ADDR": "Delhi NCR",
+      "CITY": "Delhi",
+      "STATE": "Delhi",
+      "DISTRICT": "New Delhi",
+      "PIN_CODE": 110001,
+      "MOB_NO": 9123456789,
+      "CONTACT_PERSON": "Ravi Kumar",
+      "EMAIL": "alpha@example.com",
+      "ASSIGNMENT_TYPE": "Branch Audit",
+      "POC_DESIGNATION": "Audit Lead"
     }
-
-    /**
-     * Converts a single Map<String, Object> to a Firm_Master entity.
-     * Performs minimal validation by ensuring FRN_NO and FIRM_NAME are present.
-     *
-     * @param firmMap The incoming map with firm data.
-     * @return Firm_Master entity or null if required fields missing.
-     */
-    private Firm_Master mapToFirmEntity(Map<String, Object> firmMap) {
-        String frnNo = getString(firmMap.get("FRN_NO"));
-        String firmName = getString(firmMap.get("FIRM_NAME"));
-
-        // ❗ Basic validation: Both FRN_NO and FIRM_NAME must be present
-        if (frnNo.isEmpty() || firmName.isEmpty()) {
-            return null;  // Skip this map — cannot save/update without key fields
-        }
-
-        Firm_Master firm = new Firm_Master();
-        firm.setBranchcode(parseInt(firmMap.get("BRANCH_CODE")));
-        firm.setBranchname(getString(firmMap.get("BRANCH_NAME")));
-        firm.setUcnno(parseInt(firmMap.get("UCN_NO")));
-        firm.setFrnno(frnNo);
-        firm.setFirmname(firmName);
-        firm.setPanno(getString(firmMap.get("PAN_NO")));
-        firm.setGstnno(getString(firmMap.get("GSTN")));
-        firm.setAddress(getString(firmMap.get("FIRM_ADDR")));
-        firm.setCity(getString(firmMap.get("CITY")));
-        firm.setState(getString(firmMap.get("STATE")));
-        firm.setDistrict(getString(firmMap.get("DISTRICT")));
-        firm.setPincode(parseInt(firmMap.get("PIN_CODE")));
-        firm.setMobno(parseInt(firmMap.get("MOB_NO")));
-        firm.setContactperson(getString(firmMap.get("CONTACT_PERSON")));
-        firm.setPocEmail(getString(firmMap.get("EMAIL")));
-        firm.setFirmtype(getString(firmMap.get("ASSIGNMENT_TYPE")));
-        firm.setPocDesignation(getString(firmMap.get("POC_DESIGNATION")));
-
-        return firm;
-    }
-
-    /**
-     * Safely converts an Object to an int, returns 0 if conversion fails or is null.
-     */
-    private int parseInt(Object obj) {
-        if (obj == null) return 0;
-        try {
-            return Integer.parseInt(obj.toString());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    /**
-     * Safely converts an Object to a trimmed String, returns empty string if null.
-     */
-    private String getString(Object obj) {
-        return obj != null ? obj.toString().trim() : "";
-    }
+  ]
 }
