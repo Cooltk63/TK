@@ -1,61 +1,84 @@
-{
-  "firms": [
-    {
-      "BRANCH_CODE": 101,
-      "BRANCH_NAME": "Navi Mumbai",
-      "UCN_NO": 555,
-      "FRN_NO": "45687",
-      "FIRM_NAME": "TRINITY ENT",
-      "PAN_NO": "ABCDE1234F",
-      "GSTN": "27AAHCK850D1ZK",
-      "FIRM_ADDR": "Navi Mumbai, Belapur",
-      "CITY": "Mumbai",
-      "STATE": "Maharashtra",
-      "DISTRICT": "Thane",
-      "PIN_CODE": 400614,
-      "MOB_NO": 9988776655,
-      "CONTACT_PERSON": "John Doe",
-      "EMAIL": "tushar.khade.cbstcs@sbi.co.in.com",
-      "ASSIGNMENT_TYPE": "Statutory Audit",
-      "POC_DESIGNATION": "Partner"
-    },
-    {
-      "BRANCH_CODE": 202,
-      "BRANCH_NAME": "Bangalore Central",
-      "UCN_NO": 888,
-      "FRN_NO": "89456",
-      "FIRM_NAME": "OMEGA & CO",
-      "PAN_NO": "AABCU9603R",
-      "GSTN": "29AABCU9603R1ZR",
-      "FIRM_ADDR": "Bangalore, Karnataka",
-      "CITY": "Bangalore",
-      "STATE": "Karnataka",
-      "DISTRICT": "Bangalore Urban",
-      "PIN_CODE": 560001,
-      "MOB_NO": 9876543210,
-      "CONTACT_PERSON": "Jane Smith",
-      "EMAIL": "omega@example.com",
-      "ASSIGNMENT_TYPE": "Internal Audit",
-      "POC_DESIGNATION": "Manager"
-    },
-    {
-      "BRANCH_CODE": 303,
-      "BRANCH_NAME": "Delhi NCR",
-      "UCN_NO": 999,
-      "FRN_NO": "10324",
-      "FIRM_NAME": "ALPHA CONSULTING",
-      "PAN_NO": "ABCDE1234F",
-      "GSTN": "07ABCDE1234F2Z5",
-      "FIRM_ADDR": "Delhi NCR",
-      "CITY": "Delhi",
-      "STATE": "Delhi",
-      "DISTRICT": "New Delhi",
-      "PIN_CODE": 110001,
-      "MOB_NO": 9123456789,
-      "CONTACT_PERSON": "Ravi Kumar",
-      "EMAIL": "alpha@example.com",
-      "ASSIGNMENT_TYPE": "Branch Audit",
-      "POC_DESIGNATION": "Audit Lead"
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class ExcelGenerator {
+
+    public static void generateExcel(List<Map<String, Object>> dataList, OutputStream outputStream) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Data");
+
+            if (dataList == null || dataList.isEmpty()) {
+                workbook.write(outputStream);
+                return;
+            }
+
+            // Extract headers from first row keys
+            Set<String> headers = dataList.get(0).keySet();
+            Row headerRow = sheet.createRow(0);
+
+            int colIndex = 0;
+            for (String header : headers) {
+                Cell cell = headerRow.createCell(colIndex++);
+                cell.setCellValue(header);
+                CellStyle style = workbook.createCellStyle();
+                Font font = workbook.createFont();
+                font.setBold(true);
+                style.setFont(font);
+                cell.setCellStyle(style);
+            }
+
+            // Populate rows
+            int rowIndex = 1;
+            for (Map<String, Object> rowData : dataList) {
+                Row row = sheet.createRow(rowIndex++);
+                colIndex = 0;
+                for (String header : headers) {
+                    Cell cell = row.createCell(colIndex++);
+                    Object value = rowData.get(header);
+                    if (value instanceof Number) {
+                        cell.setCellValue(Double.parseDouble(value.toString()));
+                    } else {
+                        cell.setCellValue(value != null ? value.toString() : "");
+                    }
+                }
+            }
+
+            // Auto-size columns
+            for (int i = 0; i < headers.size(); i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(outputStream);
+        }
     }
-  ]
+}
+
+
+
+xxxx
+
+@RestController
+@RequestMapping("/api/excel")
+public class ExcelDownloadController {
+
+    @PostMapping("/download")
+    public ResponseEntity<byte[]> downloadExcel(@RequestBody List<Map<String, Object>> dataList) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        // Generate Excel file
+        ExcelGenerator.generateExcel(dataList, outputStream);
+
+        byte[] excelBytes = outputStream.toByteArray();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "data.xlsx");
+
+        return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
+    }
 }
