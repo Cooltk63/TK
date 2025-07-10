@@ -1,6 +1,7 @@
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -17,22 +18,29 @@ public class ExcelGenerator {
                 return;
             }
 
-            // Extract headers from first row keys
             Set<String> headers = dataList.get(0).keySet();
             Row headerRow = sheet.createRow(0);
 
+            // 🔶 Create Header Style with Border and Bold Font
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            addCellBorders(headerStyle);
+
+            // Create Header Cells
             int colIndex = 0;
             for (String header : headers) {
                 Cell cell = headerRow.createCell(colIndex++);
                 cell.setCellValue(header);
-                CellStyle style = workbook.createCellStyle();
-                Font font = workbook.createFont();
-                font.setBold(true);
-                style.setFont(font);
-                cell.setCellStyle(style);
+                cell.setCellStyle(headerStyle);
             }
 
-            // Populate rows
+            // 🔶 Create Data Cell Style with Border
+            CellStyle dataStyle = workbook.createCellStyle();
+            addCellBorders(dataStyle);
+
+            // Populate Data Rows
             int rowIndex = 1;
             for (Map<String, Object> rowData : dataList) {
                 Row row = sheet.createRow(rowIndex++);
@@ -40,11 +48,14 @@ public class ExcelGenerator {
                 for (String header : headers) {
                     Cell cell = row.createCell(colIndex++);
                     Object value = rowData.get(header);
+
                     if (value instanceof Number) {
                         cell.setCellValue(Double.parseDouble(value.toString()));
                     } else {
                         cell.setCellValue(value != null ? value.toString() : "");
                     }
+
+                    cell.setCellStyle(dataStyle);
                 }
             }
 
@@ -56,29 +67,12 @@ public class ExcelGenerator {
             workbook.write(outputStream);
         }
     }
-}
 
-
-
-xxxx
-
-@RestController
-@RequestMapping("/api/excel")
-public class ExcelDownloadController {
-
-    @PostMapping("/download")
-    public ResponseEntity<byte[]> downloadExcel(@RequestBody List<Map<String, Object>> dataList) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        // Generate Excel file
-        ExcelGenerator.generateExcel(dataList, outputStream);
-
-        byte[] excelBytes = outputStream.toByteArray();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "data.xlsx");
-
-        return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
+    // 🔶 Helper: Add Thin Borders to CellStyle
+    private static void addCellBorders(CellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
     }
 }
