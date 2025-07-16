@@ -1,8 +1,127 @@
- Entity Not Exists Inserting Data::OMEGA & CO
-2025-07-16 :: 18:06:33.810 || WARN :: SqlExceptionHelper.java: | 145 | ::  SQL Error: 1722, SQLState: 42000
-2025-07-16 :: 18:06:33.810 || ERROR:: SqlExceptionHelper.java: | 150 | ::  ORA-01722: invalid number
+Model Class:
+package com.crs.iamservice.Model;
 
-2025-07-16 :: 18:06:33.824 || ERROR:: EmpanelmentServiceImpl.java: | 457 | ::  Exception Occurred Message::could not execute statement [ORA-01722: invalid number
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Date;
+
+@Entity
+@Table(name = "IAM_REQUEST_MASTER_LIST")
+@Getter
+@Setter
+public class IAM_Request_MasterList {
+
+    @Column(name = "UCN_NO")
+    String ucnno;
+
+    @Column(name = "FRN_NO")
+    String frnno;
+
+    @Column(name = "FIRM_NAME")
+    String firmname;
+
+    @Column(name = "PAN_NO")
+    String panno;
+
+    @Column(name = "GSTN_NO")
+    String gstnno;
+
+    @Column(name = "ADDRESS")
+    String address;
+
+    @Column(name = "CITY")
+    String city;
+
+    @Column(name = "STATE")
+    String state;
+
+    @Column(name = "DISTRICT")
+    String district;
+
+    @Column(name = "PIN_CODE")
+    String pincode;
+
+    @Column(name = "MOB_NO")
+    String mobno;
+
+    @Column(name = "CONTACT_PERSON")
+    String contactperson;
+
+    @Column(name = "POC_EMAIL")
+    String pcemail;
+
+    @Column(name = "FIRM_TYPE")
+    String firmtype;
+
+    @Column(name = "POC_DESIGNATION")
+    String podesignation;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "REQUEST_ID", insertable = false, updatable = false)
+    int requestid;
+
+    @Column(name = "REQUEST_CREATED_BY")
+    String requestcreatedby;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "REQUEST_CREATED_TIMESTAMP")
+    Date requestcreatedtimestamp;
+
+    @Column(name = "REQUEST_RESOLVED_BY")
+    String requestresolvedby;
+
+    @Column(name = "REQUEST_RESOLVED_TIMESTAMP")
+    Date requestresolvedtimestamp;
+
+    @Column(name = "REQUEST_STATUS")
+    String requeststatus;
+
+    @Column(name = "REQUEST_TYPE")
+    String requesttype;
+
+    @Column(name = "REQUEST_EMPANELMENT_TYPE")
+    String requestempanelmenttype;
+
+    @Column(name = "REQUEST_EMPANELMENT_SUB_TYPE")
+    String requestempanelmentsubtype;
+
+}
+
+
+Service Logic::
+Optional<IAM_Request_MasterList> existingOpt =
+                                    requestMasterListRepository.findByFrnnoAndRequestempanelmenttypeAndRequestempanelmentsubtype(
+                                            firmEntity.getFrnno(),
+                                            firmEntity.getRequestempanelmenttype(),
+                                            firmEntity.getRequestempanelmentsubtype()
+                                    );
+                            if (existingOpt.isPresent()) {
+                                log.info("Entity Exists ::" + existingOpt.get().getFirmname());
+                                IAM_Request_MasterList existing = existingOpt.get();
+                                //  Update logic here (skipped as requested)
+                                requestMasterListRepository.save(existing);
+                            } else {
+                                log.info("Entity Not Exists Inserting Data::" + firmEntity.getFirmname());
+                                //  Insert logic
+                                requestMasterListRepository.save(firmEntity);
+                            }
+
+
+       Repository Code :;
+ Optional<IAM_Request_MasterList> findByFrnnoAndRequestempanelmenttypeAndRequestempanelmentsubtype(
+            String frnno,
+            String requestempanelmenttype,
+            String requestempanelmentsubtype
+    );
+
+       Error :
+
+       025-07-16 :: 18:17:54.449 || WARN :: SqlExceptionHelper.java: | 145 | ::  SQL Error: 1722, SQLState: 42000
+2025-07-16 :: 18:17:54.449 || ERROR:: SqlExceptionHelper.java: | 150 | ::  ORA-01722: invalid number
+
 org.springframework.dao.InvalidDataAccessResourceUsageException: could not execute statement [ORA-01722: invalid number
 ] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,default)]; SQL [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,default)]
 	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:277)
@@ -150,6 +269,10 @@ Caused by: [SQL INCLUDES EXPRESSIONS ADDED BY THE ORACLE JDBC DRIVER],Error : 17
 
 	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:636)
 	... 124 more
+2025-07-16 :: 18:17:54.461 || ERROR:: EmpanelmentServiceImpl.java: | 457 | ::  Exception Occurred Message::could not execute statement [ORA-01722: invalid number
 ] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,default)]; SQL [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,default)]
-2025-07-16 :: 18:06:33.825 || ERROR:: EmpanelmentServiceImpl.java: | 458 | ::  Exception Message::{}org.hibernate.exception.SQLGrammarException: could not execute statement [ORA-01722: invalid number
+2025-07-16 :: 18:17:54.461 || ERROR:: EmpanelmentServiceImpl.java: | 458 | ::  Exception Message::{}org.hibernate.exception.SQLGrammarException: could not execute statement [ORA-01722: invalid number
 ] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,default)]
+
+
+
