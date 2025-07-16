@@ -1,66 +1,181 @@
-INSERT INTO YOUR_TABLE_NAME (
-    REQUEST_ID, UCN_NO, REQUEST_CREATED_TIMESTAMP, REQUEST_RESOLVED_TIMESTAMP,
-    CONTACT_PERSON, ADDRESS, MOB_NO, FIRM_TYPE, POC_DESIGNATION, PIN_CODE,
-    CITY, GSTN_NO, PAN_NO, FIRM_NAME, REQUEST_EMPANELMENT_SUB_TYPE,
-    FRN_NO, REQUEST_EMPANELMENT_TYPE, REQUEST_TYPE, REQUEST_BATCH_ID,
-    REQUEST_CREATED_BY, REQUEST_RESOLVED_BY, REQUEST_STATUS, STATE, DISTRICT, POC_EMAIL
-) VALUES
--- Row 1
-(100001, 123456789012345678, SYSTIMESTAMP, SYSTIMESTAMP + 2,
- 'Amit Shah', '12 MG Road, Pune', '9876543210', 'LLP', 'Partner', '411001',
- 'Pune', '27AAECS1234F1Z3', 'ABCDE1234F', 'Tech Solutions LLP', 'Engineering',
- 'FRN1001', 'Fresh', 'Online', 'BATCH001', 'admin', 'approver1', 'Approved', 'Maharashtra', 'Pune', 'amit.shah@example.com'),
+Service Logic::
+public ResponseEntity<ResponseVO<List<Map<String, Object>>>> fetchRequest(Map<String, Object> payload) {
+        ResponseVO<List<Map<String, Object>>> responseVO = new ResponseVO<>();
 
--- Row 2
-(100002, 223456789012345679, SYSTIMESTAMP - 3, SYSTIMESTAMP - 1,
- 'Sneha Patil', '5th Floor, Infotech Park, Nagpur', '9123456789', 'Private Ltd', 'Manager', '440001',
- 'Nagpur', '27BBECS4321D2Z4', 'BCDPE4321F', 'InnovaTech Pvt Ltd', 'IT Services',
- 'FRN1002', 'Renewal', 'Offline', 'BATCH002', 'user1', 'approver2', 'Pending', 'Maharashtra', 'Nagpur', 'sneha.patil@example.com'),
+        log.info("Inside fetching request Data");
+        try {
+            responseVO.setStatusCode(HttpStatus.OK.value());
+            responseVO.setMessage("Success fetched Pending Request Data");
+            responseVO.setResult(requestMasterListRepository.findAllByRequeststatus("1"));
+        } catch (NullPointerException e) {
+            responseVO.setStatusCode(HttpStatus.OK.value());
+            responseVO.setMessage("Failed to fetched Active FRN Data");
+            responseVO.setResult(null);
 
--- Row 3
-(100003, 323456789012345680, SYSTIMESTAMP - 5, NULL,
- 'Rahul Verma', 'Sector 21, Noida', '9988776655', 'Proprietorship', 'Owner', '201301',
- 'Noida', '09AABCU3456M1Z2', 'AZTVE9876L', 'Verma Traders', 'Retail',
- 'FRN1003', 'Fresh', 'Online', 'BATCH003', 'admin', NULL, 'In Progress', 'Uttar Pradesh', 'Gautam Buddha Nagar', 'rahul.verma@example.com'),
+        }
 
--- Row 4
-(100004, 423456789012345681, SYSTIMESTAMP - 1, SYSTIMESTAMP,
- 'Priya Nair', 'MG Road, Ernakulam', '9753124680', 'LLP', 'CEO', '682016',
- 'Ernakulam', '32AACCN1234F2Z1', 'CQTVF2345P', 'GreenTech LLP', 'Consultancy',
- 'FRN1004', 'Renewal', 'Offline', 'BATCH004', 'user2', 'approver3', 'Rejected', 'Kerala', 'Ernakulam', 'priya.nair@example.com'),
 
--- Row 5
-(100005, 523456789012345682, SYSTIMESTAMP - 10, SYSTIMESTAMP - 7,
- 'Alok Kumar', 'Near Rajendra Nagar, Patna', '9812345678', 'Partnership', 'Partner', '800016',
- 'Patna', '10AABCA3214H3Z9', 'BNZPK6754R', 'Bihar Services', 'Auditing',
- 'FRN1005', 'Fresh', 'Online', 'BATCH005', 'admin', 'approver1', 'Approved', 'Bihar', 'Patna', 'alok.kumar@example.com'),
+       Repository code::
+       @Repository
+public interface RequestMasterListRepository extends JpaRepository<IAM_Request_MasterList, Integer> {
+    List<Map<String, Object>> findAllByRequeststatus(String requeststatus);
+}
 
--- Row 6
-(100006, 623456789012345683, SYSTIMESTAMP - 6, NULL,
- 'Deepika Singh', 'Sector 62, Gurgaon', '9001234567', 'Private Ltd', 'CFO', '122001',
- 'Gurgaon', '06AACCD1234F4Z6', 'AZDFE8765M', 'Singh Finance Pvt Ltd', 'Finance',
- 'FRN1006', 'Renewal', 'Online', 'BATCH006', 'user3', NULL, 'In Progress', 'Haryana', 'Gurgaon', 'deepika.singh@example.com'),
+Model Class::
+Entity
+@Table(name = "IAM_REQUEST_MASTER_LIST")
+@Getter
+@Setter
+public class IAM_Request_MasterList {
 
--- Row 7
-(100007, 723456789012345684, SYSTIMESTAMP - 8, SYSTIMESTAMP - 4,
- 'Manish Mehta', 'Lal Baug, Mumbai', '9823456780', 'Proprietorship', 'Owner', '400012',
- 'Mumbai', '27AACCM5678K1Z0', 'MNZPK7654R', 'Mehta Electricals', 'Maintenance',
- 'FRN1007', 'Fresh', 'Offline', 'BATCH007', 'admin', 'approver2', 'Approved', 'Maharashtra', 'Mumbai', 'manish.mehta@example.com'),
+    @Column(name = "UCN_NO")
+    String ucnno;
 
--- Row 8
-(100008, 823456789012345685, SYSTIMESTAMP - 2, NULL,
- 'Neha Joshi', 'BTM Layout, Bangalore', '9745123480', 'LLP', 'Co-founder', '560076',
- 'Bangalore', '29AAACN7890L2Z5', 'BTYPK9876N', 'NTech LLP', 'Technology',
- 'FRN1008', 'Renewal', 'Online', 'BATCH008', 'user4', NULL, 'In Progress', 'Karnataka', 'Bangalore Urban', 'neha.joshi@example.com'),
+    @Column(name = "FRN_NO")
+    String frnno;
 
--- Row 9
-(100009, 923456789012345686, SYSTIMESTAMP - 1, SYSTIMESTAMP,
- 'Kiran Deshmukh', 'Civil Lines, Nagpur', '9845001234', 'Private Ltd', 'Director', '440001',
- 'Nagpur', '27AAABD5432E1Z6', 'KLMPF8765T', 'Deshmukh Tech Pvt Ltd', 'Software',
- 'FRN1009', 'Fresh', 'Offline', 'BATCH009', 'admin', 'approver1', 'Approved', 'Maharashtra', 'Nagpur', 'kiran.deshmukh@example.com'),
+    @Column(name = "FIRM_NAME")
+    String firmname;
 
--- Row 10
-(100010, 1023456789012345687, SYSTIMESTAMP - 12, SYSTIMESTAMP - 5,
- 'Anita Reddy', 'Banjara Hills, Hyderabad', '9876012345', 'LLP', 'Managing Partner', '500034',
- 'Hyderabad', '36AAECR1234F5Z9', 'RWTPE5432G', 'Reddy Legal LLP', 'Legal',
- 'FRN1010', 'Renewal', 'Online', 'BATCH010', 'user5', 'approver2', 'Pending', 'Telangana', 'Hyderabad', 'anita.reddy@example.com');
+    @Column(name = "PAN_NO")
+    String panno;
+
+    @Column(name = "GSTN_NO")
+    String gstnno;
+
+    @Column(name = "ADDRESS")
+    String address;
+
+    @Column(name = "CITY")
+    String city;
+
+    @Column(name = "STATE")
+    String state;
+
+    @Column(name = "DISTRICT")
+    String district;
+
+    @Column(name = "PIN_CODE")
+    String pincode;
+
+    @Column(name = "MOB_NO")
+    String mobno;
+
+    @Column(name = "CONTACT_PERSON")
+    String contactperson;
+
+    @Column(name = "POC_EMAIL")
+    String pcemail;
+
+    @Column(name = "FIRM_TYPE")
+    String firmtype;
+
+    @Column(name = "POC_DESIGNATION")
+    String podesignation;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "REQUEST_ID")
+    String requestid;
+
+    @Column(name = "REQUEST_CREATED_BY")
+    String requestcreatedby;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "REQUEST_CREATED_TIMESTAMP")
+    Date requestcreatedtimestamp;
+
+    @Column(name = "REQUEST_RESOLVED_BY")
+    String requestresolvedby;
+
+    @Column(name = "REQUEST_RESOLVED_TIMESTAMP")
+    Date requestresolvedtimestamp;
+
+    @Column(name = "REQUEST_STATUS")
+    String requeststatus;
+
+    @Column(name = "REQUEST_TYPE")
+    String requesttype;
+
+    @Column(name = "REQUEST_EMPANELMENT_TYPE")
+    String requestempanelmenttype;
+
+    @Column(name = "REQUEST_EMPANELMENT_SUB_TYPE")
+    String requestempanelmentsubtype;
+
+    Error getting :
+    Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'empanelmentController' defined in file [F:\Projects\CRS Projects\CRS_IAM\backend\IAMService\target\classes\com\crs\iamservice\Controller\EmpanelmentController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'empanelmentServiceImpl' defined in file [F:\Projects\CRS Projects\CRS_IAM\backend\IAMService\target\classes\com\crs\iamservice\Service\EmpanelmentServiceImpl.class]: Unsatisfied dependency expressed through constructor parameter 3: Error creating bean with name 'RequestService': Unsatisfied dependency expressed through field 'requestMasterListRepository': Error creating bean with name 'requestMasterListRepository' defined in com.crs.iamservice.Repository.RequestMasterListRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Could not create query for public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); Reason: Failed to create query for method public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); No property 'empty' found for type 'IAM_Request_MasterList'
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:795)
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:237)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1357)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:962)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:624)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
+	at com.crs.iamservice.IamServiceApplication.main(IamServiceApplication.java:10)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'empanelmentServiceImpl' defined in file [F:\Projects\CRS Projects\CRS_IAM\backend\IAMService\target\classes\com\crs\iamservice\Service\EmpanelmentServiceImpl.class]: Unsatisfied dependency expressed through constructor parameter 3: Error creating bean with name 'RequestService': Unsatisfied dependency expressed through field 'requestMasterListRepository': Error creating bean with name 'requestMasterListRepository' defined in com.crs.iamservice.Repository.RequestMasterListRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Could not create query for public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); Reason: Failed to create query for method public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); No property 'empty' found for type 'IAM_Request_MasterList'
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:795)
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:237)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1357)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1443)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1353)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:904)
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:782)
+	... 22 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'RequestService': Unsatisfied dependency expressed through field 'requestMasterListRepository': Error creating bean with name 'requestMasterListRepository' defined in com.crs.iamservice.Repository.RequestMasterListRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Could not create query for public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); Reason: Failed to create query for method public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); No property 'empty' found for type 'IAM_Request_MasterList'
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:787)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:767)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:145)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:508)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1421)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:599)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1443)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1353)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:904)
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:782)
+	... 36 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'requestMasterListRepository' defined in com.crs.iamservice.Repository.RequestMasterListRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Could not create query for public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); Reason: Failed to create query for method public abstract java.util.List com.crs.iamservice.Repository.RequestMasterListRepository.findAllByRequeststatus(java.lang.String); No property 'empty' found for type 'IAM_Request_MasterList'
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1788)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:600)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1443)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1353)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:784)
+
+
+ How to Reoslve the error 
