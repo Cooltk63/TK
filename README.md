@@ -1,136 +1,101 @@
-2025-07-16 :: 18:29:04.902 || INFO :: RequestServiceImpl.java: | 106 | ::  request map {UCN_NO=888, FRN_NO=ASDW7485WE89WB, FIRM_NAME=OMEGA & CO, PAN_NO=AABCU9603R, GSTN=29AABCU9603R1ZR, ADDRESS=Bangalore, Karnataka, CITY=Bangalore, STATE=Karnataka, DISTRICT=Bangalore Urban, PINCODE=560001, MOBNO=9876543210, CONTACT_PERSON=Jane Smith, POC_EMAIL=omega@example.com, REQUEST_EMPANELMENT_SUBTYPE=Internal Audit, PODESIGNATION=Manager, FIRM_TYPE=Properitery., REQUEST_TYPE=C, REQUEST_STATUS=1, REQUEST_EMPANELMENT_TYPE=SA}
-2025-07-16 :: 18:29:04.903 || INFO :: RequestServiceImpl.java: | 107 | ::  user map {access=SAM, financial_year=2024-2025, pf_number=1212121}
-2025-07-16 :: 18:29:04.903 || INFO :: EmpanelmentServiceImpl.java: | 404 | ::  LoginRole ::SAM Checking for ::IA
-2025-07-16 :: 18:29:04.903 || INFO :: EmpanelmentServiceImpl.java: | 406 | ::  Firm Entity ::OMEGA & CO
-2025-07-16 :: 18:29:04.907 || INFO :: EmpanelmentServiceImpl.java: | 410 | ::  FRNCount  ::0  Firm Entity ::OMEGA & CO
-2025-07-16 :: 18:29:04.907 || INFO :: EmpanelmentServiceImpl.java: | 415 | ::  Firm Allowed for inserted/Updated Data ::OMEGA & CO FRN NO: null
-2025-07-16 :: 18:29:04.915 || INFO :: EmpanelmentServiceImpl.java: | 430 | ::  Entity Not Exists Inserting Data::OMEGA & CO
-2025-07-16 :: 18:29:04.939 || WARN :: SqlExceptionHelper.java: | 145 | ::  SQL Error: 1722, SQLState: 42000
-2025-07-16 :: 18:29:04.940 || ERROR:: SqlExceptionHelper.java: | 150 | ::  ORA-01722: invalid number
+This is Source Entity::
+package com.crs.iamservice.Model;
 
-2025-07-16 :: 18:29:04.953 || ERROR:: EmpanelmentServiceImpl.java: | 457 | ::  Exception Occurred Message::could not execute statement [ORA-01722: invalid number
-org.springframework.dao.InvalidDataAccessResourceUsageException: could not execute statement [ORA-01722: invalid number
-] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; SQL [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]
-	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:277)
-	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
-	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:566)
-	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
-	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
-	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:676)
-	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:426)
-	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
-	at jdk.proxy4/jdk.proxy4.$Proxy132.save(Unknown Source)
-	at com.crs.iamservice.Service.EmpanelmentServiceImpl.generateBulkXLRequest(EmpanelmentServiceImpl.java:432)
-	at com.crs.iamservice.Controller.EmpanelmentController.uploadExcelMaster(EmpanelmentController.java:51)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
-	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
-	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
-	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
-	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
-	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
-	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
-	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
-	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
-	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
-	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
-	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
-	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
-	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
-	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
-	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
-	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:389)
-	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
-	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
-	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741)
-	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
-	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
-	at java.base/java.lang.Thread.run(Thread.java:1570)
-Caused by: org.hibernate.exception.SQLGrammarException: could not execute statement [ORA-01722: invalid number
-] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]
-	at org.hibernate.exception.internal.SQLExceptionTypeDelegate.convert(SQLExceptionTypeDelegate.java:66)
-	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:58)
-	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:108)
-	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:197)
-	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.performNonBatchedMutation(AbstractMutationExecutor.java:134)
-	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:55)
-	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:55)
-	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:194)
-	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:132)
-	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:104)
-	at org.hibernate.action.internal.EntityInsertAction.execute(EntityInsertAction.java:110)
-	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:632)
-	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:499)
-	at org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:371)
-	at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:41)
-	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127)
-	at org.hibernate.internal.SessionImpl.doFlush(SessionImpl.java:1425)
-	at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:487)
-	at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2324)
-	at org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:1981)
-	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:439)
-	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:169)
-	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:267)
-	at org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
-	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:562)
-	... 64 more
-Caused by: java.sql.SQLSyntaxErrorException: ORA-01722: invalid number
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:629)
-	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:563)
-	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1230)
-	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:771)
-	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:298)
-	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:511)
-	at oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:162)
-	at oracle.jdbc.driver.T4CPreparedStatement.executeForRows(T4CPreparedStatement.java:1240)
-	at oracle.jdbc.driver.OracleStatement.executeSQLStatement(OracleStatement.java:1819)
-	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1471)
-	at oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3760)
-	at oracle.jdbc.driver.OraclePreparedStatement.executeLargeUpdate(OraclePreparedStatement.java:4061)
-	at oracle.jdbc.driver.OraclePreparedStatement.executeUpdate(OraclePreparedStatement.java:4036)
-	at oracle.jdbc.driver.OraclePreparedStatementWrapper.executeUpdate(OraclePreparedStatementWrapper.java:995)
-	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
-	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
-	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:194)
-	... 85 more
-Caused by: Error : 1722, Position : 467, Sql = insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (:1 ,:2 ,:3 ,:4 ,:5 ,:6 ,:7 ,:8 ,:9 ,:10 ,:11 ,:12 ,:13 ,:14 ,:15 ,:16 ,:17 ,:18 ,:19 ,:20 ,:21 ,:22 ,:23 ,:24 ), OriginalSql = insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?), Error Msg = ORA-01722: invalid number
+@Entity
+@Getter
+@Setter
+@Table(name = "IAM_FIRM_EMPANELMENT")
+public class FirmEmpanelment {
 
-	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:636)
-	... 101 more
-] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; SQL [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]
-2025-07-16 :: 18:29:04.954 || ERROR:: EmpanelmentServiceImpl.java: | 458 | ::  Exception Message::{}org.hibernate.exception.SQLGrammarException: could not execute statement [ORA-01722: invalid number
-] [insert into iam_request_master_list (address,city,contact_person,district,firm_name,firm_type,frn_no,gstn_no,mob_no,pan_no,poc_email,pin_code,poc_designation,request_created_by,request_created_timestamp,request_empanelment_sub_type,request_empanelment_type,request_resolved_by,request_resolved_timestamp,request_status,request_type,state,ucn_no,request_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]
-2025-07-16 :: 18:29:22.898 || INFO :: FrnDashboardServiceImpl.java: | 39 | ::  inside getMasterTemplate
+    @Id
+    @Column(name = "FRN")
+    String frnNumber;
+
+    @Column(name = "FIRM_NAME")
+    String firmName;
+
+    @Column(name = "EMPANELMENT_TYPE")
+    String empanelmentType;
+
+    @Column(name = "EMPANELMENT_SUB_TYPE")
+    String empanelmentSubType;
+
+    @Column(name = "EMPANELED_BY")
+    int empaneledBy;
+
+    @Column(name = "FINANCIAL_YEAR")
+    String financialyear;
+
+    @Column(name = "REQUEST_STATUS")
+    String requeststatus;
+
+    @Column(name = "EMPANELED_STATUS")
+    String empaneledStatus;
+
+    @Column(name = "MOB_NO")
+    private String mobno;
+
+    @Column(name = "CONTACT_PERSON")
+    private String contactperson;
+
+    @Column(name = "POC_EMAIL")
+    private String pocEmail;
+
+    @Column(name = "POC_DESIGNATION")
+    private String pocDesignation;
+}
+
+
+This is destination Entity
+
+@Entity
+@Getter
+@Setter
+@Table(name = "IAM_FIRM_ARCHIVE")
+public class IAM_FIRM_ARCHIVE {
+
+    @Column(name = "FRN")
+    String frnNumber;
+    @Column(name = "FIRM_NAME")
+    String firmName;
+    @Column(name = "EMPANELMENT_TYPE")
+    String empanelmentType;
+    @Column(name = "EMPANELMENT_SUB_TYPE")
+    String empanelmentSubType;
+    @Column(name = "EMPANELED_BY")
+    int empaneledBy;
+    @Column(name = "FINANCIAL_YEAR")
+    String financialyear;
+    @Column(name = "REQUEST_STATUS")
+    String requeststatus;
+    @Column(name = "EMPANELED_STATUS")
+    String empaneledStatus;
+    @Id
+    @Column(name = "ARCHIVE_ID")
+    private int archiveid;
+    @Column(name = "ARCHIVED_BY")
+    private String archivedby;
+    @Column(name = "ARCHIVED_TIMESTAMP")
+    private Date archivedtimestamp;
+    @Column(name = "MOB_NO")
+    private String mobno;
+
+    @Column(name = "CONTACT_PERSON")
+    private String contactperson;
+
+    @Column(name = "POC_EMAIL")
+    private String pocEmail;
+
+    @Column(name = "POC_DESIGNATION")
+    private String pocDesignation;
+}
+
+
+I wanted to move all data from Source table to destination use the financial year as parameter for findall for source table.
