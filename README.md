@@ -1,101 +1,137 @@
-This is Source Entity::
-package com.crs.iamservice.Model;
+package com.crs.iamservice.Repository;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import com.crs.iamservice.Model.FirmEmpanelment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Entity
-@Getter
-@Setter
-@Table(name = "IAM_FIRM_EMPANELMENT")
-public class FirmEmpanelment {
+import java.util.List;
 
-    @Id
-    @Column(name = "FRN")
-    String frnNumber;
+@Repository
+public interface FirmEmpanelmentRepository extends JpaRepository<FirmEmpanelment, String> {
 
-    @Column(name = "FIRM_NAME")
-    String firmName;
+    // Fetch all records by financial year
+    List<FirmEmpanelment> findByFinancialyear(String financialyear);
 
-    @Column(name = "EMPANELMENT_TYPE")
-    String empanelmentType;
+    // Delete all records by financial year
+    void deleteByFinancialyear(String financialyear);
+}
 
-    @Column(name = "EMPANELMENT_SUB_TYPE")
-    String empanelmentSubType;
+xxxx
 
-    @Column(name = "EMPANELED_BY")
-    int empaneledBy;
 
-    @Column(name = "FINANCIAL_YEAR")
-    String financialyear;
+package com.crs.iamservice.Repository;
 
-    @Column(name = "REQUEST_STATUS")
-    String requeststatus;
+import com.crs.iamservice.Model.IAM_FIRM_ARCHIVE;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-    @Column(name = "EMPANELED_STATUS")
-    String empaneledStatus;
-
-    @Column(name = "MOB_NO")
-    private String mobno;
-
-    @Column(name = "CONTACT_PERSON")
-    private String contactperson;
-
-    @Column(name = "POC_EMAIL")
-    private String pocEmail;
-
-    @Column(name = "POC_DESIGNATION")
-    private String pocDesignation;
+@Repository
+public interface IamFirmArchiveRepository extends JpaRepository<IAM_FIRM_ARCHIVE, Integer> {
 }
 
 
-This is destination Entity
+xxxx
 
-@Entity
-@Getter
-@Setter
-@Table(name = "IAM_FIRM_ARCHIVE")
-public class IAM_FIRM_ARCHIVE {
+package com.crs.iamservice.Service;
 
-    @Column(name = "FRN")
-    String frnNumber;
-    @Column(name = "FIRM_NAME")
-    String firmName;
-    @Column(name = "EMPANELMENT_TYPE")
-    String empanelmentType;
-    @Column(name = "EMPANELMENT_SUB_TYPE")
-    String empanelmentSubType;
-    @Column(name = "EMPANELED_BY")
-    int empaneledBy;
-    @Column(name = "FINANCIAL_YEAR")
-    String financialyear;
-    @Column(name = "REQUEST_STATUS")
-    String requeststatus;
-    @Column(name = "EMPANELED_STATUS")
-    String empaneledStatus;
-    @Id
-    @Column(name = "ARCHIVE_ID")
-    private int archiveid;
-    @Column(name = "ARCHIVED_BY")
-    private String archivedby;
-    @Column(name = "ARCHIVED_TIMESTAMP")
-    private Date archivedtimestamp;
-    @Column(name = "MOB_NO")
-    private String mobno;
+import com.crs.iamservice.Model.FirmEmpanelment;
+import com.crs.iamservice.Model.IAM_FIRM_ARCHIVE;
+import com.crs.iamservice.Repository.FirmEmpanelmentRepository;
+import com.crs.iamservice.Repository.IamFirmArchiveRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-    @Column(name = "CONTACT_PERSON")
-    private String contactperson;
+import java.sql.Date;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-    @Column(name = "POC_EMAIL")
-    private String pocEmail;
+@Service
+public class DataMoveService {
 
-    @Column(name = "POC_DESIGNATION")
-    private String pocDesignation;
+    private final FirmEmpanelmentRepository firmEmpanelmentRepository;
+    private final IamFirmArchiveRepository iamFirmArchiveRepository;
+
+    public DataMoveService(FirmEmpanelmentRepository firmEmpanelmentRepository,
+                            IamFirmArchiveRepository iamFirmArchiveRepository) {
+        this.firmEmpanelmentRepository = firmEmpanelmentRepository;
+        this.iamFirmArchiveRepository = iamFirmArchiveRepository;
+    }
+
+    /**
+     * Move all records for a given financial year from IAM_FIRM_EMPANELMENT
+     * to IAM_FIRM_ARCHIVE with extra fields archivedby and archivedtimestamp.
+     */
+    @Transactional
+    public String moveDataByFinancialYear(String financialYear, String archivedBy) {
+        // 1. Fetch all records for given financial year
+        List<FirmEmpanelment> sourceData = firmEmpanelmentRepository.findByFinancialyear(financialYear);
+
+        if (sourceData.isEmpty()) {
+            return "No records found for financial year: " + financialYear;
+        }
+
+        // 2. Prepare list for IAM_FIRM_ARCHIVE
+        AtomicInteger counter = new AtomicInteger(1);
+        List<IAM_FIRM_ARCHIVE> archiveList = sourceData.stream()
+                .map(src -> {
+                    IAM_FIRM_ARCHIVE archive = new IAM_FIRM_ARCHIVE();
+                    archive.setArchiveid(counter.getAndIncrement()); // or use sequence if DB handles
+                    archive.setFrnNumber(src.getFrnNumber());
+                    archive.setFirmName(src.getFirmName());
+                    archive.setEmpanelmentType(src.getEmpanelmentType());
+                    archive.setEmpanelmentSubType(src.getEmpanelmentSubType());
+                    archive.setEmpaneledBy(src.getEmpaneledBy());
+                    archive.setFinancialyear(src.getFinancialyear());
+                    archive.setRequeststatus(src.getRequeststatus());
+                    archive.setEmpaneledStatus(src.getEmpaneledStatus());
+                    archive.setMobno(src.getMobno());
+                    archive.setContactperson(src.getContactperson());
+                    archive.setPocEmail(src.getPocEmail());
+                    archive.setPocDesignation(src.getPocDesignation());
+
+                    // Additional Columns
+                    archive.setArchivedby(archivedBy);
+                    archive.setArchivedtimestamp(Date.from(Instant.now()));
+
+                    return archive;
+                }).collect(Collectors.toList());
+
+        // 3. Save to archive table
+        iamFirmArchiveRepository.saveAll(archiveList);
+
+        // 4. Delete from source table
+        firmEmpanelmentRepository.deleteByFinancialyear(financialYear);
+
+        return "Successfully moved " + archiveList.size() + " records for Financial Year: " + financialYear;
+    }
 }
 
 
-I wanted to move all data from Source table to destination use the financial year as parameter for findall for source table.
+xxxx
+
+package com.crs.iamservice.Controller;
+
+import com.crs.iamservice.Service.DataMoveService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/iam")
+public class DataMoveController {
+
+    private final DataMoveService dataMoveService;
+
+    public DataMoveController(DataMoveService dataMoveService) {
+        this.dataMoveService = dataMoveService;
+    }
+
+    /**
+     * API: Move all records from EMPANELMENT to ARCHIVE for given financial year.
+     * Example: POST /api/iam/move?financialYear=2024-25&archivedBy=Admin
+     */
+    @PostMapping("/move")
+    public String moveData(@RequestParam String financialYear, @RequestParam String archivedBy) {
+        return dataMoveService.moveDataByFinancialYear(financialYear, archivedBy);
+    }
+}
