@@ -17,19 +17,18 @@ LEFT JOIN
     ON IAM_FIRM_EMPANELMENT.FRN = IAM_FIRM_MASTER_DETAILS.FRN_NO 
 LEFT JOIN (
     SELECT
-        FRN,
+        FRN_NO,
         EMAIL_STATUS,
         RMLID
     FROM IAM_EMAIL_LOGS l
     INNER JOIN (
-        -- Subquery to get max RMLID per FRN
-        SELECT FRN, MAX(RMLID) AS max_rmlid
+        SELECT FRN_NO, MAX(RMLID) AS max_rmlid
         FROM IAM_EMAIL_LOGS
-        GROUP BY FRN
-    ) ml ON l.FRN = ml.FRN AND l.RMLID = ml.max_rmlid
+        GROUP BY FRN_NO
+    ) ml ON l.FRN_NO = ml.FRN_NO AND l.RMLID = ml.max_rmlid
 ) IEL
-    ON IEL.FRN = IAM_FIRM_EMPANELMENT.FRN
-    OR IEL.FRN = IAM_FIRM_MASTER_DETAILS.FRN_NO
+    ON IEL.FRN_NO = IAM_FIRM_EMPANELMENT.FRN
+    OR IEL.FRN_NO = IAM_FIRM_MASTER_DETAILS.FRN_NO
 WHERE 
     FINANCIAL_YEAR = :finyear  
     AND EMPANELED_STATUS = 'YES' 
