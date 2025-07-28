@@ -19,10 +19,13 @@ WHERE
     AND iam_firm_empanelment.empaneled_status = 'YES'
     AND iam_firm_empanelment.empanelment_type = :emptype
     AND iam_firm_empanelment.empanelment_sub_type = :empSubtype
-
-    -- Only apply circle filter if assignment_type_circle = 'T'
     AND (
-        iam_assignment_type_master.assignment_type_circle IS NULL
-        OR iam_assignment_type_master.assignment_type_circle != 'T'
-        OR iam_firm_empanelment.circle = :circle
+        CASE
+            WHEN iam_assignment_type_master.assignment_type_circle = 'T'
+            THEN CASE
+                    WHEN iam_firm_empanelment.circle = :circle THEN 1
+                    ELSE 0
+                 END
+            ELSE 1
+        END = 1
     )
