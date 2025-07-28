@@ -20,12 +20,6 @@ WHERE
     AND iam_firm_empanelment.empanelment_type = :emptype
     AND iam_firm_empanelment.empanelment_sub_type = :empSubtype
     AND (
-        CASE
-            WHEN iam_assignment_type_master.assignment_type_circle = 'T'
-            THEN CASE
-                    WHEN iam_firm_empanelment.circle = :circle THEN 1
-                    ELSE 0
-                 END
-            ELSE 1
-        END = 1
+        NVL(iam_assignment_type_master.assignment_type_circle, 'N') != 'T'
+        OR iam_firm_empanelment.circle = :circle
     )
