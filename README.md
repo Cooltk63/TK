@@ -1,161 +1,110 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>Fincore</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-	<name>Fincore</name>
-	<description>Project for Spring Boot Kubernates</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<properties>
-		<java.version>17</java.version>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc11</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-kubernetes-discoveryclient -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-kubernetes-discoveryclient</artifactId>
-			<version>2.1.3</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-kubernetes-config -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-kubernetes-config</artifactId>
-			<version>1.1.10.RELEASE</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-kubernetes-client-all -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-kubernetes-client-all</artifactId>
-			<version>3.3.0</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.38</version>
-		</dependency>
+Calling Request-2(fin-service) from Reuquest-1(Product-Service).
 
 
-	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-				<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
-				<dependency>
-					<groupId>org.springframework.cloud</groupId>
-					<artifactId>spring-cloud-dependencies</artifactId>
-					<version>2025.0.0</version>
-					<type>pom</type>
-					<scope>import</scope>
-				</dependency>
-		</dependencies>
-	</dependencyManagement>
+Request-1 Controller as per below ::
+@RestController
+@RequestMapping("/SampleTest")
+public class SampleController {
+
+    @GetMapping("/getSample")
+    public String SampleTest(){
+        return "This Sample Result";
+    }
+}
 
 
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+Request-2 Controller as per below ::
+@RestController
+@RequestMapping("/product")
+public class SampleproductController {
 
-</project>
+@PostMapping("/getProduct")
+public String Sampleproduct(){
+    String response = null;
+    try {
+        response = new RestTemplate().getForObject("http://fin-service/SampleTest/getSample", String.class);
+    } catch (RestClientException e) {
+        e.printStackTrace();
+    }
+    return "Order includes: " + response;
+}
 
-Properties File:
+Console Output at Request -2 as per below after calling the Request2 Controller /getProduct mapping from postman  
 
-# ========== Application Configuration ==========
-spring.application.name=fin-service 
-# Unique service name in Kubernetes
+Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-07-29 :: 17:32:51.642 || INFO :: FrameworkServlet.java: | 532 | ::  Initializing Servlet 'dispatcherServlet'
+2025-07-29 :: 17:32:51.645 || INFO :: FrameworkServlet.java: | 554 | ::  Completed initialization in 2 ms
+org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://fin-service/SampleTest/getSample": fin-service
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:926)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:906)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.getForObject(RestTemplate.java:415)
+	at com.example.Product.Controller.SampleproductController.Sampleproduct(SampleproductController.java:17)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+Caused by: java.net.UnknownHostException: fin-service
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:567)
+	at java.base/java.net.Socket.connect(Socket.java:752)
+	at java.base/java.net.Socket.connect(Socket.java:687)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:183)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:280)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:386)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:408)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1310)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1243)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1129)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1058)
+	at org.springframework.http.client.SimpleClientHttpRequest.executeInternal(SimpleClientHttpRequest.java:79)
+	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:71)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:81)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:900)
+	... 51 more
 
-# ========== Server Configuration ==========
-# Local port application will run on
-server.port=8089                         
-
-# ========== Oracle DB Configuration ==========
-spring.datasource.url=jdbc:oracle:thin:MY SECRET DATA
-spring.datasource.username=MY SECRET DATA
-spring.datasource.password=MY SECRET DATA
-# Recommended Oracle JDBC driver class
-spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
-
-
-# ========== Kubernetes Discovery Settings ==========
-# Enable discovery
-spring.cloud.kubernetes.discovery.enabled=true
-# Limit to same namespace
-spring.cloud.kubernetes.discovery.all-namespaces=false
-spring.cloud.kubernetes.discovery.service-labels[app]=fin-service
-
-
-Console Output:
-
-2025-07-29 :: 17:15:18.472 || INFO :: HikariPool.java: | 580 | ::  HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@4438938e
-2025-07-29 :: 17:15:18.474 || INFO :: HikariDataSource.java: | 122 | ::  HikariPool-1 - Start completed.
-2025-07-29 :: 17:15:18.507 || INFO :: LogHelper.java: | 31 | ::  HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-07-29 :: 17:15:18.546 || INFO :: Version.java: | 44 | ::  HHH000412: Hibernate ORM core version 6.6.22.Final
-2025-07-29 :: 17:15:18.574 || INFO :: RegionFactoryInitiator.java: | 50 | ::  HHH000026: Second-level cache disabled
-2025-07-29 :: 17:15:19.077 || INFO :: SpringPersistenceUnitInfo.java: | 87 | ::  No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-07-29 :: 17:15:19.509 || INFO :: JdbcEnvironmentInitiator.java: | 163 | ::  HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 19.27
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2025-07-29 :: 17:15:20.017 || INFO :: JtaPlatformInitiator.java: | 59 | ::  HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-07-29 :: 17:15:20.026 || INFO :: AbstractEntityManagerFactoryBean.java: | 447 | ::  Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-07-29 :: 17:15:20.812 || INFO :: StartupInfoLogger.java: | 59 | ::  Started FincoreApplication in 5.346 seconds (process running for 6.942)
-2025-07-29 :: 17:15:20.825 || INFO :: AbstractEntityManagerFactoryBean.java: | 660 | ::  Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-07-29 :: 17:15:20.829 || INFO :: HikariDataSource.java: | 349 | ::  HikariPool-1 - Shutdown initiated...
-2025-07-29 :: 17:15:20.949 || INFO :: HikariDataSource.java: | 351 | ::  HikariPool-1 - Shutdown completed.
-
-
-How to resolve thisn issue.
