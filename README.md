@@ -108,6 +108,31 @@
 
 </project>
 
+Properties File:
+
+# ========== Application Configuration ==========
+spring.application.name=fin-service 
+# Unique service name in Kubernetes
+
+# ========== Server Configuration ==========
+# Local port application will run on
+server.port=8089                         
+
+# ========== Oracle DB Configuration ==========
+spring.datasource.url=jdbc:oracle:thin:MY SECRET DATA
+spring.datasource.username=MY SECRET DATA
+spring.datasource.password=MY SECRET DATA
+# Recommended Oracle JDBC driver class
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+
+# ========== Kubernetes Discovery Settings ==========
+# Enable discovery
+spring.cloud.kubernetes.discovery.enabled=true
+# Limit to same namespace
+spring.cloud.kubernetes.discovery.all-namespaces=false
+spring.cloud.kubernetes.discovery.service-labels[app]=fin-service
+
 
 Console Output:
 
