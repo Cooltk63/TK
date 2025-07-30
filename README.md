@@ -1,26 +1,21 @@
-2025-07-30 :: 23:11:28.454 || INFO :: JdbcEnvironmentInitiator.java: | 163 | ::  HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 19.27
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2025-07-30 :: 23:11:28.766 || INFO :: JtaPlatformInitiator.java: | 59 | ::  HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-07-30 :: 23:11:28.771 || INFO :: AbstractEntityManagerFactoryBean.java: | 447 | ::  Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-07-30 :: 23:11:28.808 || WARN :: JpaBaseConfiguration.java: | 258 | ::  spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-07-30 :: 23:11:29.336 || INFO :: TomcatWebServer.java: | 243 | ::  Tomcat started on port 8091 (http) with context path '/'
+Error: A JNI error has occurred, please check your installation and try again
+2025-07-30T17:50:52.096540700Z Exception in thread "main" java.lang.SecurityException: Invalid signature file digest for Manifest main attributes
+2025-07-30T17:50:52.097239900Z 	at java.base/sun.security.util.SignatureFileVerifier.processImpl(SignatureFileVerifier.java:339)
+2025-07-30T17:50:52.097255400Z 	at java.base/sun.security.util.SignatureFileVerifier.process(SignatureFileVerifier.java:281)
+2025-07-30T17:50:52.097415200Z 	at java.base/java.util.jar.JarVerifier.processEntry(JarVerifier.java:323)
+2025-07-30T17:50:52.097610700Z 	at java.base/java.util.jar.JarVerifier.update(JarVerifier.java:235)
+2025-07-30T17:50:52.097619700Z 	at java.base/java.util.jar.JarFile.initializeVerifier(JarFile.java:739)
+2025-07-30T17:50:52.097622400Z 	at java.base/java.util.jar.JarFile.ensureInitialization(JarFile.java:1049)
+2025-07-30T17:50:52.097624500Z 	at java.base/java.util.jar.JavaUtilJarAccessImpl.ensureInitialization(JavaUtilJarAccessImpl.java:42)
+2025-07-30T17:50:52.098470900Z 	at java.base/jdk.internal.loader.URLClassPath$JarLoader$1.getManifest(URLClassPath.java:720)
+2025-07-30T17:50:52.098491300Z 	at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(BuiltinClassLoader.java:762)
+2025-07-30T17:50:52.098493900Z 	at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(BuiltinClassLoader.java:691)
+2025-07-30T17:50:52.098495900Z 	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(BuiltinClassLoader.java:620)
+2025-07-30T17:50:52.098498000Z 	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:578)
+2025-07-30T17:50:52.098500000Z 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:490)
+2025-07-30T17:50:52.098503100Z 	at java.base/java.lang.Class.forName0(Native Method)
+2025-07-30T17:50:52.098505000Z 	at java.base/java.lang.Class.forName(Class.java:543)
+2025-07-30T17:50:52.098506800Z 	at java.base/sun.launcher.LauncherHelper.loadMainClass(LauncherHelper.java:863)
+2025-07-30T17:50:52.098508800Z 	at java.base/sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:748)
 
-Why I am getting the 
-
-Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 19.27
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-
-
- error like while runninght app getting this console output
- help me to reolsve or remove this lines getting isnisde the console
+even after following all of your steps getting this error what the hell is this error I am really frusstrated with this isue.
