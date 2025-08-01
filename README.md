@@ -18,3 +18,24 @@ Error: A JNI error has occurred, please check your installation and try again
 2025-08-01T13:41:56.247484000Z 	at java.base/java.lang.Class.forName(Class.java:543)
 2025-08-01T13:41:56.247485500Z 	at java.base/sun.launcher.LauncherHelper.loadMainClass(LauncherHelper.java:863)
 2025-08-01T13:41:56.248140800Z 	at java.base/sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:748)
+
+Docker File ::
+
+# Use Red Hat UBI with OpenJDK 17 (if accessible internally)
+FROM cimg/openjdk:24.0.2-node
+
+# Set working directory inside container
+WORKDIR /app
+
+# Set environment variable (optional)
+#ENV SPRING_PROFILES_ACTIVE=prod
+
+# Copy JAR file into the container
+COPY out/artifacts/Fincore_jar/*.jar app.jar
+
+# Run your Spring Boot app
+CMD ["java", "-jar", "app.jar"]
+
+is there any issue in configuration or naything
+
+
