@@ -1,118 +1,55 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>Fincore</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-	<name>Fincore</name>
-	<description>Project for Spring Boot Kubernates Discovery</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<properties>
-		<java.version>17</java.version>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc11</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-kubernetes-discoveryclient -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-kubernetes-discoveryclient</artifactId>
-			<version>2.1.3</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-kubernetes-config -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-kubernetes-config</artifactId>
-			<version>1.1.10.RELEASE</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-			<version>3.5.4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.38</version>
-		</dependency>
-
-
-	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-				<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
-				<dependency>
-					<groupId>org.springframework.cloud</groupId>
-					<artifactId>spring-cloud-dependencies</artifactId>
-					<version>2025.0.0</version>
-					<type>pom</type>
-					<scope>import</scope>
-				</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
-</project>
-
-
-
-is this right dependecy for need to add more dependency for deploying the spring boot application tanzu kubernative clusert using the service discovry by names that is using dns name is this right or need some different or new depeneccies suggest me any dependceny which redice the more coading and used for efficient reliable and scalable application developement.
+Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: java.lang.IllegalArgumentException: Cannot generate variable name for non-typed Collection parameter type] with root cause
+2025-08-05T07:39:28.531143000Z java.lang.IllegalArgumentException: Cannot generate variable name for non-typed Collection parameter type
+2025-08-05T07:39:28.531148000Z 	at org.springframework.core.Conventions.getVariableNameForParameter(Conventions.java:113)
+2025-08-05T07:39:28.531149600Z 	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:153)
+2025-08-05T07:39:28.531151000Z 	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+2025-08-05T07:39:28.531152200Z 	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:227)
+2025-08-05T07:39:28.531153300Z 	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:181)
+2025-08-05T07:39:28.531154500Z 	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+2025-08-05T07:39:28.531155700Z 	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991)
+2025-08-05T07:39:28.531156900Z 	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896)
+2025-08-05T07:39:28.531158000Z 	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+2025-08-05T07:39:28.531159200Z 	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+2025-08-05T07:39:28.531160300Z 	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+2025-08-05T07:39:28.531161400Z 	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+2025-08-05T07:39:28.531162500Z 	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+2025-08-05T07:39:28.531164600Z 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+2025-08-05T07:39:28.531165800Z 	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+2025-08-05T07:39:28.531166900Z 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+2025-08-05T07:39:28.531168000Z 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+2025-08-05T07:39:28.531176700Z 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+2025-08-05T07:39:28.531178000Z 	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+2025-08-05T07:39:28.531179000Z 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+2025-08-05T07:39:28.531180100Z 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+2025-08-05T07:39:28.531181100Z 	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+2025-08-05T07:39:28.531182300Z 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+2025-08-05T07:39:28.531183400Z 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+2025-08-05T07:39:28.531184500Z 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+2025-08-05T07:39:28.531185600Z 	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+2025-08-05T07:39:28.531186700Z 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+2025-08-05T07:39:28.531187800Z 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+2025-08-05T07:39:28.531188800Z 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+2025-08-05T07:39:28.531189900Z 	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+2025-08-05T07:39:28.531191000Z 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+2025-08-05T07:39:28.531192100Z 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+2025-08-05T07:39:28.531193200Z 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+2025-08-05T07:39:28.531194300Z 	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+2025-08-05T07:39:28.531195400Z 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+2025-08-05T07:39:28.531196800Z 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+2025-08-05T07:39:28.531197900Z 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+2025-08-05T07:39:28.531199000Z 	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+2025-08-05T07:39:28.531200100Z 	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+2025-08-05T07:39:28.531201200Z 	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+2025-08-05T07:39:28.531202200Z 	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+2025-08-05T07:39:28.531203400Z 	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+2025-08-05T07:39:28.531206000Z 	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+2025-08-05T07:39:28.531207100Z 	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+2025-08-05T07:39:28.531208200Z 	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+2025-08-05T07:39:28.531209300Z 	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+2025-08-05T07:39:28.531210500Z 	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+2025-08-05T07:39:28.531211700Z 	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769)
+2025-08-05T07:39:28.531212800Z 	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+2025-08-05T07:39:28.531213900Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+2025-08-05T07:39:28.531214900Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+2025-08-05T07:39:28.531216000Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2025-08-05T07:39:28.531217000Z 	at java.base/java.lang.Thread.run(Thread.java:1447)
