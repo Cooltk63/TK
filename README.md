@@ -1,15 +1,14 @@
-docker run -d --network my-app-network  --name product-service -p 8081:8081 product-service
+Vulnerability :: Vulnerability Description in Detail	Likely Impact	
+Recommendation :: Weak Cryptographic Hash: Missing Required Step	On line 191 of DecryptAscii.java, the code invokes the method digest() prior to invoking a required step after the call to getInstance() on line 181.	On line 191 of DecryptAscii.java, the code invokes the method digest() prior to invoking a required step after the call to getInstance() on line 181.	Implement all steps required in the generation of a cryptographic hash. Where possible, explicitly specify the parameters used to ensure that the strength of hash is not compromised.
 
-docker run -d --network my-app-network  --name fincore-service -p 8089:8089 fincore-service
+Source Code ::
 
-I am using this both commands for running the docker containers uisng my images 
+  public static byte[] decryptKeyFile(PrivateKey key, byte[] ciphertext)
+            throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException
+    {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        return cipher.doFinal(ciphertext);
+    }
 
-so I have to do the things manually to 
-1. Run mvn clean package --command for Jar creation
-2. create image for application using the docker file 
-3.create network for containers
-4. run the commands manually on local cmd to run the containers 
-
-Can i get the one stop solution for this like evrthing will be dynamic no need to so the mnaully work
-
-Like in docker file or command or naything helpful which reduce this mnaual work.
+    Tell me how to resolved this issue
