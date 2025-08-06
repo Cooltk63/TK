@@ -1,150 +1,21 @@
-public Map<String, Object> getSC10Sftp(Map<String, Object> map) {
-    log.info("Inside SC10DaoImpl Reading the .TXT File");
-    Map<String, Object> updatedTabData = new HashMap<>();
+Vulnerability :: Cross-Site Scripting: Content Sniffing
+Vulnerability Description in Detail :: The method checkIsCircleFreeze() in AdminController.java sends unvalidated data to a web browser on line 1291, which may result in certain browsers executing malicious code.
+Likely Impact :: The method checkIsCircleFreeze() in AdminController.java sends unvalidated data to a web browser on line 1291, which may result in certain browsers executing malicious code.
+Recommendation :: The solution to prevent XSS is to ensure that validation occurs in the required places and that relevant properties are set to prevent vulnerabilities. Because XSS vulnerabilities occur when an application includes malicious data in its output, one logical approach is to validate data immediately before it leaves the application. However, because web applications often have complex and intricate code for generating dynamic content, this method is prone to errors of omission (missing validation). An effective way to mitigate this risk is to also perform input validation for XSS. Web applications must validate all input to prevent other vulnerabilities, such as SQL injection, so augmenting an application's existing input validation mechanism to include checks for XSS is generally relatively easy. Despite its value, input validation for XSS does not take the place of rigorous output validation. An application might accept input through a shared data store or other trusted source, and that data store might accept input from a source that does not perform adequate input validation. Therefore, the application cannot implicitly rely on the safety of this or any other data. This means that the best way to prevent XSS vulnerabilities is to validate everything that enters the application and leaves the application destined for the user. The most secure approach to validation for XSS is to create an allow list of safe characters that can appear in HTTP content and accept input composed exclusively of characters in the approved set. For example, a valid username might only include alphanumeric characters or a phone number might only include digits 0-9. However, this solution is often infeasible in web applications because many characters that have special meaning to the browser must be considered valid input after they are encoded, such as a web design bulletin board that must accept HTML fragments from its users. A more flexible, but less secure approach is to implement a deny list, which selectively rejects or escapes potentially dangerous characters before using the input. To form such a list, you first need to understand the set of characters that hold special meaning for web browsers. Although the HTML standard defines which characters have special meaning, many web browsers try to correct common mistakes in HTML and might treat other characters as special in certain contexts. This is why we do not recommend the use of deny lists as a means to prevent XSS. The CERT(R) Coordination Center at the Software Engineering Institute at Carnegie Mellon University provides the following details about special characters in various contexts [1]: In the content of a block-level element (in the middle of a paragraph of text): - "<" is special because it introduces a tag. - "&" is special because it introduces a character entity. - ">" is special because some browsers treat it as special, on the assumption that the author of the page intended to include an opening "<", but omitted it in error. The following principles apply to attribute values: - In attribute values enclosed in double quotes, the double quotes are special because they mark the end of the attribute value. - In attribute values enclosed in single quotes, the single quotes are special because they mark the end of the attribute value. - In attribute values without any quotes, white-space characters, such as space and tab, are special. - "&" is special when used with certain attributes, because it introduces a character entity. In URLs, for example, a search engine might provide a link within the results page that the user can click to re-run the search. This can be implemented by encoding the search query inside the URL, which introduces additional special characters: - Space, tab, and new line are special because they mark the end of the URL. - "&" is special because it either introduces a character entity or separates CGI parameters. - Non-ASCII characters (that is, everything greater than 127 in the ISO-8859-1 encoding) are not allowed in URLs, so they are considered to be special in this context. - The "%" symbol must be filtered from input anywhere parameters encoded with HTTP escape sequences are decoded by server-side code. For example, "%" must be filtered if input such as "%68%65%6C%6C%6F" becomes "hello" when it appears on the web page. Within the body of a <SCRIPT> </SCRIPT>: - Semicolons, parentheses, curly braces, and new line characters must be filtered out in situations where text could be inserted directly into a pre-existing script tag. Server-side scripts: - Server-side scripts that convert any exclamation characters (!) in input to double-quote characters (") on output might require additional filtering. Other possibilities: - If an attacker submits a request in UTF-7, the special character '<' appears as '+ADw-' and might bypass filtering. If the output is included in a page that does not explicitly specify an encoding format, then some browsers try to intelligently identify the encoding based on the content (in this case, UTF-7). After you identify the correct points in an application to perform validation for XSS attacks and what special characters the validation should consider, the next challenge is to identify how your validation handles special characters. If special characters are not considered valid input to the application, then you can reject any input that contains special characters as invalid. A second option is to remove special characters with filtering. However, filtering has the side effect of changing any visual representation of the filtered content and might be unacceptable in circumstances where the integrity of the input must be preserved for display. If input containing special characters must be accepted and displayed accurately, validation must encode any special characters to remove their significance. A complete list of ISO 8859-1 encoded values for special characters is provided as part of the official HTML specification [2]. Many application servers attempt to limit an application's exposure to cross-site scripting vulnerabilities by providing implementations for the functions responsible for setting certain specific HTTP response content that perform validation for the characters essential to a cross-site scripting attack. Do not rely on the server running your application to make it secure. For any developed application, there are no guarantees about which application servers it will run on during its lifetime. As standards and known exploits evolve, there are no guarantees that application servers will continue to stay in sync. A new response header was introduced to instruct the browser to not perform any MIME sniffing: X-Content-Type-Options: nosniff. Note that old browsers such as Internet Explorer 7 will not respect this header.
 
-    // Extract input parameters from the map
-    String quarterEndDate = (String) map.get("qed");
-    String circleCode = (String) map.get("circleCode");
-    String reportName = (String) map.get("reportName");
+Source Code ::  @Override
+    public String checkIsCircleFreeze(UserLogin user) {
+        String isExist = "";
+        String IsCircleFreeze = "SELECT FREEZE_FLAG from bs_freeze where FREEZE_CIRCLE=? and FREEZE_QDATE = TO_DATE( ?,'DD/MM/YYYY' ) ";
+        try {
+            isExist = jdbcTemplate.queryForObject(IsCircleFreeze,
+                    new Object[]{user.getCircleCode(), user.getQuarterEndDate()}, String.class);
 
-    log.info("Quarter End Date: " + quarterEndDate);
-
-    // Extract year, month, and day from quarterEndDate (format: dd/MM/yyyy)
-    String[] dateParts = quarterEndDate.split("/");
-    String yyyy = dateParts[2];
-    String mm = dateParts[1];
-    String dd = dateParts[0];
-
-    // Generate required date formats
-    String sessionDate = yyyy + mm + dd;  // Format: YYYYMMDD
-    String qDate = dd + mm + yyyy;        // Format: DDMMYYYY
-
-    log.info("Session Date: " + sessionDate);
-    log.info("Fetching file...");
-
-    try {
-        PropertiesConfiguration config = new PropertiesConfiguration("common.properties");
-
-        String mainPath = config.getProperty("ReportDirIFAMS").toString();
-        String filePath = mainPath + qDate + "/IFAMS_SCH10_" + sessionDate + "_" + circleCode + ".txt";
-
-        log.info("File Reading Path : " + mainPath);
-        log.info("File Received Path: " + filePath);
-
-        int[] rowNumber = {1, 3, 4, 36, 5, 6, 7, 37, 9, 33, 10, 11, 12, 13, 14, 18, 34,
-                38, 19, 20, 21, 39, 22, 40, 24, 25, 26, 27, 28,
-                29, 30, 31, 35, 32};
-        int rowNumberCount = 0;
-
-        List<String> lines = new ArrayList<>();
-
-        // Read the file
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                if (!line.trim().isEmpty()) {
-                    lines.add(line);
-                }
-            }
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error While checking checkIsCircleFreeze :"+e.getMessage());
         }
-
-        SC10 sc10 = new SC10();
-        Map<Integer, String[]> rowData = new HashMap<>();
-        String timeStamp = "";
-
-        for (String line : lines) {
-            String[] columns = line.split("\\|");
-
-            for (int i = 0; i < columns.length; i++) {
-                if (columns[i] == null || columns[i].trim().isEmpty()) {
-                    columns[i] = "0";
-                }
-            }
-
-            if (columns[0].trim().equalsIgnoreCase("Generated at")) {
-                timeStamp = columns[1].trim();
-                log.info("Time Stamp Extracted from .txt File ::" + timeStamp);
-                updatedTabData.put("FILETIMESTAMP", timeStamp);
-                continue;
-            }
-
-            int rowNum = rowNumber[rowNumberCount++];
-            rowData.put(rowNum, columns);
-        }
-
-        // Field names matching SC10.java (without row number)
-        String[] fieldNames = {
-                "stcNstaff", "offResidenceA", "otherPremisesA", "electricFitting",
-                "totalA", "computers", "compSoftwareInt", "compSoftwareNonint",
-                "compSoftwareTotal", "motor", "offResidenceB", "stcLho",
-                "otherPremisesB", "otherMachineryPlant", "totalB", "totalFurnFix",
-                "landNotRev", "landRev", "landRevEnh", "offBuildNotRev",
-                "offBuildRev", "offBuildRevEnh", "residQuartNotRev", "residQuartRev",
-                "residQuartRevEnh", "premisTotal", "revtotal", "totalC",
-                "premisesUnderCons", "grandTotal"
-        };
-
-        // ✅ SAFE WHITELIST: Build allowed methods in advance
-        Map<String, Method> allowedMethods = new HashMap<>();
-
-        for (int row : rowNumber) {
-            for (String field : fieldNames) {
-                String methodName = "set" + capitalize(field) + row;
-                try {
-                    Method method = SC10.class.getMethod(methodName, String.class);
-                    allowedMethods.put(methodName, method);  // only whitelisted methods allowed
-                } catch (NoSuchMethodException e) {
-                    log.warn("No such method found (may be unused): " + methodName);
-                }
-            }
-        }
-
-        // Sort the rows to maintain order
-        List<Integer> sortedRows = new ArrayList<>(rowData.keySet());
-        Collections.sort(sortedRows);
-
-        // Process each row safely
-        for (int row : sortedRows) {
-            log.info("Processing row: " + row);
-            if (!rowData.containsKey(row)) {
-                log.info("Skipping missing row " + row);
-                continue;
-            }
-
-            String[] data = rowData.get(row);
-
-            for (int index = 1; index <= 30; index++) {
-                try {
-                    String methodName = "set" + capitalize(fieldNames[index - 1]) + row;
-                    Method setterMethod = allowedMethods.get(methodName);
-
-                    if (setterMethod != null) {
-                        setterMethod.invoke(sc10, data[index].trim());
-                    } else {
-                        log.warn("Unsafe or unapproved setter skipped: " + methodName);
-                    }
-                } catch (Exception e) {
-                    log.error("Error setting value using method for row " + row + ": " + e.getMessage());
-                }
-            }
-        }
-
-        // Update timestamp in CCDPFiletime Table
-        log.info("Updating CCDPFiletime with timestamp: " + timeStamp);
-        int updateTime = ccdpSftpDao.updateCCDPFiletime(timeStamp, circleCode, quarterEndDate, reportName);
-        log.info("Timestamp update status: " + updateTime);
-
-        updatedTabData.put("sc10Data", sc10);
-        updatedTabData.put("message", "Data received from IFAMS and imported successfully");
-        updatedTabData.put("status", true);
-        updatedTabData.put("fileAndDataStatus", 1);
-
-    } catch (IOException | DataAccessException | ConfigurationException e) {
-        updatedTabData.put("message", "Error reading file");
-        updatedTabData.put("fileAndDataStatus", 2);
-        updatedTabData.put("status", false);
-        log.error("Error while reading the file: " + e.getMessage());
+        //log.info("************************************** Checking circle Freezed  or not " + isExist);
+        return isExist;
     }
 
-    return updatedTabData;
-}
+    How to resolve this issue.
