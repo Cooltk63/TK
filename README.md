@@ -3,12 +3,20 @@ Recommendation :: Weak Cryptographic Hash: Missing Required Step	On line 191 of 
 
 Source Code ::
 
-  public static byte[] decryptKeyFile(PrivateKey key, byte[] ciphertext)
-            throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException
-    {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        cipher.init(Cipher.DECRYPT_MODE, key);
-        return cipher.doFinal(ciphertext);
+  private static String getFileHash(String filePath) throws IOException, NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+            log.info("into get file hash");
+        try (InputStream inputStream = new FileInputStream(filePath)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                md.update(buffer, 0, bytesRead);
+            }
+        }
+
+        byte[] hash = md.digest();
+        log.info("last line of  get file hash");
+        return Base64.getEncoder().encodeToString(hash);
     }
 
     Tell me how to resolved this issue
