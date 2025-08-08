@@ -140,3 +140,43 @@
         return jObj;
 
     }
+
+
+
+This is the enitity class of userlogin which used in RequestBidy
+
+package com.tcs.beans;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class UserLogin {
+	private String token;
+	private String userId;
+	private String userName;
+	private String circleCode;
+	private String circleName;
+	private String role;
+	private String capacity;
+	private String status;
+	private String isUserExist;
+	private String quarterEndDate;
+	private String previousQuarterEndDate;
+	private String previousYearEndDate;
+	private String financialYear;
+	private String quarter;
+	private String isBranchFinal;
+	private String isCircleFreeze;
+	private String isCheckerDig;
+	private String isAuditorDig;
+	private String mocFlag;
+	private String frRMId;
+	private String frReportId;
+	private String frReportSts;
+	private Boolean asciiUploadCheck;
+	private String isCircleExist;
+	
+}
