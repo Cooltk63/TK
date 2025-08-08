@@ -180,3 +180,15 @@ public class UserLogin {
 	private String isCircleExist;
 	
 }
+
+
+
+Supported Methods
+
+private final Pattern USER_ID_PATTERN = Pattern.compile("^[0-9]{7}$");
+
+
+    public boolean isValidUserId(String userId) {
+            return userId != null && USER_ID_PATTERN.matcher(userId).matches();
+
+    }
