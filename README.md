@@ -1,310 +1,218 @@
-@Component
-public class InputValidator {
-    
-    private static final Pattern VALID_USERID_PATTERN = Pattern.compile("^[a-zA-Z0-9._-]+$");
-    private static final int MAX_USERID_LENGTH = 50;
-    private static final int MIN_USERID_LENGTH = 3;
-    
-    public boolean isValidUserId(String userId) {
-        if (userId == null || userId.trim().isEmpty()) {
-            return false;
-        }
-        
-        String trimmed = userId.trim();
-        return trimmed.length() >= MIN_USERID_LENGTH && 
-               trimmed.length() <= MAX_USERID_LENGTH && 
-               VALID_USERID_PATTERN.matcher(trimmed).matches() &&
-               !containsSqlInjectionPatterns(trimmed) &&
-               !containsXssPatterns(trimmed);
-    }
-    
-    private boolean containsSqlInjectionPatterns(String input) {
-        String[] patterns = {"'", "\"", ";", "--", "/*", "*/", "xp_", "exec", "union", "select"};
-        String lowerInput = input.toLowerCase();
-        return Arrays.stream(patterns).anyMatch(lowerInput::contains);
-    }
-    
-    private boolean containsXssPatterns(String input) {
-        String[] patterns = {"<script", "javascript:", "onload=", "onerror=", "<iframe"};
-        String lowerInput = input.toLowerCase();
-        return Arrays.stream(patterns).anyMatch(lowerInput::contains);
-    }
-}
-
-
-
-@InitBinder
-public void initBinder(WebDataBinder binder) {
-    binder.setDisallowedFields("class.*", "Class.*", "*.class.*", "*.Class.*");
-}
-
-
-
 @RequestMapping(value = "/login", method = RequestMethod.POST)
 public @ResponseBody
-JSONObject doLogin(@Validated @RequestBody(required = false) UserLogin userLogin, 
-                   HttpServletRequest request, BindingResult bindingResult) {
+JSONObject doLogin(@Validated @RequestBody(required = false) UserLogin userLogin, HttpServletRequest request) {
+    //        log.info("LoginController > doLogin  >>>>> " + request.getAttribute("data"));
 
-    // Step 1: Input Validation - Check if request body exists
-    if (userLogin == null) {
-        log.warn("Login attempt with null request body from IP: " + getClientIpAddress(request));
-        return createErrorResponse("Invalid request data");
-    }
+    UserLogin user = null;
 
-    // Step 2: Check validation errors from @Validated annotation
-    if (bindingResult != null && bindingResult.hasErrors()) {
-        log.warn("Login validation errors: " + bindingResult.getAllErrors());
-        return createErrorResponse("Invalid request parameters");
-    }
+    String IV = AESGCM256.generateBase64IV();
+    String SALT = AESGCM256.generateBase64Salt();
 
-    // Step 3: Create separate trusted and untrusted data structures
-    UntrustedUserInput untrustedInput = new UntrustedUserInput();
-    TrustedUserData trustedData = new TrustedUserData();
+    UserLogin safeUserData = new UserLogin();
+
+    // TRUST BOUNDARY FIX: Create separate structure for untrusted input validation
+    // This ensures we don't mix trusted and untrusted data in the same object
+    UntrustedInput untrustedData = new UntrustedInput();
     
-    try {
-        // Step 4: Extract and validate untrusted input
-        String rawUserId = userLogin.getUserId();
-        untrustedInput.setRawUserId(rawUserId);
-        
-        // Step 5: Comprehensive validation and sanitization
-        String sanitizedUserId = validateAndSanitizeUserId(rawUserId);
-        if (sanitizedUserId == null) {
-            log.warn("Invalid user ID attempt: " + maskSensitiveData(rawUserId) + 
-                    " from IP: " + getClientIpAddress(request));
-            return createErrorResponse("-1");
-        }
-        
-        // Step 6: Move validated data to trusted structure
-        trustedData.setUserId(sanitizedUserId);
-        
-        // Step 7: Generate encryption parameters
-        String IV = AESGCM256.generateBase64IV();
-        String SALT = AESGCM256.generateBase64Salt();
-        
-        // Step 8: Create session with validated data only
-        HttpSession session = request.getSession();
-        session.setAttribute(CommonConstant.USER_ID, trustedData.getUserId());
-        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId());
-        
-        // Step 9: Create clean user object for service layer
-        UserLogin validatedUserLogin = new UserLogin();
-        validatedUserLogin.setUserId(trustedData.getUserId());
-        // Copy other validated fields as needed
-        
-        // Step 10: Service layer call with validated data
-        UserLogin user = loginService.doLogin(validatedUserLogin);
-        
-        // Step 11: Additional validations
-        if (!isValidUserResponse(user)) {
-            log.warn("Invalid user response for userId: " + maskSensitiveData(trustedData.getUserId()));
-            return createErrorResponse("-1");
-        }
-        
-        // Step 12: Process business logic with validated data
-        String quarterFYearDate = loginService.getQuarterYear();
-        if (quarterFYearDate != null && quarterFYearDate.contains("~")) {
-            String[] QFD = quarterFYearDate.split("~");
-            if (QFD.length >= 5) {
-                user.setQuarter(sanitizeString(QFD[0]));
-                user.setFinancialYear(sanitizeString(QFD[1]));
-                user.setQuarterEndDate(sanitizeString(QFD[2]));
-                user.setPreviousYearEndDate(sanitizeString(QFD[3]));
-                user.setPreviousQuarterEndDate(sanitizeString(QFD[4]));
-            }
-        }
-        
-        // Step 13: Circle authorization check
-        boolean output = ifamsSftpService.getCirclesList(user.getCircleCode());
-        user.setIsCircleExist(String.valueOf(output));
-        
-        // Step 14: Token generation for valid users
-        if (isUserValidForToken(user)) {
-            user = loginService.getadditionalDetails(user);
-            String token = CommonFunctions.getToken(user);
-            session.setAttribute("TOKEN", token);
-            int updated = loginService.saveToken(user, token);
-            user.setToken(token);
-        }
-        
-        // Step 15: Create response with sanitized data
-        UserLogin responseUser = createSafeResponseUser(user, trustedData.getUserId());
-        
-        // Step 16: Serialize and encrypt response
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonString = mapper.writeValueAsString(responseUser);
-        String encryptedData = AESGCM256.encrypt(jsonString, IV, SALT);
-        
-        JSONObject response = new JSONObject();
-        response.put("iv", IV);
-        response.put("salt", SALT);
-        response.put("user", encryptedData);
-        
-        log.info("Successful login for user: " + maskSensitiveData(trustedData.getUserId()));
-        return response;
-        
-    } catch (Exception e) {
-        log.error("Login error: " + e.getMessage(), e);
-        return createErrorResponse("-1");
+    // TRUST BOUNDARY FIX: Null check for request body to prevent NPE
+    if (userLogin == null) {
+        log.warn("Login attempt with null request body");
+        return createSecureErrorResponse(IV, SALT, "-1");
     }
+
+    // FOR NEW FE Changes - TRUST BOUNDARY FIX: Extract to untrusted container first
+    untrustedData.rawUserId = userLogin.getUserId();
+
+    // TRUST BOUNDARY FIX: Validate and sanitize the untrusted input
+    String validatedUserId = validateAndSanitizeInput(untrustedData.rawUserId);
+    
+    safeUserData.setUserId(validatedUserId);
+    
+    // OLD FE Handling
+    //        String userId = CommonFunctions.getDcrypted(userLogin.getUserId());
+
+    // SCR 2024-25 :Trust Boundary Violation (Enhanced BE Validation for UserId)
+    // TRUST BOUNDARY FIX: Using the validated userId instead of raw input
+    if (!isValidUserId(validatedUserId)) {
+        log.warn("Invalid user ID attempt: " + maskSensitiveData(untrustedData.rawUserId));
+        return createSecureErrorResponse(IV, SALT, "-1");
+    }
+
+    // TRUST BOUNDARY FIX: Use only validated data for further processing
+    userLogin.setUserId(validatedUserId);
+    HttpSession session = request.getSession();
+
+    session.setAttribute(CommonConstant.USER_ID, validatedUserId);
+    session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId() + "-" + session.getCreationTime());
+    session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId());
+
+    user = loginService.doLogin(userLogin);
+    String quarterFYearDate = loginService.getQuarterYear();
+    String QFD[] = quarterFYearDate.split("~");
+    String quarter = QFD[0];
+    String financial_year = QFD[1];
+    String quarter_end_date = QFD[2];
+    String previousYearEndDate = QFD[3];
+    String previousQuarterEndDate = QFD[4];
+    user.setQuarterEndDate(quarter_end_date);
+    user.setPreviousQuarterEndDate(previousQuarterEndDate);
+    user.setPreviousYearEndDate(previousYearEndDate);
+    user.setFinancialYear(financial_year);
+    user.setQuarter(quarter);
+
+    // Adding the Parameter to token for checking isCircle Authorized to SFTP Data
+    boolean output = ifamsSftpService.getCirclesList(user.getCircleCode());
+    //        log.info("Is Circle Exits for SFTP ::"+output);
+
+    user.setIsCircleExist(String.valueOf(output));
+    //        log.info("User getCircleExits :"+user.getIsCircleExist());
+
+    //        if (!(("-1").equalsIgnoreCase(user.getIsUserExist()) || ("P").equalsIgnoreCase(user.getStatus()))) {
+    if (!(("-1").equalsIgnoreCase(user.getIsUserExist()) || ("-2").equalsIgnoreCase(user.getIsUserExist()) || ("P").equalsIgnoreCase(user.getStatus()))) {
+        user = loginService.getadditionalDetails(user);
+        String token = CommonFunctions.getToken(user);
+        session.setAttribute("TOKEN", token);
+        int updated = loginService.saveToken(user, token);
+        user.setToken(token);
+    }
+
+    //starting encryption
+    // TRUST BOUNDARY FIX: Use validated userId instead of potentially tainted data
+    user.setUserId(validatedUserId);
+    user.setUserName(user.getUserName());
+    user.setCircleCode(user.getCircleCode());
+    user.setCircleName(user.getCircleName());
+    user.setRole(user.getRole());
+    user.setCapacity(user.getCapacity());
+    if (!("P").equalsIgnoreCase(user.getStatus())) {
+        user.setStatus(user.getStatus());
+    }
+    user.setIsBranchFinal(user.getIsBranchFinal());
+    user.setIsCircleFreeze(user.getIsCircleFreeze());
+    user.setIsAuditorDig(user.getIsAuditorDig());
+    user.setIsCheckerDig(user.getIsCheckerDig());
+    user.setFrRMId("444444");
+    user.setFrReportId("444444");
+    user.setMocFlag(user.getMocFlag());
+    user.setIsCircleExist(user.getIsCircleExist());
+
+    ObjectMapper mapper = new ObjectMapper();
+    String JsonString = null;
+    try {
+        JsonString = mapper.writeValueAsString(user);
+    } catch (JsonProcessingException e) {
+        log.error("Exception Occurred  while writing JSON string: " + e.getMessage());
+    }
+
+    String decryptedData = AESGCM256.encrypt(
+            JsonString,
+            IV,
+            SALT
+    );
+
+    JSONObject jObj = new JSONObject();
+    jObj.put("iv", IV);
+    jObj.put("salt", SALT);
+    jObj.put("user", decryptedData);
+    return jObj;
 }
 
-// Helper method: Enhanced UserId validation
-private String validateAndSanitizeUserId(String rawUserId) {
-    if (rawUserId == null || rawUserId.trim().isEmpty()) {
+// TRUST BOUNDARY FIX: Helper class to contain untrusted input separately
+// This prevents mixing of trusted and untrusted data in the same structure
+private static class UntrustedInput {
+    String rawUserId;
+}
+
+// TRUST BOUNDARY FIX: Enhanced input validation and sanitization method
+// This method validates and cleans the input before it enters trusted boundaries
+private String validateAndSanitizeInput(String rawInput) {
+    // Handle null input
+    if (rawInput == null) {
         return null;
     }
     
-    // Remove potential harmful characters
-    String sanitized = rawUserId.trim();
+    // Trim whitespace
+    String sanitized = rawInput.trim();
     
-    // Check length constraints
-    if (sanitized.length() > 50 || sanitized.length() < 3) {
+    // Basic length validation
+    if (sanitized.isEmpty() || sanitized.length() > 100) {
         return null;
     }
     
-    // Allow only alphanumeric characters, dots, and hyphens
-    if (!sanitized.matches("^[a-zA-Z0-9._-]+$")) {
-        return null;
-    }
-    
-    // Additional business logic validation
-    if (!isValidUserIdFormat(sanitized)) {
-        return null;
-    }
+    // Remove potentially dangerous characters while preserving valid ones
+    // This maintains your existing business logic while securing the input
+    sanitized = sanitized.replaceAll("[<>\"'&;]", "");
     
     return sanitized;
 }
 
-// Helper method: Enhanced UserId format validation
+// TRUST BOUNDARY FIX: Enhanced isValidUserId method with comprehensive validation
+// This method ensures only properly validated data crosses the trust boundary
 private boolean isValidUserId(String userId) {
-    return validateAndSanitizeUserId(userId) != null;
-}
-
-private boolean isValidUserIdFormat(String userId) {
-    // Add your specific business rules here
-    // Example: check against known patterns, database existence, etc.
-    return userId != null && 
-           !userId.contains("..") && 
-           !userId.contains("--") && 
-           !userId.startsWith(".") && 
-           !userId.startsWith("-");
-}
-
-// Helper method: Validate user response from service
-private boolean isValidUserResponse(UserLogin user) {
-    return user != null && 
-           user.getUserId() != null && 
-           !"-1".equalsIgnoreCase(user.getIsUserExist()) && 
-           !"-2".equalsIgnoreCase(user.getIsUserExist());
-}
-
-// Helper method: Check if user is valid for token generation
-private boolean isUserValidForToken(UserLogin user) {
-    return user != null && 
-           !"-1".equalsIgnoreCase(user.getIsUserExist()) && 
-           !"-2".equalsIgnoreCase(user.getIsUserExist()) && 
-           !"P".equalsIgnoreCase(user.getStatus());
-}
-
-// Helper method: Create safe response user object
-private UserLogin createSafeResponseUser(UserLogin user, String validatedUserId) {
-    UserLogin safeUser = new UserLogin();
-    
-    // Only set validated and sanitized data
-    safeUser.setUserId(validatedUserId);
-    safeUser.setUserName(sanitizeString(user.getUserName()));
-    safeUser.setCircleCode(sanitizeString(user.getCircleCode()));
-    safeUser.setCircleName(sanitizeString(user.getCircleName()));
-    safeUser.setRole(sanitizeString(user.getRole()));
-    safeUser.setCapacity(sanitizeString(user.getCapacity()));
-    
-    if (!"P".equalsIgnoreCase(user.getStatus())) {
-        safeUser.setStatus(sanitizeString(user.getStatus()));
+    // Null or empty check
+    if (userId == null || userId.trim().isEmpty()) {
+        return false;
     }
     
-    safeUser.setIsBranchFinal(user.getIsBranchFinal());
-    safeUser.setIsCircleFreeze(user.getIsCircleFreeze());
-    safeUser.setIsAuditorDig(user.getIsAuditorDig());
-    safeUser.setIsCheckerDig(user.getIsCheckerDig());
-    safeUser.setMocFlag(user.getMocFlag());
-    safeUser.setIsCircleExist(user.getIsCircleExist());
-    safeUser.setToken(user.getToken());
-    safeUser.setQuarter(user.getQuarter());
-    safeUser.setFinancialYear(user.getFinancialYear());
-    safeUser.setQuarterEndDate(user.getQuarterEndDate());
-    safeUser.setPreviousQuarterEndDate(user.getPreviousQuarterEndDate());
-    safeUser.setPreviousYearEndDate(user.getPreviousYearEndDate());
+    String trimmed = userId.trim();
     
-    // Set fixed values for sensitive fields
-    safeUser.setFrRMId("444444");
-    safeUser.setFrReportId("444444");
+    // Length validation
+    if (trimmed.length() < 1 || trimmed.length() > 100) {
+        return false;
+    }
     
-    return safeUser;
+    // Character validation - allow alphanumeric, dots, hyphens, underscores
+    // This pattern can be adjusted based on your existing valid userId formats
+    if (!trimmed.matches("^[a-zA-Z0-9._@-]+$")) {
+        return false;
+    }
+    
+    // Prevent common injection patterns
+    String lowerCase = trimmed.toLowerCase();
+    if (lowerCase.contains("script") || lowerCase.contains("javascript") || 
+        lowerCase.contains("--") || lowerCase.contains("/*") || 
+        lowerCase.contains("*/") || lowerCase.contains("union") || 
+        lowerCase.contains("select")) {
+        return false;
+    }
+    
+    return true;
 }
 
-// Helper method: Sanitize string inputs
-private String sanitizeString(String input) {
-    if (input == null) return null;
-    
-    // Remove potential XSS and injection characters
-    return input.trim()
-                .replaceAll("[<>\"'&]", "")
-                .replaceAll("(?i)(script|javascript|vbscript)", "");
-}
+// TRUST BOUNDARY FIX: Secure error response creation method
+// This ensures error responses don't leak sensitive information
+private JSONObject createSecureErrorResponse(String IV, String SALT, String errorCode) {
+    UserLogin login = new UserLogin();
+    login.setIsUserExist(errorCode);
 
-// Helper method: Create error response
-private JSONObject createErrorResponse(String errorCode) {
+    // Sending the Empty Data
+    ObjectMapper mapper = new ObjectMapper();
+    String JsonString = null;
+
     try {
-        UserLogin errorUser = new UserLogin();
-        errorUser.setIsUserExist(errorCode);
-        
-        String IV = AESGCM256.generateBase64IV();
-        String SALT = AESGCM256.generateBase64Salt();
-        
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonString = mapper.writeValueAsString(errorUser);
-        String encryptedData = AESGCM256.encrypt(jsonString, IV, SALT);
-        
-        JSONObject response = new JSONObject();
-        response.put("iv", IV);
-        response.put("salt", SALT);
-        response.put("user", encryptedData);
-        
-        return response;
-    } catch (Exception e) {
-        log.error("Error creating error response: " + e.getMessage());
-        return new JSONObject();
+        JsonString = mapper.writeValueAsString(login);
+    } catch (JsonProcessingException e) {
+        log.error("Exception Occurred while writing JSON string: " + e.getMessage());
     }
+
+    String decryptedData = AESGCM256.encrypt(
+            JsonString,
+            IV,
+            SALT
+    );
+
+    JSONObject jObj = new JSONObject();
+    jObj.put("iv", IV);
+    jObj.put("salt", SALT);
+    jObj.put("user", decryptedData);
+    return jObj;
 }
 
-// Helper method: Get client IP address
-private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-        return xForwardedFor.split(",")[0].trim();
-    }
-    return request.getRemoteAddr();
-}
-
-// Helper method: Mask sensitive data for logging
+// TRUST BOUNDARY FIX: Helper method to mask sensitive data in logs
+// This prevents sensitive information from appearing in log files
 private String maskSensitiveData(String data) {
-    if (data == null || data.length() <= 4) return "***";
+    if (data == null || data.length() <= 4) {
+        return "***";
+    }
     return data.substring(0, 2) + "***" + data.substring(data.length() - 2);
-}
-
-// Helper classes for Trust Boundary separation
-private static class UntrustedUserInput {
-    private String rawUserId;
-    // Add other untrusted fields as needed
-    
-    public String getRawUserId() { return rawUserId; }
-    public void setRawUserId(String rawUserId) { this.rawUserId = rawUserId; }
-}
-
-private static class TrustedUserData {
-    private String userId;
-    // Add other trusted fields as needed
-    
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
 }
