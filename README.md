@@ -1,74 +1,141 @@
-// Java 1.8 compatible HeaderSecurityUtils class
-public class HeaderSecurityUtils {
-    
-    /**
-     * Sanitizes filename for HTTP headers to prevent header injection attacks
-     * @param filename The original filename
-     * @return Sanitized filename safe for HTTP headers
-     */
-    public static String sanitizeFilenameForHeader(String filename) {
-        if (filename == null || filename.trim().isEmpty()) {
-            return "report";
+@RequestMapping(value = "/login", method = RequestMethod.POST)
+    public @ResponseBody
+    JSONObject doLogin(@Validated @RequestBody(required =false)UserLogin userLogin, HttpServletRequest request) {
+//        log.info("LoginController > doLogin  >>>>> " + request.getAttribute("data"));
+
+        UserLogin user = null;
+
+        String IV = AESGCM256.generateBase64IV();
+        String SALT = AESGCM256.generateBase64Salt();
+
+
+        UserLogin safeUserData=new  UserLogin();
+
+        // FOR NEW FE Changes
+        String userId = userLogin.getUserId();
+
+
+        safeUserData.setUserId(userLogin.getUserId());
+        // OLD FE Handling
+//        String userId = CommonFunctions.getDcrypted(userLogin.getUserId());
+
+        // SCR 2024-25 :Trust Boundary Violation (Added the BE Validation for UserId)
+        if (!isValidUserId(userId)) {
+            log.warn("Invalid user ID attempt: " + userId);
+            UserLogin login = new UserLogin();
+            login.setIsUserExist("-1");
+
+            // Sending the Empty Data
+            ObjectMapper mapper = new ObjectMapper();
+            String JsonString = null;
+
+            try {
+                JsonString= mapper.writeValueAsString(login);
+            } catch (JsonProcessingException e) {
+               log.error("Exception Occurred  while writing JSON string: " + e.getMessage());
+            }
+
+            String decryptedData = AESGCM256.encrypt(
+                    JsonString,
+                    IV,
+                    SALT
+            );
+
+            JSONObject jObj = new JSONObject();
+            jObj.put("iv", IV);
+            jObj.put("salt", SALT);
+            jObj.put("user", decryptedData);
+            return jObj;
         }
-        
-        // Remove or replace dangerous characters that could cause header injection
-        String sanitized = filename
-            .replaceAll("[\r\n\t]", "") // Remove line breaks and tabs
-            .replaceAll("[\"\\\\]", "_") // Replace quotes and backslashes
-            .replaceAll("[<>:|?*]", "_") // Replace other problematic chars
-            .replaceAll("\\s+", "_") // Replace whitespace with underscore
-            .replaceAll("_{2,}", "_") // Replace multiple underscores with single
-            .trim();
-        
-        // Ensure filename doesn't start or end with underscore/dot
-        sanitized = sanitized.replaceAll("^[._]+|[._]+$", "");
-        
-        // Limit length to prevent buffer overflow
-        if (sanitized.length() > 100) {
-            sanitized = sanitized.substring(0, 100);
+
+        userLogin.setUserId(userId);
+        HttpSession session=request.getSession();
+
+        session.setAttribute(CommonConstant.USER_ID, userId);
+        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId() + "-" + session.getCreationTime());
+        session.setAttribute(CommonConstant.USER_SESSION_ID, session.getId());
+
+
+
+
+        user = loginService.doLogin(userLogin);
+        String quarterFYearDate = loginService.getQuarterYear();
+        String QFD[] = quarterFYearDate.split("~");
+        String quarter = QFD[0];
+        String financial_year = QFD[1];
+        String quarter_end_date = QFD[2];
+        String previousYearEndDate = QFD[3];
+        String previousQuarterEndDate = QFD[4];
+        user.setQuarterEndDate(quarter_end_date);
+        user.setPreviousQuarterEndDate(previousQuarterEndDate);
+        user.setPreviousYearEndDate(previousYearEndDate);
+        user.setFinancialYear(financial_year);
+        user.setQuarter(quarter);
+
+        // Adding the Parameter to token for checking isCircle Authorized to SFTP Data
+        boolean output=ifamsSftpService.getCirclesList(user.getCircleCode());
+//        log.info("Is Circle Exits for SFTP ::"+output);
+
+        user.setIsCircleExist(String.valueOf(output));
+//        log.info("User getCircleExits :"+user.getIsCircleExist());
+
+
+
+
+//        if (!(("-1").equalsIgnoreCase(user.getIsUserExist()) || ("P").equalsIgnoreCase(user.getStatus()))) {
+        if (!(("-1").equalsIgnoreCase(user.getIsUserExist()) || ("-2").equalsIgnoreCase(user.getIsUserExist()) || ("P").equalsIgnoreCase(user.getStatus()))) {
+            user = loginService.getadditionalDetails(user);
+            String token = CommonFunctions.getToken(user);
+            session.setAttribute("TOKEN", token);
+            int updated = loginService.saveToken(user, token);
+            user.setToken(token);
         }
-        
-        // Ensure we have a valid filename
-        if (sanitized.isEmpty()) {
-            sanitized = "report";
+
+
+
+        //starting encryption
+        user.setUserId(userId);
+        user.setUserName(user.getUserName());
+        user.setCircleCode(user.getCircleCode());
+        user.setCircleName(user.getCircleName());
+        user.setRole(user.getRole());
+        user.setCapacity(user.getCapacity());
+        if(!("P").equalsIgnoreCase(user.getStatus())){
+        user.setStatus(user.getStatus());
         }
-        
-        return sanitized;
+        user.setIsBranchFinal(user.getIsBranchFinal());
+        user.setIsCircleFreeze(user.getIsCircleFreeze());
+        user.setIsAuditorDig(user.getIsAuditorDig());
+        user.setIsCheckerDig(user.getIsCheckerDig());
+        user.setFrRMId("444444");
+        user.setFrReportId("444444");
+        user.setMocFlag(user.getMocFlag());
+        user.setIsCircleExist(user.getIsCircleExist());
+
+        ObjectMapper mapper = new ObjectMapper();
+        String JsonString = null;
+        try {
+            JsonString = mapper.writeValueAsString(user);
+        } catch (JsonProcessingException e) {
+            log.error("Exception Occurred  while writing JSON string: " + e.getMessage());
+        }
+
+        String decryptedData = AESGCM256.encrypt(
+                JsonString,
+                IV,
+                SALT
+        );
+
+
+
+        JSONObject jObj = new JSONObject();
+        jObj.put("iv", IV);
+        jObj.put("salt", SALT);
+        jObj.put("user", decryptedData);
+        return jObj;
+
     }
+Vulnerability ::Trust Boundary Violation
+
+Vulnerability Description in Detail :: The method doLogin() in LoginController.java commingles trusted and untrusted data in the same data structure, which encourages programmers to mistakenly trust unvalidated data.
     
-    /**
-     * Sets Content-Disposition header safely
-     * @param response HttpServletResponse object
-     * @param filename Filename to set
-     * @param inline Whether to display inline (true) or as attachment (false)
-     */
-    public static void setContentDispositionHeader(HttpServletResponse response, String filename, boolean inline) {
-        String sanitizedFilename = sanitizeFilenameForHeader(filename);
-        String disposition = inline ? "inline" : "attachment";
-        
-        // Use RFC 6266 compliant header format
-        String headerValue = disposition + "; filename=\"" + sanitizedFilename + "\"";
-        
-        response.setHeader("Content-Disposition", headerValue);
-    }
-    
-    /**
-     * Sets all security headers to prevent various attacks
-     * @param response HttpServletResponse object
-     */
-    public static void setSecurityHeaders(HttpServletResponse response) {
-        // Prevent clickjacking
-        response.setHeader("X-Frame-Options", "DENY");
-        
-        // Prevent MIME type sniffing
-        response.setHeader("X-Content-Type-Options", "nosniff");
-        
-        // Enable XSS protection
-        response.setHeader("X-XSS-Protection", "1; mode=block");
-        
-        // Prevent caching of sensitive content
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Expires", "0");
-    }
-}
