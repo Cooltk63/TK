@@ -1,63 +1,164 @@
-Console Output ::
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.fincore.ApiGateWay</groupId>
+    <artifactId>ApiGateWay</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>ApiGateWay</name>
+    <description>Project for Spring Boot Cloud ApiGateWay</description>
+    <url/>
+    <licenses>
+        <license/>
+    </licenses>
+    <developers>
+        <developer/>
+    </developers>
+    <scm>
+        <connection/>
+        <developerConnection/>
+        <tag/>
+        <url/>
+    </scm>
+    <properties>
+        <java.version>17</java.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+    </properties>
+    <dependencies>
+        <!-- Spring Boot -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gateway-webflux -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+            <version>4.3.0</version>
+        </dependency>
 
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-08-12T13:32:33.266+05:30 ERROR 54076 --- [ApiGateWay] [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
 
-***************************
-APPLICATION FAILED TO START
-***************************
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
 
-Description:
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
 
-Failed to bind properties under 'spring.cloud.gateway.server.webflux.routes' to java.util.List<org.springframework.cloud.gateway.route.RouteDefinition>:
+        <!-- Redis for session management -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
 
-    Property: spring.cloud.gateway.server.webflux.routes
-    Value: "product-service"
-    Origin: class path resource [application.properties] - 25:44
-    Reason: failed to convert java.lang.String to @jakarta.validation.constraints.NotNull @jakarta.validation.Valid org.springframework.cloud.gateway.route.RouteDefinition (caused by jakarta.validation.ValidationException: Unable to parse RouteDefinition text 'product-service', must be of the form name=value)
+        <!-- Oracle JDBC -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-Action:
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
 
-Update your application's configuration
+        <!-- Spring Cloud Kubernetes -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-kubernetes-client</artifactId>
+        </dependency>
 
+        <!-- Resilience4j for rate limiting -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.2.0</version>
+        </dependency>
 
-Process finished with exit code 1
+        <!-- Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>4.0.0-M4</version>
+        </dependency>
 
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+    </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>2025.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-Application.properties file ::
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-spring.application.name=ApiGateWay
-
-spring.data.redis.host=localhost
-spring.data.redis.port=6379
-spring.data.redis.timeout=60000
-spring.data.redis.client-type=lettuce
-
-
-spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
-server.port=8080
-spring.profiles.active=dev
-
-
-security.jwt.public-key=uGp9YSsW41V4dIkoW7SHcoeyDnrUZ+amH+JuNESsQms=
-security.session.ttl-seconds=3600
-gateway.bypass.urls=/auth/**,/public/**
-
-management.endpoints.web.exposure.include=health,info,prometheus
-management.endpoint.health.show-details=never
-management.endpoints.web.base-path=/management
-
-# Logging
-logging.level.org.springframework.cloud.gateway=INFO
-
-spring.cloud.gateway.server.webflux.routes=product-service
-spring.cloud.gateway.server.webflux.routes[0].uri=http://product-service:8080
-spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/products/**
-spring.cloud.gateway.server.webflux.routes[0].filters[0]=RequestRateLimiter=redis-rate-limiter.replenishRate=5,redis-rate-limiter.burstCapacity=10
-spring.cloud.gateway.server.webflux.routes[0].filters[1]=RewritePath=/products/(?<segment>.*), /${segment}
-
-gateway.cors.allowed-origins=http://localhost:8080
-gateway.cors.allowed-methods=GET,POST,UPDATE,DELETE
-gateway.cors.allowed-headers=*
+</project>
