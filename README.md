@@ -9,49 +9,30 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.Duration;
-import java.util.Base64;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
-
-import javax.annotation.PostConstruct;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
+import javax.crypto.SecretKey;
 import java.time.Duration;
 import java.util.Base64;
 
 @Component
 public class JwtUtil {
 
-    @Value("${security.jwt.public-key}")
-    private String publicKeyStr;
+    @Value("${security.jwt.secret}")
+    private String secretKeyStr; // HMAC secret in Base64
 
     @Value("${security.session.ttl-seconds:3600}")
     private long sessionTtlSeconds;
 
     private final ReactiveStringRedisTemplate redisTemplate;
-    private PublicKey publicKey;
+    private SecretKey secretKey;
 
     public JwtUtil(ReactiveStringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
     @PostConstruct
-    public void init() throws Exception {
-        byte[] keyBytes = Base64.getDecoder().decode(publicKeyStr);
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("HmacSHA256");
-        this.publicKey = keyFactory.generatePublic(keySpec);
+    public void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secretKeyStr);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public boolean validateToken(String token) {
@@ -89,29 +70,9 @@ public class JwtUtil {
 
     private Claims getAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 }
-
-
-This is Jwtutil class
-
-I have recently key generated using ::
-public class Main {
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-
-        KeyGenerator keygen =KeyGenerator.getInstance("HmacSHA256");
-        keygen.init(256);
-
-        SecretKey secretKey = keygen.generateKey();
-
-        String Base64= java.util.Base64.getEncoder().encodeToString((secretKey).getEncoded());
-
-        System.out.println("KeyGen Is ::" +Base64);
-    }
-}
-
-help me where should i have to changes
