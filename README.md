@@ -220,96 +220,38 @@ xxxx
 
 xxx
 
-package com.example.gateway.security;
-
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
-import java.util.function.Function;
-
 @Component
 public class JwtUtil {
+    private final Key key;
+    private final ReactiveStringRedisTemplate redis;
 
-    @Value("${jwt.public.key}")
-    private String publicKeyString;
-
-    @Value("${jwt.private.key}")
-    private String privateKeyString;
-
-    @Value("${jwt.expiration-ms}")
-    private long jwtExpirationMs;
-
-    private PublicKey publicKey;
-    private PrivateKey privateKey;
-
-    @PostConstruct
-    public void initKeys() throws Exception {
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-        byte[] publicBytes = Base64.getDecoder().decode(publicKeyString);
-        X509EncodedKeySpec publicSpec = new X509EncodedKeySpec(publicBytes);
-        this.publicKey = keyFactory.generatePublic(publicSpec);
-
-        byte[] privateBytes = Base64.getDecoder().decode(privateKeyString);
-        PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateBytes);
-        this.privateKey = keyFactory.generatePrivate(privateSpec);
+    public JwtUtil(@Value("${jwt.secret}") String secret, ReactiveStringRedisTemplate redis) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.redis = redis;
     }
 
-    // Generate token with claims
-    public String generateToken(String username, Map<String, Object> extraClaims) {
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(username)
-                .setIssuedAt(Date.from(Instant.now()))
-                .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationMs)))
-                .signWith(privateKey, SignatureAlgorithm.RS256)
-                .compact();
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (JwtException ex) {
+            return false;
+        }
     }
 
-    // Validate token
-    public boolean validateToken(String token, String username) {
-        final String tokenUsername = extractUsername(token);
-        return (tokenUsername.equals(username) && !isTokenExpired(token));
+    public String getSubject(String token) {
+        Claims c = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return c.getSubject();
     }
 
-    // Extract username
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public String getSessionId(String token) {
+        Claims c = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return c.get("sessionId", String.class);
     }
 
-    // Extract claim generically
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = parseToken(token);
-        return claimsResolver.apply(claims);
-    }
-
-    // Parse and verify token
-    private Claims parseToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    // Check expiration
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public Mono<Boolean> isSessionActiveMono(String userId, String sessionId) {
+        return redis.opsForValue().get("session:" + userId)
+                .map(stored -> stored != null && stored.equals(sessionId))
+                .defaultIfEmpty(false);
     }
 }
