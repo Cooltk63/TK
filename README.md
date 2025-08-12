@@ -220,38 +220,85 @@ xxxx
 
 xxx
 
+package com.example.gateway.util;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+import javax.annotation.PostConstruct;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.time.Duration;
+import java.util.Base64;
+
 @Component
 public class JwtUtil {
-    private final Key key;
-    private final ReactiveStringRedisTemplate redis;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret, ReactiveStringRedisTemplate redis) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.redis = redis;
+    @Value("${security.jwt.public-key}")
+    private String publicKeyStr;
+
+    @Value("${security.session.ttl-seconds:3600}")
+    private long sessionTtlSeconds;
+
+    private final ReactiveStringRedisTemplate redisTemplate;
+    private PublicKey publicKey;
+
+    public JwtUtil(ReactiveStringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    @PostConstruct
+    public void init() throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(publicKeyStr);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        this.publicKey = keyFactory.generatePublic(keySpec);
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (JwtException ex) {
+            Claims claims = getAllClaims(token);
+            return claims.getExpiration().after(new java.util.Date());
+        } catch (Exception e) {
             return false;
         }
     }
 
     public String getSubject(String token) {
-        Claims c = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return c.getSubject();
+        return getAllClaims(token).getSubject();
     }
 
     public String getSessionId(String token) {
-        Claims c = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return c.get("sessionId", String.class);
+        Object sessionId = getAllClaims(token).get("sessionId");
+        return sessionId != null ? sessionId.toString() : null;
     }
 
-    public Mono<Boolean> isSessionActiveMono(String userId, String sessionId) {
-        return redis.opsForValue().get("session:" + userId)
-                .map(stored -> stored != null && stored.equals(sessionId))
+    public Mono<Boolean> isSessionActiveMono(String subject, String sessionId) {
+        if (subject == null || sessionId == null) return Mono.just(false);
+        String redisKey = "session:" + subject;
+        return redisTemplate.opsForValue().get(redisKey)
+                .map(storedSessionId -> storedSessionId.equals(sessionId))
                 .defaultIfEmpty(false);
+    }
+
+    public Mono<Void> storeSession(String subject, String sessionId) {
+        String redisKey = "session:" + subject;
+        return redisTemplate.opsForValue()
+                .set(redisKey, sessionId, Duration.ofSeconds(sessionTtlSeconds))
+                .then();
+    }
+
+    private Claims getAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(publicKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
