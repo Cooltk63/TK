@@ -302,3 +302,22 @@ public class JwtUtil {
                 .getBody();
     }
 }
+
+
+xxx
+
+@Service
+public class TokenBlacklistService {
+    private final ReactiveStringRedisTemplate redis;
+    private static final String PREFIX = "blacklisted:";
+
+    public TokenBlacklistService(ReactiveStringRedisTemplate redis) { this.redis = redis; }
+
+    public Mono<Boolean> isBlacklistedMono(String token) {
+        return redis.hasKey(PREFIX + token);
+    }
+
+    public Mono<Boolean> blacklistMono(String token, Duration ttl) {
+        return redis.opsForValue().set(PREFIX + token, "1", ttl);
+    }
+}
