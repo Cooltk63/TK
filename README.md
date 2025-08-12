@@ -214,4 +214,23 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
 xxxx
 
+@Component
+public class JwtUtil {
+    @Value("${jwt.secret}")
+    private String secret;
 
+    public String extractUsername(String token) {
+        return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                .build().parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                .build().parseClaimsJws(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+}
