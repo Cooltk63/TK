@@ -1,40 +1,63 @@
-2025-08-12T13:28:41.724+05:30 ERROR 55288 --- [ApiGateWay] [           main] o.s.boot.SpringApplication               : Application run failed
+Console Output ::
 
-org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'corsConfig': Injection of autowired dependencies failed
-	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:515) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1459) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:606) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1222) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1188) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1123) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:987) ~[spring-context-6.2.9.jar:6.2.9]
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:627) ~[spring-context-6.2.9.jar:6.2.9]
-	at org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext.refresh(ReactiveWebServerApplicationContext.java:66) ~[spring-boot-3.5.4.jar:3.5.4]
-	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.4.jar:3.5.4]
-	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.4.jar:3.5.4]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.4.jar:3.5.4]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361) ~[spring-boot-3.5.4.jar:3.5.4]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350) ~[spring-boot-3.5.4.jar:3.5.4]
-	at com.fincore.ApiGateWay.ApiGateWayApplication.main(ApiGateWayApplication.java:10) ~[classes/:na]
-Caused by: org.springframework.util.PlaceholderResolutionException: Could not resolve placeholder 'gateway.cors.allowed-origins' in value "${gateway.cors.allowed-origins}"
-	at org.springframework.util.PlaceholderResolutionException.withValue(PlaceholderResolutionException.java:81) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.util.PlaceholderParser$ParsedValue.resolve(PlaceholderParser.java:423) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.util.PlaceholderParser.replacePlaceholders(PlaceholderParser.java:128) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:118) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:114) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:293) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:264) ~[spring-core-6.2.9.jar:6.2.9]
-	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:186) ~[spring-context-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:971) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1650) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1628) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:785) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:768) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146) ~[spring-beans-6.2.9.jar:6.2.9]
-	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:509) ~[spring-beans-6.2.9.jar:6.2.9]
-	... 19 common frames omitted
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-08-12T13:32:33.266+05:30 ERROR 54076 --- [ApiGateWay] [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.cloud.gateway.server.webflux.routes' to java.util.List<org.springframework.cloud.gateway.route.RouteDefinition>:
+
+    Property: spring.cloud.gateway.server.webflux.routes
+    Value: "product-service"
+    Origin: class path resource [application.properties] - 25:44
+    Reason: failed to convert java.lang.String to @jakarta.validation.constraints.NotNull @jakarta.validation.Valid org.springframework.cloud.gateway.route.RouteDefinition (caused by jakarta.validation.ValidationException: Unable to parse RouteDefinition text 'product-service', must be of the form name=value)
+
+Action:
+
+Update your application's configuration
+
+
+Process finished with exit code 1
+
+
+
+
+Application.properties file ::
+
+spring.application.name=ApiGateWay
+
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.timeout=60000
+spring.data.redis.client-type=lettuce
+
+
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+server.port=8080
+spring.profiles.active=dev
+
+
+security.jwt.public-key=uGp9YSsW41V4dIkoW7SHcoeyDnrUZ+amH+JuNESsQms=
+security.session.ttl-seconds=3600
+gateway.bypass.urls=/auth/**,/public/**
+
+management.endpoints.web.exposure.include=health,info,prometheus
+management.endpoint.health.show-details=never
+management.endpoints.web.base-path=/management
+
+# Logging
+logging.level.org.springframework.cloud.gateway=INFO
+
+spring.cloud.gateway.server.webflux.routes=product-service
+spring.cloud.gateway.server.webflux.routes[0].uri=http://product-service:8080
+spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/products/**
+spring.cloud.gateway.server.webflux.routes[0].filters[0]=RequestRateLimiter=redis-rate-limiter.replenishRate=5,redis-rate-limiter.burstCapacity=10
+spring.cloud.gateway.server.webflux.routes[0].filters[1]=RewritePath=/products/(?<segment>.*), /${segment}
+
+gateway.cors.allowed-origins=http://localhost:8080
+gateway.cors.allowed-methods=GET,POST,UPDATE,DELETE
+gateway.cors.allowed-headers=*
