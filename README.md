@@ -52,3 +52,71 @@ Caused by: java.lang.UnsupportedOperationException: null
 	at com.fincore.gateway.ApiGatewayApplication.main(ApiGatewayApplication.java:12) ~[classes/:na]
 
  After running project everytime I am getting this error in cconsole I dont understand how this apiGateway gonna work I have added the loggers in jwt filter not single log in getting printted but when I call the pulic api where is bypasses by jwt Is returning output but no log printed in jwt auth filer used "Sl4j Annotation for logger  also provde above error solution
+
+
+
+
+ I dont understand anything what does this class file do
+
+ package com.fincore.gateway.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Defines routes. You point to services by DNS names when on Kubernetes (e.g., http://service-a:8080).
+ * For local dev, point to localhost:port.
+ *
+ * We also add a sample route to httpbin to test quickly.
+ */
+@Configuration
+public class GatewayRoutesConfig {
+
+    @Value("${routes.service-a.uri:http://localhost:8090}")
+    private String serviceAUri;
+
+    @Value("${routes.httpbin.uri:https://httpbin.org}")
+    private String httpbinUri;
+
+    @Value("${ratelimit.enabled:true}")
+    private boolean rateLimitEnabled;
+
+    @Bean
+    public RouteLocator customRoutes(RouteLocatorBuilder builder, OptionalRateLimiterProvider rlProvider) {
+        var routes = builder.routes()
+
+                // Example: /service-a/** -> http://service-a:8080/**
+                .route("service-a", r -> r
+                        .path("/service-a/**")
+                        .filters(f -> {
+                            if (rateLimitEnabled && rlProvider.redisRateLimiter() != null) {
+                                f.requestRateLimiter(c -> c.setRateLimiter(rlProvider.redisRateLimiter()));
+                            }
+                            f.rewritePath("/service-a/(?<segment>.*)", "/${segment}");
+                            return f;
+                        })
+                        .uri(serviceAUri))
+
+                // Quick test route that requires auth (except you can add /public/** bypass):
+                .route("httpbin", r -> r
+                        .path("/httpbin/**")
+                        .filters(f -> f.rewritePath("/httpbin/(?<segment>.*)", "/${segment}"))
+                        .uri(httpbinUri))
+
+                .build();
+
+        // Make sure the original request URL is preserved for diagnostics
+        routes.getRoutes().subscribe(rd ->
+                rd.getFilters().add((exchange, chain) -> {
+                    exchange.getAttributes().put(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR, exchange.getRequest().getURI());
+                    return chain.filter(exchange);
+                })
+        );
+        return routes;
+    }
+}
+
