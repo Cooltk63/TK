@@ -804,3 +804,23 @@ redis.enabled=false
 
 
 xxx
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import java.util.*;
+
+public class TokenGenerator {
+    public static void main(String[] args) {
+        String secret = "uGp9YSsW41V4dIkoW7SHcoeyDnrUZ+amH+JuNESsQms="; // from properties
+
+        String jwt = Jwts.builder()
+                .setSubject("tushar.khade")
+                .claim("roles", Arrays.asList("ROLE_USER"))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 3600_000)) // 1 hour
+                .signWith(SignatureAlgorithm.HS256, Base64.getDecoder().decode(secret))
+                .compact();
+
+        System.out.println(jwt);
+    }
+}
