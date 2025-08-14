@@ -1,102 +1,88 @@
-Previously you have given me the 
+2025-08-14 :: 13:11:37.670 || ERROR:: CompositeLog.java: | 102 | ::  [9daa05f1-12]  500 Server Error for HTTP POST "/auth/login"
+io.jsonwebtoken.io.DecodingException: Illegal base64 character: ' '
+	at io.jsonwebtoken.io.Base64.ctoi(Base64.java:221)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ? org.springframework.web.cors.reactive.CorsWebFilter [DefaultWebFilterChain]
+	*__checkpoint ? org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
+	*__checkpoint ? HTTP POST "/auth/login" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+		at io.jsonwebtoken.io.Base64.ctoi(Base64.java:221)
+		at io.jsonwebtoken.io.Base64.decodeFast(Base64.java:270)
+		at io.jsonwebtoken.io.Base64Decoder.decode(Base64Decoder.java:36)
+		at io.jsonwebtoken.io.Base64Decoder.decode(Base64Decoder.java:23)
+		at io.jsonwebtoken.io.ExceptionPropagatingDecoder.decode(ExceptionPropagatingDecoder.java:36)
+		at com.fincore.gateway.JwtUtil.JwtUtil.getHmacKey(JwtUtil.java:41)
+		at com.fincore.gateway.JwtUtil.JwtUtil.generateToken(JwtUtil.java:59)
+		at com.fincore.gateway.Controller.AuthController.login(AuthController.java:38)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.web.reactive.result.method.InvocableHandlerMethod.lambda$invoke$0(InvocableHandlerMethod.java:208)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.signal(MonoZip.java:297)
+		at reactor.core.publisher.MonoZip$ZipInner.onNext(MonoZip.java:478)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onNext(FluxDefaultIfEmpty.java:122)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:158)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2096)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onComplete(FluxPeek.java:260)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+		at reactor.netty.channel.FluxReceive.onInboundComplete(FluxReceive.java:413)
+		at reactor.netty.channel.ChannelOperations.onInboundComplete(ChannelOperations.java:455)
+		at reactor.netty.http.server.HttpServerOperations.handleLastHttpContent(HttpServerOperations.java:903)
+		at reactor.netty.http.server.HttpServerOperations.onInboundNext(HttpServerOperations.java:812)
+		at reactor.netty.channel.ChannelOperationsHandler.channelRead(ChannelOperationsHandler.java:115)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at reactor.netty.http.server.HttpTrafficHandler.channelRead(HttpTrafficHandler.java:321)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.channel.CombinedChannelDuplexHandler$DelegatingChannelHandlerContext.fireChannelRead(CombinedChannelDuplexHandler.java:436)
+		at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+		at io.netty.channel.CombinedChannelDuplexHandler.channelRead(CombinedChannelDuplexHandler.java:251)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1357)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:868)
+		at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:796)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:732)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:658)
+		at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+		at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+		at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+		at java.base/java.lang.Thread.run(Thread.java:1570)
 
-package com.fincore.gateway.Controller;
 
+  getting this error on  request ::
 
-import com.fincore.gateway.JwtUtil.JwtUtil;
-import com.fincore.gateway.Service.RedisTokenService;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+ URL :: http://localhost:8080/auth/login
 
-import java.util.UUID;
-
-/**
- * Very small auth endpoints to help local testing:
- *  - POST /auth/login  -> returns access token (JWT) and stores token/session in Redis
- *  - POST /auth/logout -> removes token/session from Redis
- *
- * NOTE: This is a test stub. Replace with your real Login service in production.
- */
-@RestController
-@RequestMapping("/auth")
-@RequiredArgsConstructor
-public class AuthController {
-
-    private final JwtUtil jwtUtil;
-    private final RedisTokenService redisTokenService;
-
-    @PostMapping("/login")
-    public Mono<ResponseEntity<LoginResponse>> login(@RequestBody LoginRequest req) {
-        // In real app: verify username/password against DB.
-        // Here we accept any username/password for demo.
-        String username = req.getUsername();
-        String sessionId = UUID.randomUUID().toString();
-        String jti = UUID.randomUUID().toString();
-
-        // generate token using JwtUtil (HS256)
-        String token = jwtUtil.generateToken(username, jti, sessionId);
-
-        // store in redis with TTL = token validity
-        long ttl = jwtUtil.getTokenValiditySeconds();
-        return redisTokenService.storeToken(jti, username, sessionId, ttl)
-                .thenReturn(ResponseEntity.ok(new LoginResponse(token, jti, sessionId, ttl)));
-    }
-
-    @PostMapping("/logout")
-    public Mono<ResponseEntity<Void>> logout(@RequestBody LogoutRequest req) {
-        return redisTokenService.removeToken(req.getJti(), req.getUsername())
-                .thenReturn(ResponseEntity.noContent().build());
-    }
-
-    @Data static class LoginRequest {
-        private String username;
-        private String password;
-    }
-    @Data static class LoginResponse {
-        private final String token;
-        private final String jti;
-        private final String sessionId;
-        private final long ttlSeconds;
-    }
-    @Data static class LogoutRequest {
-        private String username;
-        private String jti;
-    }
+ {
+"username":"TUSHAR",
+"password":"12345"
 }
 
 
-
-And Another Controller ::
-package com.fincore.gateway.Controller;
-
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequestMapping("/redis-test")
-public class RedisTestController {
-
-    private final StringRedisTemplate redisTemplate;
-
-    public RedisTestController(StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
-    @GetMapping("/set")
-    public String setKey(@RequestParam String key, @RequestParam String value) {
-        redisTemplate.opsForValue().set(key, value);
-        return "Saved " + key + "=" + value;
-    }
-
-    @GetMapping("/get")
-    public String getKey(@RequestParam String key) {
-        return redisTemplate.opsForValue().get(key);
-    }
+Response ::
+{
+    "timestamp": "2025-08-14T07:41:37.670+00:00",
+    "path": "/auth/login",
+    "status": 500,
+    "error": "Internal Server Error",
+    "requestId": "9daa05f1-12"
 }
-
