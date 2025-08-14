@@ -1,18 +1,16 @@
-2025-08-14 :: 13:11:37.670 || ERROR:: CompositeLog.java: | 102 | ::  [9daa05f1-12]  500 Server Error for HTTP POST "/auth/login"
-io.jsonwebtoken.io.DecodingException: Illegal base64 character: ' '
-	at io.jsonwebtoken.io.Base64.ctoi(Base64.java:221)
+Console output :: 
+
+2025-08-14 :: 14:54:42.712 || ERROR:: CompositeLog.java: | 102 | ::  [54af680c-1]  500 Server Error for HTTP POST "/auth/login"
+io.jsonwebtoken.security.WeakKeyException: The specified key byte array is 224 bits which is not secure enough for any JWT HMAC-SHA algorithm.  The JWT JWA Specification (RFC 7518, Section 3.2) states that keys used with HMAC-SHA algorithms MUST have a size >= 256 bits (the key size must be greater than or equal to the hash output size).  Consider using the io.jsonwebtoken.security.Keys#secretKeyFor(SignatureAlgorithm) method to create a key guaranteed to be secure enough for your preferred HMAC-SHA algorithm.  See https://tools.ietf.org/html/rfc7518#section-3.2 for more information.
+	at io.jsonwebtoken.security.Keys.hmacShaKeyFor(Keys.java:96)
 	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
 Error has been observed at the following site(s):
 	*__checkpoint ? org.springframework.web.cors.reactive.CorsWebFilter [DefaultWebFilterChain]
 	*__checkpoint ? org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
 	*__checkpoint ? HTTP POST "/auth/login" [ExceptionHandlingWebHandler]
 Original Stack Trace:
-		at io.jsonwebtoken.io.Base64.ctoi(Base64.java:221)
-		at io.jsonwebtoken.io.Base64.decodeFast(Base64.java:270)
-		at io.jsonwebtoken.io.Base64Decoder.decode(Base64Decoder.java:36)
-		at io.jsonwebtoken.io.Base64Decoder.decode(Base64Decoder.java:23)
-		at io.jsonwebtoken.io.ExceptionPropagatingDecoder.decode(ExceptionPropagatingDecoder.java:36)
-		at com.fincore.gateway.JwtUtil.JwtUtil.getHmacKey(JwtUtil.java:41)
+		at io.jsonwebtoken.security.Keys.hmacShaKeyFor(Keys.java:96)
+		at com.fincore.gateway.JwtUtil.JwtUtil.getHmacKey(JwtUtil.java:42)
 		at com.fincore.gateway.JwtUtil.JwtUtil.generateToken(JwtUtil.java:59)
 		at com.fincore.gateway.Controller.AuthController.login(AuthController.java:38)
 		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
@@ -67,29 +65,60 @@ Original Stack Trace:
 		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
 		at java.base/java.lang.Thread.run(Thread.java:1570)
 
-application.properties file 
+application.properties ::
+spring.application.name=api-gateway
+server.port=8080
+
+spring.profiles.active=dev
+
+# Gateway - dynamic services (comma separated). Add your services here.
+gateway.services=orders,products,users,inventory,payments,auth
+
+# Default port of backend microservices (K8s service usually exposes same internal port)
+gateway.service.default-port=8080
+
+# Paths to bypass (no JWT)
+gateway.bypass.urls=/auth/**,/public/**,/actuator/**
 
 # JWT configuration (HS256 mode - base64 secret)
 security.jwt.mode=hmac
 # Small example secret (base64 of 32 bytes). Replace with your secure secret in prod.
 security.jwt.secret=ZmFrZV9iYXNlNjRfc2VjcmV0XzMyX2J5dGVzIQ==
 
+# Token TTL seconds (used by JwtUtil)
+security.jwt.expire-seconds=900
 
-  getting this error on  request ::
+# Redis toggle + connection (change per environment)
+redis.enabled=true
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.password=     \
+# set in prod via env/secret
 
- URL :: http://localhost:8080/auth/login
+# CORS
+gateway.cors.allowed-origins=http://localhost:3000
+gateway.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
+gateway.cors.allowed-headers=*
 
- {
-"username":"TUSHAR",
-"password":"12345"
-}
+# ========== Logging ==========
+# Console log pattern (Color-coded output)
+logging.pattern.console=%d{yyyy-MM-dd :: HH:mm:ss.SSS ||} %highlight(%-5level:: %file: | %line |){ERROR=bold red, WARN=yellow, INFO=white, DEBUG=green, TRACE=green} ::  %msg%n
+
+# ========== Actuators Config ==========
+management.endpoint.health.show-details=always
+management.endpoints.web.exposure.include=health,info
 
 
-Response ::
-{
-    "timestamp": "2025-08-14T07:41:37.670+00:00",
-    "path": "/auth/login",
-    "status": 500,
-    "error": "Internal Server Error",
-    "requestId": "9daa05f1-12"
-}
+application-dev.properties ::
+# For local dev you can disable redis if you don't run it:
+redis.enabled=false
+
+# If using hmac in dev - example secret base64 (DO NOT use in prod):
+security.jwt.mode=hmac
+security.jwt.secret=ZmFrZV9iYXNlNjRfc2VjcmV0XzMyX2J5dGVzIQ==
+#base64 for fake_base64_secret_123456
+
+
+
+
+how to resolve this issue please let me guide with 100 security for every environment
