@@ -1,12 +1,13 @@
 package com.fincore.gateway.Service;
 
-import io.jsonwebtoken.Jwt;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -39,7 +40,7 @@ public class TokenSessionValidator {
         }
 
         var principal = bta.getPrincipal();
-        var jwt = bta.getToken();
+        Jwt jwt =(Jwt) bta.getToken();
         String username = jwt.getClaimAsString("sub");   // subject
         String jti = jwt.getId();                        // unique token id
 
@@ -85,147 +86,8 @@ public class TokenSessionValidator {
     }
 }
 
+Still getting error on line ::
+Unconvertible types; cannot cast 'org.springframework.security.oauth2.core.OAuth2AccessToken' to 'org.springframework.security.oauth2.jwt.Jwt'
+Jwt jwt =(Jwt) bta.getToken();
 
-Now I have useed the latest 0.12.6 version for jjwt token 
-
-below is my pom.xml let me know if any dependency is missing or required to add inside this to resolve this prevoisuly povided error on  " String username = jwt.getClaimAsString("sub");   // subject
-        String jti = jwt.getId();                        // unique token id"
-
-
-
-        pom.xml ::
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.4</version>
-    <relativePath/>
-  </parent>
-
-  <groupId>com.fincore</groupId>
-  <artifactId>api-gateway</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>api-gateway</name>
-
-  <properties>
-    <java.version>17</java.version>
-    <spring-cloud.version>2025.0.0</spring-cloud.version>
-    <jjwt.version>0.12.6</jjwt.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-dependencies</artifactId>
-        <version>${spring-cloud.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <!-- Spring Cloud Gateway (WebFlux server) -->
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
-    </dependency>
-
-    <!-- WebFlux starter (for reactive) -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-
-    <!-- Reactive Redis (Lettuce) -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
-    </dependency>
-
-    <!-- JWT  -->
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-      <version>${jjwt.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Kubernetes discovery (optional in dev) -->
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-kubernetes-client</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- Actuator -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-
-    <!-- resilience4j optional -->
-    <dependency>
-      <groupId>io.github.resilience4j</groupId>
-      <artifactId>resilience4j-spring-boot3</artifactId>
-      <version>2.2.0</version>
-    </dependency>
-
-    <!-- Micrometer Prometheus (optional) -->
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.38</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-oauth2-resource-server -->
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-oauth2-resource-server</artifactId>
-      <version>6.5.2</version>
-    </dependency>
-
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
-</project>
-
-        
+Just provide me one stop solution really irritating
