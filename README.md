@@ -1,16 +1,23 @@
-@Bean
-public Converter<Jwt, ? extends Mono<? extends AbstractAuthenticationToken>> jwtAuthConverter(TokenSessionValidator tokenSessionValidator) {
-    return jwt -> {
-        UsernamePasswordAuthenticationToken auth =
-            new UsernamePasswordAuthenticationToken(jwt.getSubject(), jwt, AuthorityUtils.NO_AUTHORITIES);
-        return tokenSessionValidator.validateWithRedis(auth).thenReturn(auth);
-    };
+if (!(authentication instanceof BearerTokenAuthentication bta)) {
+    return Mono.error(new BadCredentialsException("Unsupported authentication"));
 }
 
+Jwt jwt = (Jwt) bta.getPrincipal(); // decoded token
+String username = jwt.getClaimAsString("sub"); // subject
+String jti = jwt.getId(); // token ID
 
-.oauth2ResourceServer(oauth -> oauth
-    .jwt(jwt -> jwt
-        .jwtDecoder(decoder)
-        .jwtAuthenticationConverter(jwtAuthConverter(tokenSessionValidator))
-    )
-)
+if (username == null || jti == null) {
+    return Mono.error(new BadCredentialsException("Invalid token: missing sub or jti"));
+}
+
+String blKey = "BL:" + jti;
+String userKey = "USR:" + username;
+
+return redis.opsForValue().get(blKey)
+    .defaultIfEmpty("")
+    .flatMap(bl -> {
+        if (!bl.isEmpty()) {
+            return Mono.error(new BadCredentialsException("Token is blacklisted"));
+        }
+        return Mono.just(authentication);
+    });
