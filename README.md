@@ -67,6 +67,13 @@ Original Stack Trace:
 		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
 		at java.base/java.lang.Thread.run(Thread.java:1570)
 
+application.properties file 
+
+# JWT configuration (HS256 mode - base64 secret)
+security.jwt.mode=hmac
+# Small example secret (base64 of 32 bytes). Replace with your secure secret in prod.
+security.jwt.secret=ZmFrZV9iYXNlNjRfc2VjcmV0XzMyX2J5dGVzIQ==
+
 
   getting this error on  request ::
 
