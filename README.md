@@ -150,6 +150,33 @@
 
 </project>
 
+application.properties ::
+# ========== Application Configuration ==========
+spring.application.name=Fincore-Service
+# Unique service name in Kubernetes
+
+# ========== Server Configuration ==========
+# Local port application will run on
+server.port=8089
+server.address=0.0.0.0
+
+# Recommended Oracle JDBC driver class
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+
+# ========== Kubernetes Discovery Settings ==========
+# Enable discovery
+spring.cloud.kubernetes.discovery.enabled=true
+# Limit to same namespace
+spring.cloud.kubernetes.discovery.all-namespaces=false
+spring.cloud.kubernetes.discovery.service-labels[app]=fin-service
+
+# ========== Logging ==========
+# Console log pattern (Color-coded output)
+logging.pattern.console=%d{yyyy-MM-dd :: HH:mm:ss.SSS ||} %highlight(%-5level:: %file: | %line |){ERROR=bold red, WARN=yellow, INFO=white, DEBUG=green, TRACE=green} ::  %msg%n
+
+spring.profiles.active=dev
+xxx
 
 This is dependency of my microservice Fincore but I am getting the issue in console while try to run the service locally ::
 Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.gateway.config.GatewayClassPathWarningAutoConfiguration$SpringMvcFoundOnClasspathConfiguration': Failed to instantiate [org.springframework.cloud.gateway.config.GatewayClassPathWarningAutoConfiguration$SpringMvcFoundOnClasspathConfiguration]: Constructor threw exception
