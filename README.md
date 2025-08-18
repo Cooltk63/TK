@@ -1,144 +1,44 @@
-package com.example.gateway.security;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-
-@Component
-public class TokenSessionValidator {
-
-    private static final Logger log = LoggerFactory.getLogger(TokenSessionValidator.class);
-
-    private final ReactiveStringRedisTemplate redisTemplate;
-
-    // Redis key prefixes
-    private static final String USER_PREFIX = "USR:";
-    private static final String BLACKLIST_PREFIX = "BL:";
-
-    // Expiry = same as JWT expiry (example: 15 minutes, should match your JwtService config)
-    private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
-
-    public TokenSessionValidator(ReactiveStringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
-    /**
-     * ✅ Called during login to register a new session for the user.
-     * 1. Blacklists old JTI if exists
-     * 2. Stores new JTI in Redis with expiry
-     */
-    public Mono<Void> registerUserSession(String username, String newJti) {
-        String userKey = USER_PREFIX + username;
-
-        return redisTemplate.opsForValue().get(userKey)
-            .flatMap(oldJti -> {
-                if (oldJti != null) {
-                    log.info("⚠️ Found old session for user={} -> blacklisting oldJti={}", username, oldJti);
-                    return blacklistToken(oldJti);
-                }
-                return Mono.empty();
-            })
-            .then(redisTemplate.opsForValue()
-                .set(userKey, newJti, TOKEN_TTL)
-                .doOnSuccess(v -> log.info("✅ Registered new session in Redis for user={} jti={}", username, newJti))
-                .then()
-            );
-    }
-
-    /**
-     * ❌ Blacklist a token (on logout or replacement).
-     */
-    public Mono<Boolean> blacklistToken(String jti) {
-        String key = BLACKLIST_PREFIX + jti;
-        return redisTemplate.opsForValue().set(key, "true", TOKEN_TTL)
-            .doOnSuccess(v -> log.info("🚫 Blacklisted token jti={}", jti));
-    }
-
-    /**
-     * 🗑️ Clear session for a given user (e.g., on logout).
-     */
-    public Mono<Boolean> clearUserSession(String username) {
-        return redisTemplate.delete(USER_PREFIX + username)
-            .map(deleted -> {
-                if (deleted > 0) {
-                    log.info("🗑️ Cleared session for user={}", username);
-                    return true;
-                }
-                return false;
-            });
-    }
-
-    /**
-     * 🔑 Validate token against Redis.
-     * - Reject if blacklisted
-     * - Reject if not equal to the latest session JTI
-     */
-    public Mono<Authentication> validateWithRedis(Authentication authentication) {
-        if (!(authentication instanceof JwtAuthenticationToken jwtAuth)) {
-            log.warn("❌ Skipping validation: not a JwtAuthenticationToken -> {}", authentication);
-            return Mono.error(new BadCredentialsException("Invalid authentication type"));
-        }
-
-        Jwt jwt = jwtAuth.getToken();
-        String username = jwt.getSubject();
-        String jti = jwt.getId();
-
-        if (jti == null) {
-            log.error("❌ Token missing JTI claim -> rejecting token for user={}", username);
-            return Mono.error(new BadCredentialsException("Missing token ID (jti)"));
-        }
-
-        log.info("🔑 Validating token for user={} with jti={}", username, jti);
-
-        return redisTemplate.hasKey(BLACKLIST_PREFIX + jti)
-            .flatMap(isBlacklisted -> {
-                if (Boolean.TRUE.equals(isBlacklisted)) {
-                    log.warn("❌ Token is blacklisted -> jti={}, user={}", jti, username);
-                    return Mono.error(new BadCredentialsException("Token revoked"));
-                }
-
-                return redisTemplate.opsForValue().get(USER_PREFIX + username)
-                    .flatMap(currentJti -> {
-                        log.info("📌 Redis stored JTI for user={} is {}", username, currentJti);
-
-                        if (currentJti == null) {
-                            log.warn("⚠️ No active session found in Redis for user={} -> rejecting", username);
-                            return Mono.error(new BadCredentialsException("No active session"));
-                        }
-
-                        if (!currentJti.equals(jti)) {
-                            log.warn("❌ Token mismatch for user={} -> expected={}, got={}",
-                                    username, currentJti, jti);
-                            return Mono.error(new BadCredentialsException("Another session is active"));
-                        }
-
-                        log.info("✅ Token validation success for user={} with jti={}", username, jti);
-                        return Mono.just(authentication);
-                    });
-            });
-    }
+on login api hit ::  http://localhost:8080/auth/login
+Payload ::
+{
+"username":"TUSHAR",
+"password":"12345"
+}
+Response::
+{
+    "sub": "TUSHAR",
+    "expiresIn": 900,
+    "jti": "8dc74b87-8d4a-4f5e-8ac8-9e0cd0519487",
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJUVVNIQVIiLCJqdGkiOiI4ZGM3NGI4Ny04ZDRhLTRmNWUtOGFjOC05ZTBjZDA1MTk0ODciLCJpYXQiOjE3NTU1MDA3MTAsImV4cCI6MTc1NTUwMTYxMH0.6N3l7MOG4s0r4LYcUqmQt98evfs0Frn_ogPy491SSI8",
+    "tokenType": "Bearer"
 }
 
+Console Output ::
 
-xxx
+2025-08-18T12:37:38.037+05:30  INFO 18644 --- [api-gateway] [ctor-http-nio-5] c.fincore.gateway.JwtUtil.HmacJwtUtil    : Generated exp in Seconds=2025-08-18T07:22:38.037816800Z
+2025-08-18T12:37:38.037+05:30  INFO 18644 --- [api-gateway] [ctor-http-nio-5] c.fincore.gateway.JwtUtil.HmacJwtUtil    : Jti generated=d43f3d83-4ce4-439c-a8e2-41e3d4958a30
+2025-08-18T12:37:38.037+05:30  INFO 18644 --- [api-gateway] [ctor-http-nio-5] c.f.gateway.Controller.AuthController    : Generated token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJUVVNIQVIiLCJqdGkiOiJkNDNmM2Q4My00Y2U0LTQzOWMtYThlMi00MWUzZDQ5NThhMzAiLCJpYXQiOjE3NTU1MDA4NTgsImV4cCI6MTc1NTUwMTc1OH0.PTnFe23c7Bnb7QNhcesH6YlUK_m6UPEL9KM_sLAb3As
+2025-08-18T12:37:38.038+05:30  INFO 18644 --- [api-gateway] [ctor-http-nio-5] c.f.gateway.Controller.AuthController    : Jti from claims claimsJws.getPayload().getId()d43f3d83-4ce4-439c-a8e2-41e3d4958a30
+2025-08-18T12:37:38.038+05:30  INFO 18644 --- [api-gateway] [ctor-http-nio-5] c.f.g.Service.TokenSessionValidator      : Inside registerUserSession method USR:TUSHAR
+2025-08-18T12:37:38.042+05:30  INFO 18644 --- [api-gateway] [ioEventLoop-5-1] c.f.g.Service.TokenSessionValidator      : ?? Found old session for user=TUSHAR -> blacklisting oldJti=4aa7d7ea-7631-4457-ab9f-75f8d12ba470
+2025-08-18T12:37:38.045+05:30  INFO 18644 --- [api-gateway] [ioEventLoop-5-1] c.f.g.Service.TokenSessionValidator      : ? Blacklisted token jti=4aa7d7ea-7631-4457-ab9f-75f8d12ba470
+2025-08-18T12:37:38.047+05:30  INFO 18644 --- [api-gateway] [ioEventLoop-5-1] c.f.g.Service.TokenSessionValidator      : ? Registered new session in Redis for user=TUSHAR jti=d43f3d83-4ce4-439c-a8e2-41e3d4958a30
 
-@PostMapping("/login")
-public Mono<ResponseEntity<Map<String, String>>> login(@RequestBody LoginRequest request) {
-    return userService.validateUser(request.getUsername(), request.getPassword())
-        .flatMap(user -> {
-            String token = jwtService.generateToken(user);   // must include "jti"
-            String jti = jwtService.extractJti(token);
 
-            return tokenSessionValidator.registerUserSession(user.getUsername(), jti)
-                .thenReturn(ResponseEntity.ok(Map.of("token", token)));
-        })
-        .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+On Secure Api Call::
+ http://localhost:8080/secure/hello
+
+ With Header
+ 
+ Authorization : Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJUVVNIQVIiLCJqdGkiOiI4ZGM3NGI4Ny04ZDRhLTRmNWUtOGFjOC05ZTBjZDA1MTk0ODciLCJpYXQiOjE3NTU1MDA3MTAsImV4cCI6MTc1NTUwMTYxMH0.6N3l7MOG4s0r4LYcUqmQt98evfs0Frn_ogPy491SSI8
+
+Response  ::
+
+{
+    "message": "Hello TUSHAR",
+    "jti": "8dc74b87-8d4a-4f5e-8ac8-9e0cd0519487",
+    "sub": "TUSHAR"
 }
+ 
+
+
