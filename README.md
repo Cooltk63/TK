@@ -248,3 +248,21 @@ spec:
     - port: 8080
       targetPort: 8080
   type: ClusterIP
+
+
+xxx
+
+additional docker api Gateway 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  type: NodePort   # or LoadBalancer (if Tanzu / cloud)
+  selector:
+    app: api-gateway
+  ports:
+    - port: 8080        # cluster port
+      targetPort: 8080  # container port
+      nodePort: 30080   # exposed on host (Docker Desktop K8s)
