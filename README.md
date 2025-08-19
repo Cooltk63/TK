@@ -1,268 +1,97 @@
-@Bean
-public WebClient gatewayWebClient(WebClient.Builder builder,
-                                  @Value("${gateway.base-url:http://localhost:8080}") String baseUrl) {
-    return builder.baseUrl(baseUrl).build();
-}
+Console Error ::
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
 
-xxx
+ :: Spring Boot ::                (v3.5.4)
 
-@Autowired
-private WebClient gatewayWebClient;
+2025-08-19 :: 14:05:05.759 || INFO :: StartupInfoLogger.java: | 53 | ::  Starting ApiGatewayApplication using Java 22.0.1 with PID 23120 (F:\Projects\Fincore\Backend\api-gateway\target\classes started by V1012297 in F:\Projects\Fincore\Backend\api-gateway)
+2025-08-19 :: 14:05:05.762 || INFO :: SpringApplication.java: | 658 | ::  The following 1 profile is active: "dev"
+2025-08-19 :: 14:05:07.721 || INFO :: RepositoryConfigurationDelegate.java: | 294 | ::  Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-19 :: 14:05:07.723 || INFO :: RepositoryConfigurationDelegate.java: | 145 | ::  Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-08-19 :: 14:05:07.782 || INFO :: RepositoryConfigurationDelegate.java: | 213 | ::  Finished Spring Data repository scanning in 28 ms. Found 0 Redis repository interfaces.
+2025-08-19 :: 14:05:08.135 || INFO :: GenericScope.java: | 280 | ::  BeanFactory id=80888d7a-debc-30ce-a39f-2bbbf667e39c
+security web filter chain
+2025-08-19 :: 14:05:09.982 || WARN :: AbstractApplicationContext.java: | 635 | ::  Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'nettyWriteResponseFilter' defined in class path resource [org/springframework/cloud/gateway/config/GatewayAutoConfiguration$NettyConfiguration.class]: Unsatisfied dependency expressed through method 'nettyWriteResponseFilter' parameter 0: Error creating bean with name 'gatewayProperties': Could not bind properties to 'GatewayProperties' : prefix=spring.cloud.gateway.server.webflux, ignoreInvalidFields=false, ignoreUnknownFields=true
+2025-08-19 :: 14:05:10.022 || INFO :: ConditionEvaluationReportLogger.java: | 82 | ::  
 
-@PostMapping("/getFincoreList")
-public Mono<List<String>> getFincoreList(@RequestHeader(value = "Authorization", required = false) String auth) {
-    return gatewayWebClient.post()
-            .uri("/fincore/getFinList")
-            .headers(h -> { if (auth != null) h.set(HttpHeaders.AUTHORIZATION, auth); })
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<String>>() {});
-}
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-08-19 :: 14:05:10.045 || ERROR:: LoggingFailureAnalysisReporter.java: | 40 | ::  
 
-xxx
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.cloud.gateway.server.webflux.routes' to java.util.List<org.springframework.cloud.gateway.route.RouteDefinition>:
+
+    Property: spring.cloud.gateway.server.webflux.routes
+    Value: "product-service"
+    Origin: class path resource [application.properties] - 39:44
+    Reason: failed to convert java.lang.String to @jakarta.validation.constraints.NotNull @jakarta.validation.Valid org.springframework.cloud.gateway.route.RouteDefinition (caused by jakarta.validation.ValidationException: Unable to parse RouteDefinition text 'product-service', must be of the form name=value)
+
+Action:
+
+Update your application's configuration
+
+
+Process finished with exit code 1
+
+
+Application Properties FIles ::
+
+spring.application.name=api-gateway
+server.port=8080
+
+# ========== JWT MODE ==========
+# hmac or rsa (pick per environment using profile files)
+security.jwt.mode=hmac
+
+# HS256: base64 secret (>= 256-bit). For dev, we override below.
+security.jwt.hmac-base64-secret=
+# RS256: PEM public key (BEGIN/END PUBLIC KEY). For prod, set via profile.
+security.jwt.rsa-public=
+
+# Token lifetime used by demo /auth/login (seconds)
+security.jwt.ttl-seconds=900
+
+# Paths that bypass auth (comma-separated). Adjust per env if needed.
+security.jwt.bypass-paths=/auth/login,/actuator/**
+
+# ========== Redis ==========
+redis.enabled=true
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.database=0
+# spring.data.redis.password=   # if needed in non-dev
+
+# Actuator basic
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=always
+
+# ========== Logging ==========
+# Console log pattern (Color-coded output)
+logging.pattern.console=%d{yyyy-MM-dd :: HH:mm:ss.SSS ||} %highlight(%-5level:: %file: | %line |){ERROR=bold red, WARN=yellow, INFO=white, DEBUG=green, TRACE=green} ::  %msg%n
+
+
+spring.profiles.active=dev
 
 
 # Product service
-spring.cloud.gateway.routes[0].id=product-service
-spring.cloud.gateway.routes[0].uri=http://product-service:8080
-spring.cloud.gateway.routes[0].predicates[0]=Path=/products/**
+spring.cloud.gateway.server.webflux.routes=product-service
+spring.cloud.gateway.server.webflux.routes[0].uri=http://product-service:8081
+spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/Product/**
 
 # Fincore service
-spring.cloud.gateway.routes[1].id=fincore-service
-spring.cloud.gateway.routes[1].uri=http://fincore-service:8080
-spring.cloud.gateway.routes[1].predicates[0]=Path=/fincore/**
-
-# Orders service
-spring.cloud.gateway.routes[2].id=orders-service
-spring.cloud.gateway.routes[2].uri=http://orders-service:8080
-spring.cloud.gateway.routes[2].predicates[0]=Path=/orders/**
+spring.cloud.gateway.server.webflux.routes[1].id=fincore-service
+spring.cloud.gateway.server.webflux.routes[1].uri=http://fincore-service:8089
+spring.cloud.gateway.server.webflux.routes[1].predicates[0]=Path=/Fincore/**
 
 
-xxxx
+I have used or added the  : .server.webflux in line spring.cloud.gateway.routes[1] as it giving me the deprecated error 
 
-version: "3.9"
-services:
-  redis:
-    image: redis:7
-    command: ["redis-server", "--appendonly", "yes"]
-    networks:
-      - appnet
-    ports:
-      - "6379:6379"
-
-  api-gateway:
-    image: api-gateway:latest
-    depends_on:
-      - redis
-      - product-service
-      - fincore-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=local
-      - SPRING_DATA_REDIS_HOST=redis
-    networks:
-      - appnet
-    ports:
-      - "8080:8080"      # only gateway is exposed to host
-
-  product-service:
-    image: product-service:latest
-    networks:
-      - appnet
-    environment:
-      - SPRING_PROFILES_ACTIVE=local
-      - GATEWAY_BASE_URL=http://api-gateway:8080
-    # do NOT publish ports for this service
-
-  fincore-service:
-    image: fincore-service:latest
-    networks:
-      - appnet
-    environment:
-      - SPRING_PROFILES_ACTIVE=local
-      - GATEWAY_BASE_URL=http://api-gateway:8080
-
-networks:
-  appnet:
-    driver: bridge
-
-
-xxx
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: api-gateway
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: api-gateway
-  template:
-    metadata:
-      labels:
-        app: api-gateway
-    spec:
-      containers:
-        - name: api-gateway
-          image: <your-docker-username>/api-gateway:latest   # <-- replace
-          ports:
-            - containerPort: 8080
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "dev"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: api-gateway
-spec:
-  selector:
-    app: api-gateway
-  ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30080   # expose outside cluster
-  type: NodePort
-
-
-xxxx
-
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      containers:
-        - name: redis
-          image: redis:7.2   # use official Redis
-          ports:
-            - containerPort: 6379
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis
-spec:
-  selector:
-    app: redis
-  ports:
-    - port: 6379
-      targetPort: 6379
-  type: ClusterIP
-
-
-xxx
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: fincore-service
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: fincore-service
-  template:
-    metadata:
-      labels:
-        app: fincore-service
-    spec:
-      containers:
-        - name: fincore-service
-          image: <your-docker-username>/fincore-service:latest   # <-- replace
-          ports:
-            - containerPort: 8080
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "dev"
-            - name: REDIS_HOST
-              value: "redis"
-            - name: REDIS_PORT
-              value: "6379"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: fincore-service
-spec:
-  selector:
-    app: fincore-service
-  ports:
-    - port: 8080
-      targetPort: 8080
-  type: ClusterIP
-
-
-xxxx
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: product-service
-spec:
-  replicas: 2   # scale to 2 pods (you can change)
-  selector:
-    matchLabels:
-      app: product-service
-  template:
-    metadata:
-      labels:
-        app: product-service
-    spec:
-      containers:
-        - name: product-service
-          image: <your-docker-username>/product-service:latest   # <-- replace
-          ports:
-            - containerPort: 8080
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "dev"
-            - name: REDIS_HOST
-              value: "redis"   # Redis service name inside cluster
-            - name: REDIS_PORT
-              value: "6379"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: product-service
-spec:
-  selector:
-    app: product-service
-  ports:
-    - port: 8080
-      targetPort: 8080
-  type: ClusterIP
-
-
-xxx
-
-additional docker api Gateway 
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: api-gateway
-spec:
-  type: NodePort   # or LoadBalancer (if Tanzu / cloud)
-  selector:
-    app: api-gateway
-  ports:
-    - port: 8080        # cluster port
-      targetPort: 8080  # container port
-      nodePort: 30080   # exposed on host (Docker Desktop K8s)
+but about mentined issue how to resolve
