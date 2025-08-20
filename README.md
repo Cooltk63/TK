@@ -141,6 +141,3 @@ spring.data.redis.database=0
 
 
 Could you guide me whats wrong here why is canot to redis as I am clrely see in logs "2025-08-20 12:18:33.098 | 2025-08-20 :: 06:48:33.097 || ERROR:: SecurityConfig.java: | 57 | ::  !! RedisValidationFilter error: Unable to connect to Redis"  why I am getting this error and how does I resolved this error please guide me with proper solution 
-2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * <redisgears_2> Loading finished, re-enable key space notificaitons.
-2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * DB loaded from disk: 0.001 seconds
-2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * Ready to accept connections tcp
