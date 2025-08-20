@@ -1,224 +1,80 @@
-Console Error :
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v3.5.4)
-
-2025-08-19 :: 17:07:49.030 || INFO :: StartupInfoLogger.java: | 53 | ::  Starting ApiGatewayApplication using Java 22.0.1 with PID 13052 (F:\Projects\Fincore\Backend\api-gateway\target\classes started by V1012297 in F:\Projects\Fincore\Backend\api-gateway)
-2025-08-19 :: 17:07:49.033 || INFO :: SpringApplication.java: | 658 | ::  The following 1 profile is active: "dev"
-2025-08-19 :: 17:07:51.169 || INFO :: RepositoryConfigurationDelegate.java: | 294 | ::  Multiple Spring Data modules found, entering strict repository configuration mode
-2025-08-19 :: 17:07:51.175 || INFO :: RepositoryConfigurationDelegate.java: | 145 | ::  Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2025-08-19 :: 17:07:51.230 || INFO :: RepositoryConfigurationDelegate.java: | 213 | ::  Finished Spring Data repository scanning in 23 ms. Found 0 Redis repository interfaces.
-2025-08-19 :: 17:07:51.696 || INFO :: GenericScope.java: | 280 | ::  BeanFactory id=80888d7a-debc-30ce-a39f-2bbbf667e39c
-security web filter chain
-2025-08-19 :: 17:07:53.605 || WARN :: AbstractApplicationContext.java: | 635 | ::  Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'nettyWriteResponseFilter' defined in class path resource [org/springframework/cloud/gateway/config/GatewayAutoConfiguration$NettyConfiguration.class]: Unsatisfied dependency expressed through method 'nettyWriteResponseFilter' parameter 0: Error creating bean with name 'gatewayProperties': Could not bind properties to 'GatewayProperties' : prefix=spring.cloud.gateway.server.webflux, ignoreInvalidFields=false, ignoreUnknownFields=true
-2025-08-19 :: 17:07:53.631 || WARN :: GatewayServerWebfluxPropertiesMigrationListener.java: | 162 | ::  
-The use of configuration keys that have been renamed was found in the environment:
-
-Property source 'Config resource 'class path resource [application.properties]' via location 'optional:classpath:/'':
-	Key: spring.cloud.gateway.routes
-		Line: 39
-		Replacement: spring.cloud.gateway.server.webflux.routes
-	Key: spring.cloud.gateway.routes[0].uri
-		Line: 40
-		Replacement: spring.cloud.gateway.server.webflux.routes[0].uri
-	Key: spring.cloud.gateway.routes[0].predicates[0]
-		Line: 41
-		Replacement: spring.cloud.gateway.server.webflux.routes[0].predicates[0]
-	Key: spring.cloud.gateway.routes[1].id
-		Line: 44
-		Replacement: spring.cloud.gateway.server.webflux.routes[1].id
-	Key: spring.cloud.gateway.routes[1].uri
-		Line: 45
-		Replacement: spring.cloud.gateway.server.webflux.routes[1].uri
-	Key: spring.cloud.gateway.routes[1].predicates[0]
-		Line: 46
-		Replacement: spring.cloud.gateway.server.webflux.routes[1].predicates[0]
-
-
-Each configuration key has been temporarily mapped to its replacement for your convenience. To silence this warning, please update your configuration to use the new keys.
-
-2025-08-19 :: 17:07:53.632 || WARN :: PropertiesMigrationListener.java: | 95 | ::  
-The use of configuration keys that have been renamed was found in the environment:
-
-Property source 'Config resource 'class path resource [application.properties]' via location 'optional:classpath:/'':
-	Key: spring.cloud.gateway.routes
-		Line: 39
-		Replacement: spring.cloud.gateway.server.webflux.routes
-
-
-Each configuration key has been temporarily mapped to its replacement for your convenience. To silence this warning, please update your configuration to use the new keys.
-
-2025-08-19 :: 17:07:53.649 || INFO :: ConditionEvaluationReportLogger.java: | 82 | ::  
-
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-08-19 :: 17:07:53.675 || ERROR:: LoggingFailureAnalysisReporter.java: | 40 | ::  
-
-***************************
-APPLICATION FAILED TO START
-***************************
-
-Description:
-
-Failed to bind properties under 'spring.cloud.gateway.server.webflux.routes' to java.util.List<org.springframework.cloud.gateway.route.RouteDefinition>:
-
-    Property: spring.cloud.gateway.server.webflux.routes
-    Value: "product-service"
-    Origin: class path resource [application.properties] - 39:29
-    Reason: failed to convert java.lang.String to @jakarta.validation.constraints.NotNull @jakarta.validation.Valid org.springframework.cloud.gateway.route.RouteDefinition (caused by jakarta.validation.ValidationException: Unable to parse RouteDefinition text 'product-service', must be of the form name=value)
-
-Action:
-
-Update your application's configuration
+Radies Docker console log :
+2025-08-20 12:17:27.435 | 8:signal-handler (1755672447) Received SIGTERM scheduling shutdown...
+2025-08-20 12:17:27.435 | 8:signal-handler (1755672447) Received SIGTERM scheduling shutdown...
+2025-08-20 12:17:27.725 | 8:C 20 Aug 2025 06:47:27.724 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2025-08-20 12:17:27.725 | 8:C 20 Aug 2025 06:47:27.724 * Redis version=7.4.5, bits=64, commit=00000000, modified=0, pid=8, just started
+2025-08-20 12:17:27.725 | 8:C 20 Aug 2025 06:47:27.724 * Configuration loaded
+2025-08-20 12:17:27.725 | 8:M 20 Aug 2025 06:47:27.725 * monotonic clock: POSIX clock_gettime
+2025-08-20 12:17:27.726 | 8:M 20 Aug 2025 06:47:27.725 * Running mode=standalone, port=6379.
+2025-08-20 12:17:27.726 | 8:M 20 Aug 2025 06:47:27.726 * Module 'RedisCompat' loaded from /opt/redis-stack/lib/rediscompat.so
+2025-08-20 12:17:27.727 | 8:M 20 Aug 2025 06:47:27.727 * <search> Redis version found by RedisSearch : 7.4.5 - oss
+2025-08-20 12:17:27.727 | 8:M 20 Aug 2025 06:47:27.727 * <search> RediSearch version 2.10.20 (Git=5c09b69)
+2025-08-20 12:17:27.728 | 8:M 20 Aug 2025 06:47:27.727 * <search> Low level api version 1 initialized successfully
+2025-08-20 12:17:27.728 | 8:M 20 Aug 2025 06:47:27.728 * <search> gc: ON, prefix min length: 2, min word length to stem: 4, prefix max expansions: 200, query timeout (ms): 500, timeout policy: return, cursor read size: 1000, cursor max idle (ms): 300000, max doctable size: 1000000, max number of search results:  10000, 
+2025-08-20 12:17:27.728 | 8:M 20 Aug 2025 06:47:27.728 * <search> Initialized thread pools!
+2025-08-20 12:17:27.728 | 8:M 20 Aug 2025 06:47:27.728 * <search> Subscribe to config changes
+2025-08-20 12:17:27.728 | 8:M 20 Aug 2025 06:47:27.728 * <search> Enabled role change notification
+2025-08-20 12:17:27.728 | 8:M 20 Aug 2025 06:47:27.728 * Module 'search' loaded from /opt/redis-stack/lib/redisearch.so
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> RedisTimeSeries version 11206, git_sha=cdcbe34f8e87e15ea700b737634be6bac6b6700b
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> Redis version found by RedisTimeSeries : 7.4.5 - oss
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> loaded default CHUNK_SIZE_BYTES policy: 4096
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> loaded server DUPLICATE_POLICY: block
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> loaded default IGNORE_MAX_TIME_DIFF: 0
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> loaded default IGNORE_MAX_VAL_DIFF: 0.000000
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> Setting default series ENCODING to: compressed
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * <timeseries> Detected redis oss
+2025-08-20 12:17:27.730 | 8:M 20 Aug 2025 06:47:27.730 * Module 'timeseries' loaded from /opt/redis-stack/lib/redistimeseries.so
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.730 * <ReJSON> Created new data type 'ReJSON-RL'
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 # <ReJSON> Skip register defrag callbacks as defrag callbacks is not supported on the current Redis server.
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> version: 20809 git sha: unknown branch: unknown
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Exported RedisJSON_V1 API
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Exported RedisJSON_V2 API
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Exported RedisJSON_V3 API
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Exported RedisJSON_V4 API
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Exported RedisJSON_V5 API
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Enabled diskless replication
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <ReJSON> Initialized shared string cache, thread safe: false.
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * Module 'ReJSON' loaded from /opt/redis-stack/lib/rejson.so
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <search> Acquired RedisJSON_V5 API
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * <bf> RedisBloom version 2.8.7 (Git=unknown)
+2025-08-20 12:17:27.731 | 8:M 20 Aug 2025 06:47:27.731 * Module 'bf' loaded from /opt/redis-stack/lib/redisbloom.so
+2025-08-20 12:17:27.732 | 8:M 20 Aug 2025 06:47:27.732 * <redisgears_2> Created new data type 'GearsType'
+2025-08-20 12:17:27.733 | 8:M 20 Aug 2025 06:47:27.732 * <redisgears_2> Detected redis oss
+2025-08-20 12:17:27.733 | 8:M 20 Aug 2025 06:47:27.732 # <redisgears_2> could not initialize RedisAI_InitError
+2025-08-20 12:17:27.733 | 
+2025-08-20 12:17:27.733 | 8:M 20 Aug 2025 06:47:27.732 * <redisgears_2> Failed loading RedisAI API.
+2025-08-20 12:17:27.733 | 8:M 20 Aug 2025 06:47:27.733 * <redisgears_2> RedisGears v2.0.20, sha='9b737886bf825fe29ddc2f8da81f73cbe0b4e858', build_type='release', built_for='Linux-ubuntu22.04.x86_64', redis_version:'7.4.5', enterprise:'false'.
+2025-08-20 12:17:27.734 | 8:M 20 Aug 2025 06:47:27.734 * <redisgears_2> Registered backend: js.
+2025-08-20 12:17:27.734 | 8:M 20 Aug 2025 06:47:27.734 * Module 'redisgears_2' loaded from /opt/redis-stack/lib/redisgears.so
+2025-08-20 12:17:27.735 | 8:M 20 Aug 2025 06:47:27.735 * Server initialized
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.735 * <search> Loading event starts
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.735 * <redisgears_2> Got a loading start event, clear the entire functions data.
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * Loading RDB produced by version 7.4.5
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * RDB age 64249 seconds
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * RDB memory usage when created 1.33 Mb
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * Done loading RDB, keys loaded: 0, keys expired: 0.
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * <search> Loading event ends
 
 
-Process finished with exit code 1
+Api gateway docker container logs  ::
+2025-08-20 12:18:33.086 | 2025-08-20 :: 06:48:33.086 || INFO :: SecurityConfig.java: | 46 | ::  RedisValidationFilter invoked for path=/auth/login
+2025-08-20 12:18:33.089 | 2025-08-20 :: 06:48:33.089 || INFO :: AuthController.java: | 52 | ::  login req=AuthController.LoginReq(username=TUSHAR, password=12345)
+2025-08-20 12:18:33.089 | 2025-08-20 :: 06:48:33.089 || INFO :: AuthController.java: | 58 | ::  login accept=AuthController.LoginReq(username=TUSHAR, password=12345)
+2025-08-20 12:18:33.089 | 2025-08-20 :: 06:48:33.089 || INFO :: HmacJwtUtil.java: | 28 | ::  Generated exp in Seconds=2025-08-20T07:03:33.089718600Z
+2025-08-20 12:18:33.090 | 2025-08-20 :: 06:48:33.089 || INFO :: HmacJwtUtil.java: | 30 | ::  Jti generated=3e38108e-22dd-4e5f-a91d-5bfe18fe28c0
+2025-08-20 12:18:33.091 | 2025-08-20 :: 06:48:33.090 || INFO :: AuthController.java: | 66 | ::  Generated token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJUVVNIQVIiLCJqdGkiOiIzZTM4MTA4ZS0yMmRkLTRlNWYtYTkxZC01YmZlMThmZTI4YzAiLCJpYXQiOjE3NTU2NzI1MTMsImV4cCI6MTc1NTY3MzQxM30.HFOJfL2gAw6VCebJ0lVRrcYKKqzXQeaS_P6BqK6aCqA
+2025-08-20 12:18:33.092 | 2025-08-20 :: 06:48:33.092 || INFO :: AuthController.java: | 76 | ::  Jti from claims claimsJws.getPayload().getId()3e38108e-22dd-4e5f-a91d-5bfe18fe28c0
+2025-08-20 12:18:33.093 | 2025-08-20 :: 06:48:33.092 || INFO :: TokenSessionValidator.java: | 38 | ::  Inside registerUserSession method USR:TUSHAR
+2025-08-20 12:18:33.098 | 2025-08-20 :: 06:48:33.097 || ERROR:: SecurityConfig.java: | 57 | ::  !! RedisValidationFilter error: Unable to connect to Redis
 
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-Pom.xml FIle :
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+I have already running the redis in local like from ide I run api-gateway and radis in docker I can able to generate the jwt token and radis jti 
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.4</version>
-    <relativePath/>
-  </parent>
+below is my api-gateway Application properties main and dev properties.
 
-  <groupId>com.fincore</groupId>
-  <artifactId>api-gateway</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>api-gateway</name>
+1: Application properties ::
 
-  <properties>
-    <java.version>17</java.version>
-    <spring-cloud.version>2025.0.0</spring-cloud.version>
-    <jjwt.version>0.12.6</jjwt.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-dependencies</artifactId>
-        <version>${spring-cloud.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <!-- Spring Cloud Gateway (WebFlux server) -->
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
-    </dependency>
-
-    <!-- WebFlux starter (for reactive) -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-
-    <!-- Reactive Redis (Lettuce) -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
-    </dependency>
-
-    <!-- JWT  -->
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-      <version>${jjwt.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Kubernetes discovery (optional in dev) -->
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-kubernetes-client</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- Actuator -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-
-    <!-- resilience4j optional -->
-    <dependency>
-      <groupId>io.github.resilience4j</groupId>
-      <artifactId>resilience4j-spring-boot3</artifactId>
-      <version>2.2.0</version>
-    </dependency>
-
-    <!-- Micrometer Prometheus (optional) -->
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.38</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-oauth2-resource-server -->
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-oauth2-resource-server</artifactId>
-      <version>6.5.2</version>
-    </dependency>
-
-
-  </dependencies>
-
-  <build>
-    <finalName>${project.artifactId}</finalName>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
-</project>
-
-
-Application.properties file 
 spring.application.name=api-gateway
 server.port=8080
 
@@ -257,16 +113,17 @@ spring.profiles.active=dev
 
 
 # Product service
-spring.cloud.gateway.routes=product-service
-spring.cloud.gateway.routes[0].uri=http://product-service:8081
-spring.cloud.gateway.routes[0].predicates[0]=Path=/Product/**
+spring.cloud.gateway.server.webflux.routes[0].id=product-service
+spring.cloud.gateway.server.webflux.routes[0].uri=http://product-service:8081
+spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/Product/**
 
 # Fincore service
-spring.cloud.gateway.routes[1].id=fincore-service
-spring.cloud.gateway.routes[1].uri=http://fincore-service:8089
-spring.cloud.gateway.routes[1].predicates[0]=Path=/Fincore/**
+spring.cloud.gateway.server.webflux.routes[1].id=fincore-service
+spring.cloud.gateway.server.webflux.routes[1].uri=http://fincore-service:8089
+spring.cloud.gateway.server.webflux.routes[1].predicates[0]=Path=/Fincore/**
 
-Application-dev.properties file 
+
+2: Application-dev properties ::
 
 # Local dev: use HS256 for easy testing
 security.jwt.mode=hmac
@@ -277,8 +134,13 @@ security.jwt.bypass-paths=/auth/login,/actuator/**
 
 # Local Redis
 redis.enabled=true
-spring.data.redis.host=localhost
+spring.data.redis.host=redis
 spring.data.redis.port=6379
 spring.data.redis.database=0
 
-Why I am getting this console error and I am getting the error on spring.cloud.gateway.routes[1].id=fincore-service lines saying use the webflux.server.routes what is really required guide me I cant run the application due to this console error is any dependepncy version required or missing gide me
+
+
+Could you guide me whats wrong here why is canot to redis as I am clrely see in logs "2025-08-20 12:18:33.098 | 2025-08-20 :: 06:48:33.097 || ERROR:: SecurityConfig.java: | 57 | ::  !! RedisValidationFilter error: Unable to connect to Redis"  why I am getting this error and how does I resolved this error please guide me with proper solution 
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * <redisgears_2> Loading finished, re-enable key space notificaitons.
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * DB loaded from disk: 0.001 seconds
+2025-08-20 12:17:27.736 | 8:M 20 Aug 2025 06:47:27.736 * Ready to accept connections tcp
