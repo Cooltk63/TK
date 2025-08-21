@@ -1,76 +1,69 @@
-spring:
-  application:
-    name: api-gateway
+2025-08-21 :: 10:43:11.594 || INFO :: ReflectorRunnable.java: | 87 | :: class io.kubernetes.client.openapi.models.V1Service#Start listing and watching...
 
-  profiles:
-    active: dev
+2025-08-21 :: 10:43:11.601 || ERROR:: ReflectorRunnable.java: | 285 | :: class io.kubernetes.client.openapi.models.V1Service#Reflector loop failed unexpectedly
 
-  main:
-    web-application-type: reactive
+io.kubernetes.client.openapi.ApiException: class V1Status {
 
-  cloud:
-    gateway:
-      routes:
-        - id: product-service
-          uri: http://product-service:8081
-          predicates:
-            - Path=/Product/**
-        - id: fincore-service
-          uri: http://fincore-service:8089
-          predicates:
-            - Path=/Fincore/**
+    apiVersion: v1
 
-server:
-  port: 8080
+    code: 403
 
-# ========== JWT MODE ==========
-security:
-  jwt:
-    mode: hmac
-    hmac-base64-secret: ""   # set in application-dev.yml
-    rsa-public: ""           # for prod, if using RSA
-    ttl-seconds: 900
-    bypass-paths: /auth/login,/actuator/**
+    details: class V1StatusDetails {
 
-# ========== Redis ==========
-redis:
-  enabled: true
-spring:
-  data:
-    redis:
-      host: redis
-      port: 6379
-      database: 0
-      # password: ""  # if needed
+        causes: null
 
-# ========== Actuator ==========
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
+        group: null
 
-# ========== Logging ==========
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd :: HH:mm:ss.SSS ||} %highlight(%-5level:: %file: | %line |){ERROR=bold red, WARN=yellow, INFO=white, DEBUG=green, TRACE=green} :: %msg%n"
+        kind: services
 
+        name: null
 
-xxx
+        retryAfterSeconds: null
 
-security:
-  jwt:
-    mode: hmac
-    # example 32-byte (256-bit) base64-encoded secret
-    hmac-base64-secret: bWV0aGlvbnlsdGhyZW9ueWx0aHJlb255bGdsdXRhbWlueWxhbGFueWw=
-    bypass-paths: /auth/login,/actuator/**
+        uid: null
 
-spring:
-  data:
-    redis:
-      host: redis
-      port: 6379
-      database: 0
+    }
+
+    kind: Status
+
+    message: services is forbidden: User "system:serviceaccount:dev:default" cannot list resource "services" in API group "" in the namespace "dev"
+
+    metadata: class V1ListMeta {
+
+        _continue: null
+
+        remainingItemCount: null
+
+        resourceVersion: null
+
+        selfLink: null
+
+    }
+
+    reason: Forbidden
+
+    status: Failure
+
+}
+
+	at io.kubernetes.client.util.generic.KubernetesApiResponse.lambda$throwsApiException$0(KubernetesApiResponse.java:64)
+
+	at io.kubernetes.client.util.generic.KubernetesApiResponse.onFailure(KubernetesApiResponse.java:78)
+
+	at io.kubernetes.client.util.generic.KubernetesApiResponse.throwsApiException(KubernetesApiResponse.java:62)
+
+	at io.kubernetes.client.informer.SharedInformerFactory$2.list(SharedInformerFactory.java:318)
+
+	at io.kubernetes.client.informer.cache.ReflectorRunnable.run(ReflectorRunnable.java:91)
+
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369)
+
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310)
+
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1095)
+
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:619)
+
+	at java.base/java.lang.Thread.run(Thread.java:1447)
