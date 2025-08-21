@@ -1,50 +1,76 @@
-spring.application.name=api-gateway
-server.port=8080
+spring:
+  application:
+    name: api-gateway
+
+  profiles:
+    active: dev
+
+  main:
+    web-application-type: reactive
+
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: http://product-service:8081
+          predicates:
+            - Path=/Product/**
+        - id: fincore-service
+          uri: http://fincore-service:8089
+          predicates:
+            - Path=/Fincore/**
+
+server:
+  port: 8080
 
 # ========== JWT MODE ==========
-# hmac or rsa (pick per environment using profile files)
-security.jwt.mode=hmac
-
-# HS256: base64 secret (>= 256-bit). For dev, we override below.
-security.jwt.hmac-base64-secret=
-# RS256: PEM public key (BEGIN/END PUBLIC KEY). For prod, set via profile.
-security.jwt.rsa-public=
-
-# Token lifetime used by demo /auth/login (seconds)
-security.jwt.ttl-seconds=900
-
-# Paths that bypass auth (comma-separated). Adjust per env if needed.
-security.jwt.bypass-paths=/auth/login,/actuator/**
+security:
+  jwt:
+    mode: hmac
+    hmac-base64-secret: ""   # set in application-dev.yml
+    rsa-public: ""           # for prod, if using RSA
+    ttl-seconds: 900
+    bypass-paths: /auth/login,/actuator/**
 
 # ========== Redis ==========
-redis.enabled=true
-spring.data.redis.host=redis
-spring.data.redis.port=6379
-spring.data.redis.database=0
-# spring.data.redis.password=   # if needed in non-dev
+redis:
+  enabled: true
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      database: 0
+      # password: ""  # if needed
 
-# Actuator basic
-management.endpoints.web.exposure.include=health,info
-management.endpoint.health.show-details=always
+# ========== Actuator ==========
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 # ========== Logging ==========
-# Console log pattern (Color-coded output)
-logging.pattern.console=%d{yyyy-MM-dd :: HH:mm:ss.SSS ||} %highlight(%-5level:: %file: | %line |){ERROR=bold red, WARN=yellow, INFO=white, DEBUG=green, TRACE=green} ::  %msg%n
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd :: HH:mm:ss.SSS ||} %highlight(%-5level:: %file: | %line |){ERROR=bold red, WARN=yellow, INFO=white, DEBUG=green, TRACE=green} :: %msg%n"
 
 
-spring.profiles.active=dev
+xxx
 
+security:
+  jwt:
+    mode: hmac
+    # example 32-byte (256-bit) base64-encoded secret
+    hmac-base64-secret: bWV0aGlvbnlsdGhyZW9ueWx0aHJlb255bGdsdXRhbWlueWxhbGFueWw=
+    bypass-paths: /auth/login,/actuator/**
 
-# Product service
-#spring.cloud.gateway.server.webflux.routes[0].id=product-service
-#spring.cloud.gateway.server.webflux.routes[0].uri=http://product-service:8081
-#spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/Product/**
-
-spring.cloud.gateway.routes[0].id=product-service
-spring.cloud.gateway.routes[0].uri=http://product-service:8081
-spring.cloud.gateway.routes[0].predicates[0]=Path=/Product/**
-
-# Fincore service
-spring.cloud.gateway.routes[1].id=fincore-service
-spring.cloud.gateway.routes[1].uri=http://fincore-service:8089
-spring.cloud.gateway.routes[1].predicates[0]=Path=/Fincore/**
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      database: 0
