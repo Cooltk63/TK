@@ -1,116 +1,166 @@
-E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl logs product-service-5c96b57f6b-fkgmp -n dev
-WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
-WARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.internal.PlatformDependent0$2 (jar:nested:/app/app.jar/!BOOT-INF/lib/netty-common-4.1.123.Final.jar!/)
-WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2
-WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
 
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl apply -f namespace-dev.yaml
+namespace/dev created
 
- :: Spring Boot ::                (v3.5.4)
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl apply -f redis.yaml
+deployment.apps/redis created
+service/redis created
 
-2025-08-21 :: 09:19:41.817 || INFO :: StartupInfoLogger.java: | 53 | ::  Starting FincoreProductApplication v0.0.1-SNAPSHOT using Java 24.0.2 with PID 1 (/app/app.jar started by circleci in /app)
-2025-08-21 :: 09:19:41.825 || INFO :: SpringApplication.java: | 658 | ::  The following 1 profile is active: "dev"
-2025-08-21 :: 09:19:42.663 || INFO :: RepositoryConfigurationDelegate.java: | 145 | ::  Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-08-21 :: 09:19:42.691 || INFO :: RepositoryConfigurationDelegate.java: | 213 | ::  Finished Spring Data repository scanning in 14 ms. Found 0 JPA repository interfaces.
-2025-08-21 :: 09:19:42.918 || INFO :: GenericScope.java: | 280 | ::  BeanFactory id=8068be97-36d8-3e5a-b369-c3d2a7afce1c
-2025-08-21 :: 09:19:43.431 || INFO :: TomcatWebServer.java: | 111 | ::  Tomcat initialized with port 8081 (http)
-2025-08-21 :: 09:19:43.445 || INFO :: DirectJDKLog.java: | 168 | ::  Starting service [Tomcat]
-2025-08-21 :: 09:19:43.445 || INFO :: DirectJDKLog.java: | 168 | ::  Starting Servlet engine: [Apache Tomcat/10.1.43]
-2025-08-21 :: 09:19:43.472 || INFO :: DirectJDKLog.java: | 168 | ::  Initializing Spring embedded WebApplicationContext
-2025-08-21 :: 09:19:43.473 || INFO :: ServletWebServerApplicationContext.java: | 301 | ::  Root WebApplicationContext: initialization completed in 1565 ms
-2025-08-21 :: 09:19:43.807 || INFO :: HikariDataSource.java: | 109 | ::  HikariPool-1 - Starting...
-2025-08-21 :: 09:19:44.423 || INFO :: HikariPool.java: | 580 | ::  HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@4b7ab7ab
-2025-08-21 :: 09:19:44.426 || INFO :: HikariDataSource.java: | 122 | ::  HikariPool-1 - Start completed.
-2025-08-21 :: 09:19:44.494 || INFO :: LogHelper.java: | 31 | ::  HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-08-21 :: 09:19:44.603 || INFO :: Version.java: | 44 | ::  HHH000412: Hibernate ORM core version 6.6.22.Final
-2025-08-21 :: 09:19:44.656 || INFO :: RegionFactoryInitiator.java: | 50 | ::  HHH000026: Second-level cache disabled
-2025-08-21 :: 09:19:45.122 || INFO :: SpringPersistenceUnitInfo.java: | 87 | ::  No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-08-21 :: 09:19:45.510 || INFO :: JdbcEnvironmentInitiator.java: | 163 | ::  HHH10001005: Database info:
-        Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-        Database driver: undefined/unknown
-        Database version: 19.28
-        Autocommit mode: undefined/unknown
-        Isolation level: undefined/unknown
-        Minimum pool size: undefined/unknown
-        Maximum pool size: undefined/unknown
-2025-08-21 :: 09:19:45.976 || INFO :: JtaPlatformInitiator.java: | 59 | ::  HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-08-21 :: 09:19:45.983 || INFO :: AbstractEntityManagerFactoryBean.java: | 447 | ::  Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-08-21 :: 09:19:46.451 || WARN :: JpaBaseConfiguration.java: | 258 | ::  spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-08-21 :: 09:19:47.023 || WARN :: AbstractApplicationContext.java: | 635 | ::  Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'compositeDiscoveryClient' defined in class path resource [org/springframework/cloud/client/discovery/composite/CompositeDiscoveryClientAutoConfiguration.class]: Unsatisfied dependency expressed through method 'compositeDiscoveryClient' parameter 0: Error creating bean with name 'kubernetesDiscoveryClient' defined in class path resource [org/springframework/cloud/kubernetes/discovery/KubernetesDiscoveryClientBlockingAutoConfiguration.class]: Failed to instantiate [org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClient]: Factory method 'kubernetesDiscoveryClient' threw exception with message: 'spring.cloud.kubernetes.discovery.discovery-server-url' must be specified and be a valid URL.
-2025-08-21 :: 09:19:47.025 || INFO :: AbstractEntityManagerFactoryBean.java: | 660 | ::  Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-08-21 :: 09:19:47.028 || INFO :: HikariDataSource.java: | 349 | ::  HikariPool-1 - Shutdown initiated...
-2025-08-21 :: 09:19:47.084 || INFO :: HikariDataSource.java: | 351 | ::  HikariPool-1 - Shutdown completed.
-2025-08-21 :: 09:19:47.086 || INFO :: DirectJDKLog.java: | 168 | ::  Stopping service [Tomcat]
-2025-08-21 :: 09:19:47.102 || INFO :: ConditionEvaluationReportLogger.java: | 82 | ::
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl apply -f product-service.yaml
+deployment.apps/product-service created
+service/product-service created
 
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-08-21 :: 09:19:47.126 || ERROR:: SpringApplication.java: | 857 | ::  Application run failed
-org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'compositeDiscoveryClient' defined in class path resource [org/springframework/cloud/client/discovery/composite/CompositeDiscoveryClientAutoConfiguration.class]: Unsatisfied dependency expressed through method 'compositeDiscoveryClient' parameter 0: Error creating bean with name 'kubernetesDiscoveryClient' defined in class path resource [org/springframework/cloud/kubernetes/discovery/KubernetesDiscoveryClientBlockingAutoConfiguration.class]: Failed to instantiate [org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClient]: Factory method 'kubernetesDiscoveryClient' threw exception with message: 'spring.cloud.kubernetes.discovery.discovery-server-url' must be specified and be a valid URL.
-        at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804)
-        at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:546)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1375)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1205)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529)
-        at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339)
-        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373)
-        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
-        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1222)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1188)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1123)
-        at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:987)
-        at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:627)
-        at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
-        at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
-        at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
-        at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
-        at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361)
-        at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350)
-        at com.example.Product.FincoreProductApplication.main(FincoreProductApplication.java:11)
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
-        at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:102)
-        at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
-        at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40)
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'kubernetesDiscoveryClient' defined in class path resource [org/springframework/cloud/kubernetes/discovery/KubernetesDiscoveryClientBlockingAutoConfiguration.class]: Failed to instantiate [org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClient]: Factory method 'kubernetesDiscoveryClient' threw exception with message: 'spring.cloud.kubernetes.discovery.discovery-server-url' must be specified and be a valid URL.
-        at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:657)
-        at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:645)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1375)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1205)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569)
-        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529)
-        at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339)
-        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373)
-        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
-        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
-        at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.addCandidateEntry(DefaultListableBeanFactory.java:1996)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:1960)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveMultipleBeanCollection(DefaultListableBeanFactory.java:1850)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveMultipleBeans(DefaultListableBeanFactory.java:1818)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1694)
-        at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1628)
-        at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:913)
-        at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791)
-        ... 26 common frames omitted
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClient]: Factory method 'kubernetesDiscoveryClient' threw exception with message: 'spring.cloud.kubernetes.discovery.discovery-server-url' must be specified and be a valid URL.
-        at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:200)
-        at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiateWithFactoryMethod(SimpleInstantiationStrategy.java:89)
-        at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:169)
-        at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
-        ... 44 common frames omitted
-Caused by: org.springframework.cloud.kubernetes.discovery.DiscoveryServerUrlInvalidException: 'spring.cloud.kubernetes.discovery.discovery-server-url' must be specified and be a valid URL.
-        at org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClient.<init>(KubernetesDiscoveryClient.java:58)
-        at org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClientBlockingAutoConfiguration.kubernetesDiscoveryClient(KubernetesDiscoveryClientBlockingAutoConfiguration.java:51)
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-        at java.base/java.lang.reflect.Method.invoke(Method.java:565)
-        at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:172)
-        ... 47 common frames omitted
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl apply -f fincore-service.yaml
+deployment.apps/fincore-service created
+service/fincore-service created
 
-        This is the error logs for product service
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl apply -f api-gateway.yaml
+deployment.apps/api-gateway created
+service/api-gateway created
+
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl get pods -n dev
+NAME                               READY   STATUS    RESTARTS   AGE
+api-gateway-d9c699469-lhn5m        1/1     Running   0          10s
+fincore-service-54cdd58949-24djt   1/1     Running   0          19s
+product-service-5c96b57f6b-r2wt7   1/1     Running   0          30s
+redis-7c5ff8ffcf-7vphh             1/1     Running   0          38s
+
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl logs redis-7c5ff8ffcf-7vphh -n dev
+8:C 21 Aug 2025 09:32:35.741 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+8:C 21 Aug 2025 09:32:35.741 * Redis version=7.4.5, bits=64, commit=00000000, modified=0, pid=8, just started
+8:C 21 Aug 2025 09:32:35.741 * Configuration loaded
+8:M 21 Aug 2025 09:32:35.741 * monotonic clock: POSIX clock_gettime
+8:M 21 Aug 2025 09:32:35.742 * Running mode=standalone, port=6379.
+8:M 21 Aug 2025 09:32:35.745 * Module 'RedisCompat' loaded from /opt/redis-stack/lib/rediscompat.so
+8:M 21 Aug 2025 09:32:35.782 * <search> Redis version found by RedisSearch : 7.4.5 - oss
+8:M 21 Aug 2025 09:32:35.782 * <search> RediSearch version 2.10.20 (Git=5c09b69)
+8:M 21 Aug 2025 09:32:35.783 * <search> Low level api version 1 initialized successfully
+8:M 21 Aug 2025 09:32:35.785 * <search> gc: ON, prefix min length: 2, min word length to stem: 4, prefix max expansions: 200, query timeout (ms): 500, timeout policy: return, cursor read size: 1000, cursor max idle (ms): 300000, max doctable size: 1000000, max number of search results:  10000,
+8:M 21 Aug 2025 09:32:35.785 * <search> Initialized thread pools!
+8:M 21 Aug 2025 09:32:35.787 * <search> Subscribe to config changes
+8:M 21 Aug 2025 09:32:35.787 * <search> Enabled role change notification
+8:M 21 Aug 2025 09:32:35.787 * Module 'search' loaded from /opt/redis-stack/lib/redisearch.so
+8:M 21 Aug 2025 09:32:35.801 * <timeseries> RedisTimeSeries version 11206, git_sha=cdcbe34f8e87e15ea700b737634be6bac6b6700b
+8:M 21 Aug 2025 09:32:35.802 * <timeseries> Redis version found by RedisTimeSeries : 7.4.5 - oss
+8:M 21 Aug 2025 09:32:35.802 * <timeseries> loaded default CHUNK_SIZE_BYTES policy: 4096
+8:M 21 Aug 2025 09:32:35.802 * <timeseries> loaded server DUPLICATE_POLICY: block
+8:M 21 Aug 2025 09:32:35.802 * <timeseries> loaded default IGNORE_MAX_TIME_DIFF: 0
+8:M 21 Aug 2025 09:32:35.802 * <timeseries> loaded default IGNORE_MAX_VAL_DIFF: 0.000000
+8:M 21 Aug 2025 09:32:35.802 * <timeseries> Setting default series ENCODING to: compressed
+8:M 21 Aug 2025 09:32:35.803 * <timeseries> Detected redis oss
+8:M 21 Aug 2025 09:32:35.803 * Module 'timeseries' loaded from /opt/redis-stack/lib/redistimeseries.so
+8:M 21 Aug 2025 09:32:35.809 * <ReJSON> Created new data type 'ReJSON-RL'
+8:M 21 Aug 2025 09:32:35.809 # <ReJSON> Skip register defrag callbacks as defrag callbacks is not supported on the current Redis server.
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> version: 20809 git sha: unknown branch: unknown
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Exported RedisJSON_V1 API
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Exported RedisJSON_V2 API
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Exported RedisJSON_V3 API
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Exported RedisJSON_V4 API
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Exported RedisJSON_V5 API
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Enabled diskless replication
+8:M 21 Aug 2025 09:32:35.810 * <ReJSON> Initialized shared string cache, thread safe: false.
+8:M 21 Aug 2025 09:32:35.811 * Module 'ReJSON' loaded from /opt/redis-stack/lib/rejson.so
+8:M 21 Aug 2025 09:32:35.811 * <search> Acquired RedisJSON_V5 API
+8:M 21 Aug 2025 09:32:35.816 * <bf> RedisBloom version 2.8.7 (Git=unknown)
+8:M 21 Aug 2025 09:32:35.817 * Module 'bf' loaded from /opt/redis-stack/lib/redisbloom.so
+8:M 21 Aug 2025 09:32:35.828 * <redisgears_2> Created new data type 'GearsType'
+8:M 21 Aug 2025 09:32:35.831 * <redisgears_2> Detected redis oss
+8:M 21 Aug 2025 09:32:35.834 # <redisgears_2> could not initialize RedisAI_InitError
+
+8:M 21 Aug 2025 09:32:35.834 * <redisgears_2> Failed loading RedisAI API.
+8:M 21 Aug 2025 09:32:35.834 * <redisgears_2> RedisGears v2.0.20, sha='9b737886bf825fe29ddc2f8da81f73cbe0b4e858', build_type='release', built_for='Linux-ubuntu22.04.x86_64', redis_version:'7.4.5', enterprise:'false'.
+8:M 21 Aug 2025 09:32:35.866 * <redisgears_2> Registered backend: js.
+8:M 21 Aug 2025 09:32:35.875 * Module 'redisgears_2' loaded from /opt/redis-stack/lib/redisgears.so
+8:M 21 Aug 2025 09:32:35.875 * Server initialized
+8:M 21 Aug 2025 09:32:35.879 * Ready to accept connections tcp
+
+E:\Kubernates Yaml Files\Dev-Deployment\New Test>kubectl -n dev port-forward svc/api-gateway 30080:8080
+Forwarding from 127.0.0.1:30080 -> 8080
+Forwarding from [::1]:30080 -> 8080
+Handling connection for 30080
+Handling connection for 30080
+E0821 15:09:19.479791    9856 portforward.go:424] "Unhandled Error" err=<
+        an error occurred forwarding 30080 -> 8080: error forwarding port 8080 to pod 0b5b0e33067391dca9effb97b7548c1c1d6473fd3f1df0e8d67366b3a7637877, uid : exit status 1: 2025/08/21 09:39:19 socat[19497] E connect(5, AF=2 127.0.0.1:8080, 16): Connection refused
+ >
+E0821 15:09:19.479254    9856 portforward.go:424] "Unhandled Error" err=<
+        an error occurred forwarding 30080 -> 8080: error forwarding port 8080 to pod 0b5b0e33067391dca9effb97b7548c1c1d6473fd3f1df0e8d67366b3a7637877, uid : exit status 1: 2025/08/21 09:39:19 socat[19498] E connect(5, AF=2 127.0.0.1:8080, 16): Connection refused
+ >
+error: lost connection to pod
+
+Still not able to access any endpoint from localhost machine(From Postman )
+http://localhost:30080/auth/login  Response  :: Could not get response
+http://localhost:8080/auth/login
+
+
+below is API-gateway pod log 
+2025-08-21 :: 09:42:39.777 || INFO :: ReflectorRunnable.java: | 87 | ::  class io.kubernetes.client.openapi.models.V1Endpoints#Start listing and watching...
+2025-08-21 :: 09:42:39.779 || ERROR:: ReflectorRunnable.java: | 285 | ::  class io.kubernetes.client.openapi.models.V1Endpoints#Reflector loop failed unexpectedly
+io.kubernetes.client.openapi.ApiException: class V1Status {
+    apiVersion: v1
+    code: 403
+    details: class V1StatusDetails {
+        causes: null
+        group: null
+        kind: endpoints
+        name: null
+        retryAfterSeconds: null
+        uid: null
+    }
+    kind: Status
+    message: endpoints is forbidden: User "system:serviceaccount:dev:default" cannot list resource "endpoints" in API group "" in the namespace "dev"
+    metadata: class V1ListMeta {
+        _continue: null
+        remainingItemCount: null
+        resourceVersion: null
+        selfLink: null
+    }
+    reason: Forbidden
+    status: Failure
+}
+        at io.kubernetes.client.util.generic.KubernetesApiResponse.lambda$throwsApiException$0(KubernetesApiResponse.java:64)
+        at io.kubernetes.client.util.generic.KubernetesApiResponse.onFailure(KubernetesApiResponse.java:78)
+        at io.kubernetes.client.util.generic.KubernetesApiResponse.throwsApiException(KubernetesApiResponse.java:62)
+        at io.kubernetes.client.informer.SharedInformerFactory$2.list(SharedInformerFactory.java:318)
+        at io.kubernetes.client.informer.cache.ReflectorRunnable.run(ReflectorRunnable.java:91)
+        at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+        at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369)
+        at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310)
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1095)
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:619)
+        at java.base/java.lang.Thread.run(Thread.java:1447)
+2025-08-21 :: 09:42:39.835 || INFO :: ReflectorRunnable.java: | 87 | ::  class io.kubernetes.client.openapi.models.V1Service#Start listing and watching...
+2025-08-21 :: 09:42:39.842 || ERROR:: ReflectorRunnable.java: | 285 | ::  class io.kubernetes.client.openapi.models.V1Service#Reflector loop failed unexpectedly
+io.kubernetes.client.openapi.ApiException: class V1Status {
+    apiVersion: v1
+    code: 403
+    details: class V1StatusDetails {
+        causes: null
+        group: null
+        kind: services
+        name: null
+        retryAfterSeconds: null
+        uid: null
+    }
+    kind: Status
+    message: services is forbidden: User "system:serviceaccount:dev:default" cannot list resource "services" in API group "" in the namespace "dev"
+    metadata: class V1ListMeta {
+        _continue: null
+        remainingItemCount: null
+        resourceVersion: null
+        selfLink: null
+    }
+    reason: Forbidden
+    status: Failure
+}
+        at io.kubernetes.client.util.generic.KubernetesApiResponse.lambda$throwsApiException$0(KubernetesApiResponse.java:64)
+        at io.kubernetes.client.util.generic.KubernetesApiResponse.onFailure(KubernetesApiResponse.java:78)
+        at io.kubernetes.client.util.generic.KubernetesApiResponse.throwsApiException(KubernetesApiResponse.java:62)
+        at io.kubernetes.client.informer.SharedInformerFactory$2.list(SharedInformerFactory.java:318)
+        at io.kubernetes.client.informer.cache.ReflectorRunnable.run(ReflectorRunnable.java:91)
+        at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+        at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369)
+        at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310)
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1095)
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:619)
+        at java.base/java.lang.Thread.run(Thread.java:1447)
+
