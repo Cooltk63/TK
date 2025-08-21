@@ -3,23 +3,6 @@ WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
 WARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.internal.PlatformDependent0$2 (jar:nested:/app/app.jar/!BOOT-INF/lib/netty-common-4.1.123.Final.jar!/)
 WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2
 WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v3.5.4)
-
-2025-08-21 :: 09:19:30.623 || INFO :: StartupInfoLogger.java: | 53 | ::  Starting FincoreApplication v0.0.1-SNAPSHOT using Java 24.0.2 with PID 1 (/app/app.jar started by circleci in /app)
-2025-08-21 :: 09:19:30.625 || INFO :: SpringApplication.java: | 658 | ::  The following 1 profile is active: "dev"
-2025-08-21 :: 09:19:31.405 || INFO :: GenericScope.java: | 280 | ::  BeanFactory id=9c2256f5-dbab-348f-bdef-a44865d201e7
-2025-08-21 :: 09:19:31.659 || INFO :: TomcatWebServer.java: | 111 | ::  Tomcat initialized with port 8089 (http)
-2025-08-21 :: 09:19:31.676 || INFO :: DirectJDKLog.java: | 168 | ::  Starting service [Tomcat]
-2025-08-21 :: 09:19:31.676 || INFO :: DirectJDKLog.java: | 168 | ::  Starting Servlet engine: [Apache Tomcat/10.1.43]
-2025-08-21 :: 09:19:31.704 || INFO :: DirectJDKLog.java: | 168 | ::  Initializing Spring embedded WebApplicationContext
 2025-08-21 :: 09:19:31.705 || INFO :: ServletWebServerApplicationContext.java: | 301 | ::  Root WebApplicationContext: initialization completed in 1035 ms
 2025-08-21 :: 09:19:32.183 || WARN :: AbstractApplicationContext.java: | 635 | ::  Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'compositeDiscoveryClient' defined in class path resource [org/springframework/cloud/client/discovery/composite/CompositeDiscoveryClientAutoConfiguration.class]: Unsatisfied dependency expressed through method 'compositeDiscoveryClient' parameter 0: Error creating bean with name 'kubernetesDiscoveryClient' defined in class path resource [org/springframework/cloud/kubernetes/discovery/KubernetesDiscoveryClientBlockingAutoConfiguration.class]: Failed to instantiate [org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClient]: Factory method 'kubernetesDiscoveryClient' threw exception with message: 'spring.cloud.kubernetes.discovery.discovery-server-url' must be specified and be a valid URL.
 2025-08-21 :: 09:19:32.186 || INFO :: DirectJDKLog.java: | 168 | ::  Stopping service [Tomcat]
@@ -96,28 +79,6 @@ WARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.intern
 WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2
 WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
 
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v3.5.4)
-
-2025-08-21 :: 09:19:41.817 || INFO :: StartupInfoLogger.java: | 53 | ::  Starting FincoreProductApplication v0.0.1-SNAPSHOT using Java 24.0.2 with PID 1 (/app/app.jar started by circleci in /app)
-2025-08-21 :: 09:19:41.825 || INFO :: SpringApplication.java: | 658 | ::  The following 1 profile is active: "dev"
-2025-08-21 :: 09:19:42.663 || INFO :: RepositoryConfigurationDelegate.java: | 145 | ::  Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-08-21 :: 09:19:42.691 || INFO :: RepositoryConfigurationDelegate.java: | 213 | ::  Finished Spring Data repository scanning in 14 ms. Found 0 JPA repository interfaces.
-2025-08-21 :: 09:19:42.918 || INFO :: GenericScope.java: | 280 | ::  BeanFactory id=8068be97-36d8-3e5a-b369-c3d2a7afce1c
-2025-08-21 :: 09:19:43.431 || INFO :: TomcatWebServer.java: | 111 | ::  Tomcat initialized with port 8081 (http)
-2025-08-21 :: 09:19:43.445 || INFO :: DirectJDKLog.java: | 168 | ::  Starting service [Tomcat]
-2025-08-21 :: 09:19:43.445 || INFO :: DirectJDKLog.java: | 168 | ::  Starting Servlet engine: [Apache Tomcat/10.1.43]
-2025-08-21 :: 09:19:43.472 || INFO :: DirectJDKLog.java: | 168 | ::  Initializing Spring embedded WebApplicationContext
-2025-08-21 :: 09:19:43.473 || INFO :: ServletWebServerApplicationContext.java: | 301 | ::  Root WebApplicationContext: initialization completed in 1565 ms
-2025-08-21 :: 09:19:43.807 || INFO :: HikariDataSource.java: | 109 | ::  HikariPool-1 - Starting...
-2025-08-21 :: 09:19:44.423 || INFO :: HikariPool.java: | 580 | ::  HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@4b7ab7ab
-2025-08-21 :: 09:19:44.426 || INFO :: HikariDataSource.java: | 122 | ::  HikariPool-1 - Start completed.
 2025-08-21 :: 09:19:44.494 || INFO :: LogHelper.java: | 31 | ::  HHH000204: Processing PersistenceUnitInfo [name: default]
 2025-08-21 :: 09:19:44.603 || INFO :: Version.java: | 44 | ::  HHH000412: Hibernate ORM core version 6.6.22.Final
 2025-08-21 :: 09:19:44.656 || INFO :: RegionFactoryInitiator.java: | 50 | ::  HHH000026: Second-level cache disabled
