@@ -1,0 +1,15 @@
+security:
+  jwt:
+    mode: hmac
+    # example 32-byte (256-bit) base64-encoded secret
+    hmac-base64-secret: bWV0aGlvbnlsdGhyZW9ueWx0aHJlb255bGdsdXRhbWlueWxhbGFueWw=
+    bypass-paths: /auth/login,/actuator/**
+
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      database: 0
+
+redis: enabled:true;
