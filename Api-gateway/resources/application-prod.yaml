@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+
+  # ========== Redis Config ==========
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DB}
+      password: ${REDIS_PASSWORD}
+
+  # ========== DB Details ==========
+  datasource:
+    url: jdbc:oracle:thin:@${DB_HOST}:${DB_PORT}:${DB_SID}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+
+# ========== JWT Secrets ==========
+security:
+  jwt:
+    hmac-base64-secret: ${JWT_SECRET}
