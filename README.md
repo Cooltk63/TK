@@ -1,132 +1,106 @@
-package com.fincore.gateway.Service;
+package com.fincore.gateway.Controller;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
+import java.util.Map;
 
-@Component
-public class TokenSessionValidator {
+/**
+ * Logout endpoint using existing TokenSessionValidator logic.
+ *
+ * Behavior:
+ *  1) Blacklists (revokes) the JTI of the incoming token (always).
+ *  2) Reads Redis key USR:<username> and if its value equals the JTI being logged out,
+ *     then clears the user session (deletes USR:<username>).
+ *  3) If Redis contains a different JTI (user already logged-in elsewhere), we do NOT clear the session.
+ *
+ * Notes:
+ *  - Uses only existing public methods from TokenSessionValidator: blacklistToken(...) and clearUserSession(...).
+ *  - Uses ReactiveStringRedisTemplate to read the current session JTI to avoid modifying TokenSessionValidator.
+ *  - JWT must be presented in Authorization: Bearer <token> header (JwtAuthenticationToken is injected).
+ */
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+public class LogoutController {
 
-    private static final Logger log = LoggerFactory.getLogger(TokenSessionValidator.class);
-    // Redis key prefixes
-    private static final String USER_PREFIX = "USR:";
-    private static final String BLACKLIST_PREFIX = "BL:";
-    // Expiry = same as JWT expiry (example: 15 minutes, should match your JwtService config)
-    private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
+    private static final Logger log = LoggerFactory.getLogger(LogoutController.class);
+
+    private final com.fincore.gateway.Service.TokenSessionValidator validator;
     private final ReactiveStringRedisTemplate redisTemplate;
 
-    public TokenSessionValidator(ReactiveStringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    private static final String USER_PREFIX = "USR:";
 
     /**
-     * Called during login to register a new session for the user.
-     * 1. Blacklists old JTI if exists
-     * 2. Stores new JTI in Redis with expiry
+     * POST /auth/logout
+     * - Requires Authorization: Bearer <token>
+     * - Revokes the token and conditionally clears the user session if it matches the token's jti.
      */
-    public Mono<Void> registerUserSession(String username, String newJti) {
-        log.info("Getting Username & newjti ::", username, newJti);
-        String userKey = USER_PREFIX + username;
-
-        log.info("Inside registerUserSession method " + userKey);
-
-        return redisTemplate.opsForValue().get(userKey)
-                .flatMap(oldJti -> {
-                    if (oldJti != null) {
-                        log.info(" Found old session for user={} -> blacklisting oldJti={}", username, oldJti);
-                        return blacklistToken(oldJti);
-                    }
-                    return Mono.empty();
-                })
-                .then(redisTemplate.opsForValue()
-                        .set(userKey, newJti, TOKEN_TTL)
-                        .doOnSuccess(v -> log.info(" Registered new session in Redis for user={} jti={}", username, newJti))
-                        .then()
-                );
-    }
-
-    /**
-     * Blacklist a token (on logout or replacement).
-     */
-    public Mono<Boolean> blacklistToken(String jti) {
-        String key = BLACKLIST_PREFIX + jti;
-        return redisTemplate.opsForValue().set(key, "true", TOKEN_TTL)
-                .doOnSuccess(v -> log.info(" Blacklisted token jti={}", jti));
-    }
-
-    /**
-     * Clear session for a given user (e.g., on logout).
-     */
-    public Mono<Boolean> clearUserSession(String username) {
-        return redisTemplate.delete(USER_PREFIX + username)
-                .map(deleted -> {
-                    if (deleted > 0) {
-                        log.info(" Cleared session for user={}", username);
-                        return true;
-                    }
-                    return false;
-                });
-    }
-
-    /**
-     * Validate token against Redis.
-     * - Reject if blacklisted
-     * - Reject if not equal to the latest session JTI
-     */
-    public Mono<Authentication> validateWithRedis(Authentication authentication) {
-        if (!(authentication instanceof JwtAuthenticationToken jwtAuth)) {
-            log.warn("Skipping validation: not a JwtAuthenticationToken -> {}", authentication);
-            return Mono.error(new BadCredentialsException("Invalid authentication type"));
+    @PostMapping("/logout")
+    public Mono<ResponseEntity<Map<String, Object>>> logout(JwtAuthenticationToken jwtAuth) {
+        if (jwtAuth == null) {
+            return Mono.just(ResponseEntity.badRequest()
+                    .body(Map.of("error", "No authenticated token provided")));
         }
 
-        Jwt jwt = jwtAuth.getToken();
+        var jwt = jwtAuth.getToken();
         String username = jwt.getSubject();
         String jti = jwt.getId();
 
-        if (jti == null) {
-            log.error("Token missing JTI claim -> rejecting token for user={}", username);
-            return Mono.error(new BadCredentialsException("Missing token ID (jti)"));
+        if (username == null || jti == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Token missing subject or jti")));
         }
 
-        log.info(" Validating token for user={} with jti={}", username, jti);
+        log.info("Logout requested for user={} jti={}", username, jti);
 
-        return redisTemplate.hasKey(BLACKLIST_PREFIX + jti)
-                .flatMap(isBlacklisted -> {
-                    if (Boolean.TRUE.equals(isBlacklisted)) {
-                        log.warn(" Token is blacklisted -> jti={}, user={}", jti, username);
-                        return Mono.error(new BadCredentialsException("Token revoked"));
+        String userKey = USER_PREFIX + username;
+
+        // 1) blacklist the given jti
+        return validator.blacklistToken(jti)
+                // 2) then check current stored JTI for user
+                .then(redisTemplate.opsForValue().get(userKey).defaultIfEmpty(""))
+                .flatMap(currentJti -> {
+                    if (jti.equals(currentJti)) {
+                        // 3) Only clear session if current stored JTI equals this jti
+                        log.info("Current Redis JTI matches logout jti -> clearing session for user={}", username);
+                        return validator.clearUserSession(username)
+                                .map(cleared -> Map.<String, Object>of(
+                                        "message", "User logged out (revoked token and cleared session)",
+                                        "user", username,
+                                        "jti", jti
+                                ));
+                    } else {
+                        // Someone else already replaced the session; keep that session intact.
+                        log.info("Redis JTI does not match logout jti (currentJti={}) -> not clearing session for user={}",
+                                currentJti, username);
+                        return Mono.just(Map.<String, Object>of(
+                                "message", "Token revoked. Active session remains (another token is active)",
+                                "user", username,
+                                "jti", jti,
+                                "currentJti", currentJti == null ? "" : currentJti
+                        ));
                     }
-
-                    return redisTemplate.opsForValue().get(USER_PREFIX + username)
-                            .flatMap(currentJti -> {
-                                log.info(" Redis stored JTI for user={} is {}", username, currentJti);
-
-                                if (currentJti == null) {
-                                    log.warn(" No active session found in Redis for user={} -> rejecting", username);
-                                    return Mono.error(new BadCredentialsException("No active session"));
-                                }
-
-                                if (!currentJti.equals(jti)) {
-                                    log.warn(" Token mismatch for user={} -> expected={}, got={}",
-                                            username, currentJti, jti);
-                                    return Mono.error(new BadCredentialsException("Another session is active"));
-                                }
-
-                                log.info(" Token validation success for user={} with jti={}", username, jti);
-                                return Mono.just(authentication);
-                            });
+                })
+                .map(body -> ResponseEntity.ok(body))
+                .onErrorResume(e -> {
+                    log.error("Logout failed for user={} jti={}, reason={}", username, jti, e.toString());
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("error", "Logout failed: " + e.getMessage())));
                 });
     }
 }
 
 
+xxx
 
-This is my tokenSession Validator Class there is no such method "revokeTokenAndClearSessionIfMatches" so guide me properly and read the class again and use existing code and business logic do not use or need the change in isndie the code.
+
