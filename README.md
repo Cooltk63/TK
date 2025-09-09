@@ -1,4 +1,4 @@
-5@PostMapping("/logout")
+@PostMapping("/logout")
 public Mono<ResponseEntity<Map<String, Object>>> logout(JwtAuthenticationToken jwtAuth) {
     if (jwtAuth == null) {
         return Mono.just(ResponseEntity.badRequest().body(Map.of("error", "No authenticated token found")));
