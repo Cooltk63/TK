@@ -1,26 +1,28 @@
-[12/09, 3:52 pm] Falguni Nakhwa - TCS: import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+[12/09, 3:53 pm] Falguni Nakhwa - TCS: import org.springframework.web.bind.annotation.*;
 
-@Service
-public class KafkaProducer {
-    private final KafkaTemplate<String, String> kafkaTemplate;
+@RestController
+@RequestMapping("/kafka")
+public class KafkaController {
+    private final KafkaProducer producer;
 
-    public KafkaProducer(KafkaTemplate<String, String> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public KafkaController(KafkaProducer producer) {
+        this.producer = producer;
     }
 
-    public void sendMessage(String message) {
-        kafkaTemplate.send("my_topic", message);
-        System.out.println("Produced message: " + message);
+    @GetMapping("/publish")
+    public String publishMessage(@RequestParam String message) {
+        producer.sendMessage(message);
+        return "Message sent: " + message;
     }
 }
-[12/09, 3:52 pm] Falguni Nakhwa - TCS: import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
+[12/09, 3:53 pm] Falguni Nakhwa - TCS: import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Service
-public class KafkaConsumer {
-    @KafkaListener(topics = "my_topic", groupId = "my-group")
-    public void consume(String message) {
-        System.out.println("Consumed message: " + message);
+@Configuration
+public class KafkaTopicConfig {
+    @Bean
+    public NewTopic createTopic() {
+        return new NewTopic("my_topic", 1, (short) 1);
     }
 }
