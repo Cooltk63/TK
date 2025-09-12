@@ -1,19 +1,26 @@
-# Unique ID of the node
-process.roles=broker,controller
-node.id=1
+[12/09, 3:52 pm] Falguni Nakhwa - TCS: import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
 
-# Internal KRaft communication
-controller.quorum.voters=1@localhost:9093
+@Service
+public class KafkaProducer {
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-# Directories for Kafka log data
-log.dirs=E:/softwares/kafka/kafka-logs
+    public KafkaProducer(KafkaTemplate<String, String> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
-# Listeners for clients and controller
-listeners=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
-inter.broker.listener.name=PLAINTEXT
-controller.listener.names=CONTROLLER
+    public void sendMessage(String message) {
+        kafkaTemplate.send("my_topic", message);
+        System.out.println("Produced message: " + message);
+    }
+}
+[12/09, 3:52 pm] Falguni Nakhwa - TCS: import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
 
-# Cluster metadata storage
-offsets.topic.replication.factor=1
-transaction.state.log.replication.factor=1
-transaction.state.log.min.isr=1
+@Service
+public class KafkaConsumer {
+    @KafkaListener(topics = "my_topic", groupId = "my-group")
+    public void consume(String message) {
+        System.out.println("Consumed message: " + message);
+    }
+}
