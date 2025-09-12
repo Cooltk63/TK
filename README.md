@@ -1,28 +1,28 @@
-[12/09, 3:53 pm] Falguni Nakhwa - TCS: import org.springframework.web.bind.annotation.*;
+version: '3.8'
 
-@RestController
-@RequestMapping("/kafka")
-public class KafkaController {
-    private final KafkaProducer producer;
+services:
+  kafka:
+    image: apache/kafka:3.7.0   # pick a stable version
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft mode configs
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
 
-    public KafkaController(KafkaProducer producer) {
-        this.producer = producer;
-    }
-
-    @GetMapping("/publish")
-    public String publishMessage(@RequestParam String message) {
-        producer.sendMessage(message);
-        return "Message sent: " + message;
-    }
-}
-[12/09, 3:53 pm] Falguni Nakhwa - TCS: import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class KafkaTopicConfig {
-    @Bean
-    public NewTopic createTopic() {
-        return new NewTopic("my_topic", 1, (short) 1);
-    }
-}
+  app:
+    build: .
+    container_name: springboot-kafka-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
